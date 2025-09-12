@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/presentation/widgets/logout_dialog.dart';
 
 class SideDrawer extends StatelessWidget {
   const SideDrawer({super.key});
@@ -88,20 +90,34 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: SvgPicture.asset(AppImages.notifications, width: 24, height: 24),
+            leading: SvgPicture.asset(
+              AppImages.notifications,
+              width: 24,
+              height: 24,
+            ),
             title: Text(
               'Notifications',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
           ListTile(
-            leading: SvgPicture.asset(AppImages.settings, width: 24, height: 24),
+            leading: SvgPicture.asset(
+              AppImages.settings,
+              width: 24,
+              height: 24,
+            ),
             title: Text(
               'Settings',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
           ListTile(
+            onTap: () {
+              appRouter.pop();
+              Future.delayed(const Duration(milliseconds:200), () {
+                if (context.mounted) showLogoutDialog(context, () {});
+              });
+            },
             leading: SvgPicture.asset(AppImages.logout, width: 24, height: 24),
             title: Text('Logout', style: Theme.of(context).textTheme.bodyLarge),
           ),

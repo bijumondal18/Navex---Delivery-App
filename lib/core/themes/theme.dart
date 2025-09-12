@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -34,8 +36,21 @@ class AppTheme {
         elevation: AppSizes.elevationSmall,
         backgroundColor: AppColors.primaryLight,
       ),
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: AppColors.white,
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.white),
+      switchTheme: SwitchThemeData(
+        trackColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.greenLight; // ON state track color
+          }
+          return AppColors.dividerLight; // OFF state track color
+        }),
+        thumbColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.white; // ON state thumb color
+          }
+          return AppColors.white; // OFF state thumb color
+        }),
+        trackOutlineWidth: MaterialStateProperty.all(0.0),
       ),
       appBarTheme: const AppBarTheme(
         iconTheme: IconThemeData(
@@ -76,7 +91,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      tabBarTheme:  TabBarThemeData(
+      tabBarTheme: TabBarThemeData(
         indicatorSize: TabBarIndicatorSize.tab,
         // indicator: FilledUnderlineIndicator(
         //   fillColor: AppColors.primaryLight.withAlpha(10), // background
@@ -209,9 +224,9 @@ class AppTheme {
           size: AppSizes.appBarIconSize,
           color: AppColors.white,
         ),
-        backgroundColor: AppColors.black,
+        backgroundColor: AppColors.primaryDark,
         elevation: 0.0,
-        scrolledUnderElevation: AppSizes.elevationSmall,
+        scrolledUnderElevation: 0.0,
         centerTitle: true,
         titleTextStyle: TextStyle(
           color: AppColors.white,
@@ -224,6 +239,21 @@ class AppTheme {
         color: AppColors.primaryDark,
         circularTrackColor: AppColors.scaffoldBackgroundDark,
       ),
+      switchTheme: SwitchThemeData(
+        trackColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.greenDark; // ON state track color
+          }
+          return AppColors.hintDark; // OFF state track color
+        }),
+        thumbColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.white; // ON state thumb color
+          }
+          return AppColors.white; // OFF state thumb color
+        }),
+        trackOutlineWidth: MaterialStateProperty.all(0.0),
+      ),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.kDefaultPadding * 5),
@@ -231,7 +261,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.scaffoldBackgroundDark,
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      tabBarTheme:  TabBarThemeData(
+      tabBarTheme: TabBarThemeData(
         indicatorSize: TabBarIndicatorSize.tab,
         // indicator: FilledUnderlineIndicator(
         //   fillColor: AppColors.primaryDark.withAlpha(20), // background
@@ -276,17 +306,17 @@ class AppTheme {
         displayLarge: GoogleFonts.lato(
           color: AppColors.white,
           fontWeight: FontWeight.w700,
-            fontSize: AppSizes.displayLarge
+          fontSize: AppSizes.displayLarge,
         ),
         displayMedium: GoogleFonts.lato(
           color: AppColors.white,
           fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displayMedium
+          fontSize: AppSizes.displayMedium,
         ),
         displaySmall: GoogleFonts.lato(
           color: AppColors.white,
           fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displaySmall
+          fontSize: AppSizes.displaySmall,
         ),
         headlineLarge: GoogleFonts.lato(
           color: AppColors.white,
