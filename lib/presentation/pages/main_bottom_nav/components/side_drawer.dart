@@ -34,21 +34,25 @@ class SideDrawer extends StatelessWidget {
                           backgroundColor: Theme.of(
                             context,
                           ).scaffoldBackgroundColor,
-                          radius: 54,
+                          radius: 48,
                           child: CircleAvatar(
-                            radius: 52,
+                            radius: 46,
                             backgroundImage: NetworkImage(
                               'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
                             ),
                           ),
                         ),
-                        Text(
-                          'Larry Davis',
-                          style: Theme.of(context).textTheme.titleLarge!
-                              .copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.white,
-                              ),
+                        Expanded(
+                          child: Text(
+                            'Larry Davis',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleLarge!
+                                .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.white,
+                                ),
+                          ),
                         ),
                       ],
                     ),
@@ -56,6 +60,50 @@ class SideDrawer extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: AppSizes.kDefaultPadding),
+          ListTile(
+            leading: SvgPicture.asset(AppImages.home, width: 24, height: 24),
+            title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
+          ),
+          ListTile(
+            leading: Image.asset(AppImages.pin, width: 24, height: 24),
+            title: Text(
+              'Available Routes',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          ListTile(
+            leading: Image.asset(AppImages.pin, width: 24, height: 24),
+            title: Text(
+              'My Accepted Routes',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          ListTile(
+            leading: Image.asset(AppImages.pin, width: 24, height: 24),
+            title: Text(
+              'Route History',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          ListTile(
+            leading: SvgPicture.asset(AppImages.notifications, width: 24, height: 24),
+            title: Text(
+              'Notifications',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          ListTile(
+            leading: SvgPicture.asset(AppImages.settings, width: 24, height: 24),
+            title: Text(
+              'Settings',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          ListTile(
+            leading: SvgPicture.asset(AppImages.logout, width: 24, height: 24),
+            title: Text('Logout', style: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),

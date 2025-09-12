@@ -9,4 +9,9 @@ class AppImages {
 
   static const String sideOval = '${basePath}side_oval$extensionSvg';
   static const String topOval = '${basePath}top_oval$extensionSvg';
+  static const String home = '${basePath}ic_home$extensionSvg';
+  static const String notifications = '${basePath}ic_notification$extensionSvg';
+  static const String settings = '${basePath}ic_settings$extensionSvg';
+  static const String logout = '${basePath}ic_logout$extensionSvg';
+  static const String pin = '${basePath}ic_pin$extensionPng';
 }

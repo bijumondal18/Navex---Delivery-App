@@ -15,30 +15,6 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
       appBar: AppBar(),
       drawer: SideDrawer(),
       body: ListView(children: []),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_rounded),
-            activeIcon: Icon(Icons.calendar_month_rounded),
-            label: "Routes",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_rounded),
-            activeIcon: Icon(Icons.list_alt_rounded),
-            label: "History",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_2_outlined),
-            activeIcon: Icon(Icons.person_2_rounded),
-            label: "Profile",
-          ),
-        ],
-      ),
     );
   }
 }
