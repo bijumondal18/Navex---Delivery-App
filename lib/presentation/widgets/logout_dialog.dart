@@ -19,7 +19,7 @@ Future<void> showLogoutDialog(
         title: Text("Logout", style: Theme.of(context).textTheme.titleLarge),
         content: Text(
           "Are you sure you want to log out from this device?",
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
         actions: [
           TextButton(

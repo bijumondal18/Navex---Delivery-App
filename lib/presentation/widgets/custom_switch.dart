@@ -13,7 +13,7 @@ class CustomSwitch extends StatelessWidget {
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 64,
+        width: 54,
         height: 25,
         padding: const EdgeInsets.symmetric(horizontal: 3),
         decoration: BoxDecoration(

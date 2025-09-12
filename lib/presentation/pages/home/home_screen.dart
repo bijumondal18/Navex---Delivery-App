@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/core/utils/date_time_utils.dart';
+import 'package:navex/presentation/widgets/route_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -57,41 +58,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           Positioned(
-            top: 80,
+            top: 70,
             left: 0,
             bottom: 0,
             right: 0,
-            child: ListView.builder(
+            child: ListView.separated(
               itemCount: 8,
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizes.kDefaultPadding,
+              padding: EdgeInsets.only(
+                left: AppSizes.kDefaultPadding,
+                right: AppSizes.kDefaultPadding,
+                top: AppSizes.kDefaultPadding,
+                bottom: AppSizes.kDefaultPadding*4,
               ),
               itemBuilder: (context, index) {
-                return Container(
-                  height: 120,
-                  margin: EdgeInsets.only(
-                    bottom: AppSizes.kDefaultPadding / 1.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.cardCornerRadius,
-                    ),
-                    border: Border.all(
-                      width: 1.0,
-                      color: Theme.of(context).dividerColor,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).shadowColor.withAlpha(10),
-                        blurRadius: AppSizes.blurRadius,
-                        spreadRadius: AppSizes.spreadRadius,
-                      ),
-                    ],
-                  ),
-                  child: Column(children: []),
-                );
+                return RouteCard();
               },
+              separatorBuilder: (BuildContext context, int index) =>
+                  const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
             ),
           ),
         ],
