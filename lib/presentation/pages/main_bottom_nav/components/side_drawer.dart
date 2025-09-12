@@ -7,7 +7,9 @@ import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/logout_dialog.dart';
 
 class SideDrawer extends StatelessWidget {
-  const SideDrawer({super.key});
+  final Function(int) onItemTap;
+
+  const SideDrawer({super.key, required this.onItemTap});
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +67,12 @@ class SideDrawer extends StatelessWidget {
           ),
           const SizedBox(height: AppSizes.kDefaultPadding),
           ListTile(
+            onTap: () => onItemTap(0),
             leading: SvgPicture.asset(AppImages.home, width: 24, height: 24),
             title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
           ),
           ListTile(
+            onTap: () => onItemTap(1),
             leading: Image.asset(AppImages.pin, width: 24, height: 24),
             title: Text(
               'Available Routes',
@@ -76,6 +80,7 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            onTap: () => onItemTap(2),
             leading: Image.asset(AppImages.pin, width: 24, height: 24),
             title: Text(
               'My Accepted Routes',
@@ -83,6 +88,7 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            onTap: () => onItemTap(3),
             leading: Image.asset(AppImages.pin, width: 24, height: 24),
             title: Text(
               'Route History',
@@ -90,6 +96,7 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            onTap: () => onItemTap(4),
             leading: SvgPicture.asset(
               AppImages.notifications,
               width: 24,
@@ -101,6 +108,7 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            onTap: () => onItemTap(5),
             leading: SvgPicture.asset(
               AppImages.settings,
               width: 24,
@@ -114,7 +122,7 @@ class SideDrawer extends StatelessWidget {
           ListTile(
             onTap: () {
               appRouter.pop();
-              Future.delayed(const Duration(milliseconds:200), () {
+              Future.delayed(const Duration(milliseconds: 200), () {
                 if (context.mounted) showLogoutDialog(context, () {});
               });
             },

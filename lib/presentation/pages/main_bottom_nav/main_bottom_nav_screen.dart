@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/pages/main_bottom_nav/components/side_drawer.dart';
 import 'package:navex/presentation/widgets/custom_switch.dart';
+
+import '../available_routes/available_routes_screen.dart';
+import '../home/home_screen.dart';
+import '../my_accepted_routes/my_accepted_routes_screen.dart';
+import '../notifications/notifications_screen.dart';
+import '../route_history/route_history_screen.dart';
+import '../settings/settings_screen.dart';
 
 class MainBottomNavScreen extends StatefulWidget {
   const MainBottomNavScreen({super.key});
@@ -14,7 +22,24 @@ class MainBottomNavScreen extends StatefulWidget {
 }
 
 class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
-  bool isOnline = false;
+  bool _isOnline = false;
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = [
+    HomeScreen(),
+    AvailableRoutesScreen(),
+    MyAcceptedRoutesScreen(),
+    RouteHistoryScreen(),
+    NotificationsScreen(),
+    SettingsScreen(),
+  ];
+
+  void _onDrawerItemTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    appRouter.pop(); // close the drawer
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +55,10 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
         ),
         actions: [
           CustomSwitch(
-            value: isOnline,
+            value: _isOnline,
             onChanged: (value) {
               setState(() {
-                isOnline = value;
+                _isOnline = value;
               });
             },
           ),
@@ -58,8 +83,8 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
           ),
         ],
       ),
-      drawer: SideDrawer(),
-      body: ListView(children: []),
+      drawer: SideDrawer(onItemTap: _onDrawerItemTap),
+      body: _screens[_selectedIndex],
     );
   }
 }

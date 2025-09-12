@@ -67,4 +67,10 @@ class DateTimeUtils {
     }
   }
 
+  static String getFormattedCurrentDate() {
+    final now = DateTime.now(); // current date
+    final formatter = DateFormat('MMM dd, yyyy');
+    return formatter.format(now);
+  }
+
 }
