@@ -57,6 +57,12 @@ class SideDrawer extends StatelessWidget {
               ],
             ),
           ),
+
+          Column(
+            children: [
+              Text('Home', style: Theme.of(context).textTheme.bodyLarge,),
+            ],
+          )
         ],
       ),
     );
