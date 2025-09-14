@@ -13,123 +13,126 @@ class SideDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      shape: RoundedRectangleBorder(),
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          Container(
-            height: MediaQuery.sizeOf(context).height * 0.27,
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: Stack(
-              children: [
-                SvgPicture.asset(AppImages.sideOval, fit: BoxFit.cover),
-                SvgPicture.asset(AppImages.topOval, fit: BoxFit.cover),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.kDefaultPadding,
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: AppSizes.kDefaultPadding,
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Theme.of(
-                            context,
-                          ).scaffoldBackgroundColor,
-                          radius: 48,
-                          child: CircleAvatar(
-                            radius: 46,
-                            backgroundImage: NetworkImage(
-                              'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
+    return SizedBox(
+      width: MediaQuery.sizeOf(context).width*0.65,
+      child: Drawer(
+        shape: RoundedRectangleBorder(),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              height: MediaQuery.sizeOf(context).height * 0.27,
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+              child: Stack(
+                children: [
+                  SvgPicture.asset(AppImages.sideOval, fit: BoxFit.cover),
+                  SvgPicture.asset(AppImages.topOval, fit: BoxFit.cover),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSizes.kDefaultPadding,
+                    ),
+                    child: SafeArea(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        spacing: AppSizes.kDefaultPadding,
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor,
+                            radius: 48,
+                            child: CircleAvatar(
+                              radius: 46,
+                              backgroundImage: NetworkImage(
+                                'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
+                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Larry Davis',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleLarge!
-                                .copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.white,
-                                ),
+                          Expanded(
+                            child: Text(
+                              'Larry Davis',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.white,
+                                  ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: AppSizes.kDefaultPadding),
-          ListTile(
-            onTap: () => onItemTap(0),
-            leading: SvgPicture.asset(AppImages.home, width: 24, height: 24),
-            title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
-          ),
-          ListTile(
-            onTap: () => onItemTap(1),
-            leading: Image.asset(AppImages.pin, width: 24, height: 24),
-            title: Text(
-              'Available Routes',
-              style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            ListTile(
+              onTap: () => onItemTap(0),
+              leading: SvgPicture.asset(AppImages.home, width: 24, height: 24),
+              title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
             ),
-          ),
-          ListTile(
-            onTap: () => onItemTap(2),
-            leading: Image.asset(AppImages.pin, width: 24, height: 24),
-            title: Text(
-              'My Accepted Routes',
-              style: Theme.of(context).textTheme.bodyLarge,
+            ListTile(
+              onTap: () => onItemTap(1),
+              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              title: Text(
+                'Available Routes',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
-          ),
-          ListTile(
-            onTap: () => onItemTap(3),
-            leading: Image.asset(AppImages.pin, width: 24, height: 24),
-            title: Text(
-              'Route History',
-              style: Theme.of(context).textTheme.bodyLarge,
+            ListTile(
+              onTap: () => onItemTap(2),
+              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              title: Text(
+                'My Accepted Routes',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
-          ),
-          ListTile(
-            onTap: () => onItemTap(4),
-            leading: SvgPicture.asset(
-              AppImages.notifications,
-              width: 24,
-              height: 24,
+            ListTile(
+              onTap: () => onItemTap(3),
+              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              title: Text(
+                'Route History',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
-            title: Text(
-              'Notifications',
-              style: Theme.of(context).textTheme.bodyLarge,
+            ListTile(
+              onTap: () => onItemTap(4),
+              leading: SvgPicture.asset(
+                AppImages.notifications,
+                width: 24,
+                height: 24,
+              ),
+              title: Text(
+                'Notifications',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
-          ),
-          ListTile(
-            onTap: () => onItemTap(5),
-            leading: SvgPicture.asset(
-              AppImages.settings,
-              width: 24,
-              height: 24,
+            ListTile(
+              onTap: () => onItemTap(5),
+              leading: SvgPicture.asset(
+                AppImages.settings,
+                width: 24,
+                height: 24,
+              ),
+              title: Text(
+                'Settings',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
-            title: Text(
-              'Settings',
-              style: Theme.of(context).textTheme.bodyLarge,
+            ListTile(
+              onTap: () {
+                appRouter.pop();
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (context.mounted) showLogoutDialog(context, () {});
+                });
+              },
+              leading: SvgPicture.asset(AppImages.logout, width: 24, height: 24),
+              title: Text('Logout', style: Theme.of(context).textTheme.bodyLarge),
             ),
-          ),
-          ListTile(
-            onTap: () {
-              appRouter.pop();
-              Future.delayed(const Duration(milliseconds: 200), () {
-                if (context.mounted) showLogoutDialog(context, () {});
-              });
-            },
-            leading: SvgPicture.asset(AppImages.logout, width: 24, height: 24),
-            title: Text('Logout', style: Theme.of(context).textTheme.bodyLarge),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
