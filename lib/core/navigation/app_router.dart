@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 
+import '../../presentation/pages/auth/login/login_screen.dart';
 import '../../presentation/pages/main_bottom_nav/main_bottom_nav_screen.dart';
 import '../../presentation/pages/spalsh/splash_screen.dart';
 
@@ -14,19 +15,11 @@ final GoRouter appRouter = GoRouter(
       name: 'splash',
       builder: (context, state) => SplashScreen(),
     ),
-    // GoRoute(
-    //   path: Screens.languageSelection,
-    //   name: 'languageSelection',
-    //   builder: (context, state) {
-    //     // final languageList = state.extra as List<Language>;
-    //     return LanguageSelectionScreen();
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.login,
-    //   name: 'login',
-    //   builder: (context, state) => LoginScreen(),
-    // ),
+    GoRoute(
+      path: Screens.login,
+      name: 'login',
+      builder: (context, state) => LoginScreen(),
+    ),
     GoRoute(
       path: Screens.main,
       name: 'main',

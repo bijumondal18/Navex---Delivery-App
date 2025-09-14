@@ -7,7 +7,7 @@ void statusBarConfig({required BuildContext context}) {
   final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
   SystemChrome.setSystemUIOverlayStyle(
-    isDarkMode
+    !isDarkMode
         ? const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarBrightness: Brightness.dark,
