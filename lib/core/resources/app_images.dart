@@ -16,8 +16,10 @@ class AppImages {
   static const String logout = '${basePath}ic_logout$extensionSvg';
   static const String hamburger = '${basePath}ic_hamburger$extensionSvg';
   static const String pinRed = '${basePath}ic_pin_red$extensionSvg';
-  static const String checkGreen = '${basePath}ic_check_circle_green$extensionSvg';
+  static const String checkGreen =
+      '${basePath}ic_check_circle_green$extensionSvg';
   static const String circleGreen = '${basePath}ic_circle_green$extensionSvg';
+  static const String clockGreen = '${basePath}ic_clock_green$extensionSvg';
   static const String timer = '${basePath}ic_timer$extensionPng';
   static const String pin = '${basePath}ic_pin$extensionPng';
 }

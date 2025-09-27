@@ -13,7 +13,7 @@ class RouteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        appRouter.pushNamed(Screens.tripDetails,pathParameters: {'id': 'id'});
+        appRouter.pushNamed(Screens.tripDetails, pathParameters: {'id': 'id'});
       },
       child: Card(
         elevation: AppSizes.elevationSmall,
@@ -88,7 +88,7 @@ class RouteCard extends StatelessWidget {
                 ),
               ),
 
-              Divider(),
+              Divider(color: Theme.of(context).dividerColor),
 
               Padding(
                 padding: const EdgeInsets.symmetric(

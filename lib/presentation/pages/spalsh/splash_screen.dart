@@ -3,6 +3,8 @@ import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
 
+import '../../../core/extensions/status_bar_configs.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -21,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    statusBarConfig(context: context);
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body: Column(
