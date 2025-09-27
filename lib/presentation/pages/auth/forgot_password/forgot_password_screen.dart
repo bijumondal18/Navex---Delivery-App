@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:navex/core/extensions/status_bar_configs.dart';
-import 'package:navex/core/navigation/app_router.dart';
-import 'package:navex/core/navigation/screens.dart';
-import 'package:navex/core/resources/app_images.dart';
-import 'package:navex/core/themes/app_sizes.dart';
-import 'package:navex/presentation/widgets/app_text_field.dart';
-import 'package:navex/presentation/widgets/primary_button.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+import '../../../../core/resources/app_images.dart';
+import '../../../../core/themes/app_sizes.dart';
+import '../../../widgets/app_text_field.dart';
+import '../../../widgets/primary_button.dart';
+
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _pharmacyKeyController = TextEditingController();
-  final TextEditingController _mobileController = TextEditingController();
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
-  bool _cbRememberMe = false;
+  final TextEditingController _emailController = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
-    statusBarConfig(context: context);
     return Scaffold(
       body: Stack(
         children: [
@@ -68,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         top: AppSizes.kDefaultPadding,
                       ),
                       child: Text(
-                        'Log In',
+                        'Forgot Password',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
@@ -97,35 +92,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         type: AppTextFieldType.email,
                         controller: _emailController,
                         textInputAction: TextInputAction.done,
-                        hint: 'Email Id',
+                        hint: 'Enter your email id',
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSizes.kDefaultPadding,
-                        right: AppSizes.kDefaultPadding,
-                        top: AppSizes.kDefaultPadding,
-                      ),
-                      child: AppTextField(
-                        type: AppTextFieldType.text,
-                        controller: _pharmacyKeyController,
-                        textInputAction: TextInputAction.done,
-                        hint: 'Pharmacy Key',
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSizes.kDefaultPadding,
-                        right: AppSizes.kDefaultPadding,
-                        top: AppSizes.kDefaultPadding,
-                      ),
-                      child: AppTextField(
-                        type: AppTextFieldType.mobile,
-                        controller: _mobileController,
-                        textInputAction: TextInputAction.done,
-                        hint: 'Mobile Number',
-                      ),
-                    ),
+
                     Padding(
                       padding: const EdgeInsets.only(
                         left: AppSizes.kDefaultPadding,
@@ -134,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         bottom: AppSizes.kDefaultPadding,
                       ),
                       child: PrimaryButton(
-                        label: 'Log In',
+                        label: 'Next',
                         size: ButtonSize.lg,
                         onPressed: () {},
                         fullWidth: true,
@@ -143,47 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-              ),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Checkbox(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(
-                              AppSizes.cardCornerRadius / 2,
-                            ),
-                          ),
-                          side: BorderSide(
-                            width: 0.6,
-                            color: Theme.of(context).dividerColor,
-                          ),
-                          value: _cbRememberMe,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _cbRememberMe = value ?? false;
-                            });
-                          },
-                        ),
-                        Text(
-                          'Remember me',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => appRouter.push(Screens.forgotPassword),
-                    child: Text(
-                      'Forgot Password?',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
