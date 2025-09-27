@@ -37,25 +37,14 @@ class SideDrawer extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         spacing: AppSizes.kDefaultPadding,
                         children: [
+                          const SizedBox(height: AppSizes.kDefaultPadding),
                           AppCachedImage(
                             width: 96,
                             height: 96,
-                            circular: true,
+                            borderRadius: BorderRadius.circular(40),
                             url:
                                 'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
                           ),
-                          // CircleAvatar(
-                          //   backgroundColor: Theme.of(
-                          //     context,
-                          //   ).scaffoldBackgroundColor,
-                          //   radius: 48,
-                          //   child: CircleAvatar(
-                          //     radius: 46,
-                          //     backgroundImage: NetworkImage(
-                          //       'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
-                          //     ),
-                          //   ),
-                          // ),
                           Expanded(
                             child: Text(
                               'Larry Davis',

@@ -4,14 +4,16 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class TripDetailsScreen extends StatefulWidget {
+  final String routeId;
+
+  const TripDetailsScreen({super.key, required this.routeId});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<TripDetailsScreen> createState() => _TripDetailsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _TripDetailsScreenState extends State<TripDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -29,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Settings',
+                    'Trip Details',
                     style: Theme.of(
                       context,
                     ).textTheme.titleLarge!.copyWith(color: AppColors.white),

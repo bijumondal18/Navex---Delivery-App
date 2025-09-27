@@ -3,13 +3,23 @@ import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/presentation/pages/auth/account_verification/account_verification_screen.dart';
 import 'package:navex/presentation/pages/auth/forgot_password/forgot_password_screen.dart';
+import 'package:navex/presentation/pages/available_routes/available_routes_screen.dart';
+import 'package:navex/presentation/pages/my_accepted_routes/my_accepted_routes_screen.dart';
+import 'package:navex/presentation/pages/notifications/notifications_screen.dart';
+import 'package:navex/presentation/pages/route_history/route_history_screen.dart';
+import 'package:navex/presentation/pages/settings/settings_screen.dart';
+import 'package:navex/presentation/pages/trip_details/trip_details_screen.dart';
 
 import '../../presentation/pages/auth/login/login_screen.dart';
+import '../../presentation/pages/home/home_screen.dart';
 import '../../presentation/pages/main_bottom_nav/main_bottom_nav_screen.dart';
 import '../../presentation/pages/spalsh/splash_screen.dart';
 
+final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _shellKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
 final GoRouter appRouter = GoRouter(
+  navigatorKey: _rootKey,
   initialLocation: Screens.splash,
   routes: [
     GoRoute(
@@ -32,192 +42,50 @@ final GoRouter appRouter = GoRouter(
       name: 'account_verification',
       builder: (context, state) => AccountVerificationScreen(),
     ),
-    GoRoute(
-      path: Screens.main,
-      name: 'main',
-      builder: (context, state) => MainBottomNavScreen(),
+    ShellRoute(
+      navigatorKey: _shellKey,
+      builder: (context, state, child) => MainBottomNavScreen(child: child),
+      routes: [
+        GoRoute(
+          path: Screens.main,
+          name: 'main',
+          builder: (_, __) => const HomeScreen(),
+          routes: [
+            GoRoute(
+              path: 'trip/:id',
+              name: Screens.tripDetails,
+              builder: (_, state) => TripDetailsScreen(routeId: state.pathParameters['id']!,),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: Screens.availableRoutes,
+          name: 'available_routes',
+          builder: (_, state) => const AvailableRoutesScreen(),
+        ),
+        GoRoute(
+          path: Screens.acceptedRoutes,
+          name: 'accepted_routes',
+          builder: (_, state) => const MyAcceptedRoutesScreen(),
+        ),
+        GoRoute(
+          path: Screens.routeHistory,
+          name: 'route_history',
+          builder: (_, state) => const RouteHistoryScreen(),
+        ),
+        GoRoute(
+          path: Screens.settings,
+          name: 'settings',
+          builder: (_, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: Screens.notifications,
+          name: 'notifications',
+          builder: (_, state) => const NotificationsScreen(),
+        ),
+      ],
     ),
-    // GoRoute(
-    //   path: Screens.globalSearch,
-    //   name: 'globalSearch',
-    //   builder: (context, state) => GlobalSearchScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.peopleYoyMayKnow,
-    //   name: 'peopleYoyMayKnow',
-    //   builder: (context, state) {
-    //     final isPublicProfile = state.extra as bool;
-    //     return PeopleYouMayKnowScreen(isPublicProfile: isPublicProfile);
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.connectionInvitations,
-    //   name: 'connectionInvitations',
-    //   builder: (context, state) => ConnectionInvitationsScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.chatConnection,
-    //   name: 'chatConnection',
-    //   builder: (context, state) {
-    //     final extra = state.extra;
-    //     bool isPublicProfile = false;
-    //     bool isComingFromChat = false;
-    //     String userId = '';
-    //     String profileName = '';
-    //
-    //     if (extra is List && extra.length >= 4) {
-    //       final first = extra[0];
-    //       final second = extra[1];
-    //       final third = extra[2];
-    //       final fourth = extra[3];
-    //
-    //       if (first is bool) isPublicProfile = first;
-    //       if (second != null) userId = second.toString();
-    //       if (third != null) profileName = third.toString();
-    //       if (fourth is bool) isComingFromChat = fourth;
-    //     }
-    //     return ChatConnectionScreen(
-    //       isPublicProfile: isPublicProfile,
-    //       userId: userId,
-    //       profileName: profileName,
-    //       isComingFromChat: isComingFromChat,
-    //     );
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.chatInbox,
-    //   name: 'chatInbox',
-    //   builder: (context, state) {
-    //     final Chats? chats = state.extra as Chats;
-    //     return ChatInboxScreen(chats: chats);
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.createPost,
-    //   name: 'createPost',
-    //   builder: (context, state) => CreatePostScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.createPostPreview,
-    //   name: 'createPostPreview',
-    //   builder: (context, state) {
-    //     final mediaCubit = state.extra as SelectedMediaForPostCubit;
-    //     return BlocProvider.value(
-    //       value: mediaCubit,
-    //       child: CreatePostPreviewScreen(),
-    //     );
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.editProfilePic,
-    //   name: 'editProfilePic',
-    //   pageBuilder: (context, state) {
-    //     final extra = state.extra;
-    //     bool isPublicProfile = false;
-    //     String imageUrl = '';
-    //     bool isCoverPicture = false;
-    //
-    //     if (extra is List && extra.length >= 3) {
-    //       final first = extra[0];
-    //       final second = extra[1];
-    //       final third = extra[2];
-    //       if (first is bool) isPublicProfile = first;
-    //       if (second != null) imageUrl = second.toString();
-    //       if (third is bool) isCoverPicture = third;
-    //     }
-    //     return CustomTransitionPage(
-    //       barrierColor: Colors.transparent,
-    //       opaque: false, // <-- this is the key
-    //       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //         return FadeTransition(opacity: animation, child: child);
-    //       },
-    //       child: ViewOrEditProfilePictureScreen(
-    //         imageUrl: imageUrl,
-    //         isPublicProfile: isPublicProfile,
-    //         isCoverPicture: isCoverPicture,
-    //       ),
-    //     );
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.verification,
-    //   name: 'verification',
-    //   builder: (context, state) {
-    //     return VerificationScreen();
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.identityVerificationDocumentType,
-    //   name: 'identityVerificationDocumentType',
-    //   builder: (context, state) {
-    //     return IdentityVerificationDocumentTypeScreen();
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.knowledgeBase,
-    //   name: 'knowledgeBase',
-    //   builder: (context, state) => KnowledgeBaseScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.blogs,
-    //   name: 'blogs',
-    //   builder: (context, state) => BlogScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.editProfile,
-    //   name: 'editProfile',
-    //   builder: (context, state) => EditProfileScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.editProfilePic,
-    //   name: 'editProfilePic',
-    //   builder: (context, state) {
-    //     final imageUrl = state.extra as String;
-    //     return ProfilePictureViewScreen(profilePic: imageUrl);
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.analytics,
-    //   name: 'analytics',
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const AnalyticsScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       final tween = Tween<Offset>(
-    //         begin: const Offset(0, -1), // Bottom of the screen
-    //         end: Offset.zero,
-    //       ).chain(CurveTween(curve: Curves.easeInOut));
-    //
-    //       return SlideTransition(
-    //         position: animation.drive(tween),
-    //         child: child,
-    //       );
-    //     },
-    //   ),
-    // ),
-    // GoRoute(
-    //   path: Screens.profile,
-    //   name: 'profile',
-    //   builder: (context, state) {
-    //     final extra = state.extra;
-    //     bool isPublicProfile = false;
-    //     String userId = '';
-    //
-    //     if (extra is List && extra.length >= 2) {
-    //       final first = extra[0];
-    //       final second = extra[1];
-    //
-    //       if (first is bool) isPublicProfile = first;
-    //       if (second != null) userId = second.toString();
-    //     }
-    //     return ProfileScreen(isPublicProfile: isPublicProfile, userId: userId);
-    //   },
-    // ),
-    // GoRoute(
-    //   path: Screens.editProfile,
-    //   name: 'editProfile',
-    //   builder: (context, state) => EditProfileScreen(),
-    // ),
+
     // GoRoute(
     //   path: Screens.editProfileField,
     //   name: 'edit_profile_field',
@@ -240,34 +108,6 @@ final GoRouter appRouter = GoRouter(
     //     );
     //   },
     // ),
-    // GoRoute(
-    //   path: Screens.settings,
-    //   name: 'settings',
-    //   builder: (context, state) => SettingsScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.profileAnalytics,
-    //   name: 'profileAnalytics',
-    //   builder: (context, state) => ProfileAnalyticsScreen(),
-    // ),
-    // GoRoute(
-    //   path: Screens.followingAndFollowers,
-    //   name: 'following_and_followers',
-    //   pageBuilder: (context, state) => CustomTransitionPage(
-    //     key: state.pageKey,
-    //     child: const FollowingAndFollowerScreen(),
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       final tween = Tween<Offset>(
-    //         begin: const Offset(0, 1), // Bottom of the screen
-    //         end: Offset.zero,
-    //       ).chain(CurveTween(curve: Curves.easeInOut));
-    //
-    //       return SlideTransition(
-    //         position: animation.drive(tween),
-    //         child: child,
-    //       );
-    //     },
-    //   ),
-    // ),
+
   ],
 );

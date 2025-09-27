@@ -2,6 +2,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:navex/core/themes/app_sizes.dart';
 
 class AppCachedImage extends StatelessWidget {
   final String? url;
@@ -9,12 +10,16 @@ class AppCachedImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final BorderRadius? borderRadius;
-  final bool circular;          // quick circle mode
+  final bool circular;                // circle avatar mode
   final Duration fadeInDuration;
   final Duration fadeOutDuration;
-  final Widget? placeholder;    // override default
-  final Widget? errorPlaceholder;// override default
-  final Color? bgColor;         // placeholder/error bg
+  final Widget? placeholder;          // override default
+  final Widget? errorPlaceholder;     // override default
+  final Color? bgColor;               // placeholder/error bg
+
+  // NEW: border controls
+  final Color borderColor;
+  final double borderWidth;
 
   const AppCachedImage({
     super.key,
@@ -29,36 +34,54 @@ class AppCachedImage extends StatelessWidget {
     this.placeholder,
     this.errorPlaceholder,
     this.bgColor,
+    this.borderColor = Colors.white,          // <- white border
+    this.borderWidth = 2.0,                   // <- default width
   });
 
   @override
   Widget build(BuildContext context) {
-    final radius = circular
-        ? (width != null ? BorderRadius.circular((width! + (height ?? width!)) / 2) : BorderRadius.circular(9999))
-        : (borderRadius ?? BorderRadius.circular(12));
-
+    final radius = borderRadius ?? BorderRadius.circular(AppSizes.cardCornerRadius);
     final defaultBg = bgColor ?? Theme.of(context).colorScheme.surfaceVariant;
 
-    Widget shadedBox(Widget child) => Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
+    // Outer decorated container draws the border
+    Widget withBorder(Widget child) {
+      final decoration = circular
+          ? BoxDecoration(
+        shape: BoxShape.circle,
+        color: defaultBg,
+        border: Border.all(color: borderColor, width: borderWidth),
+      )
+          : BoxDecoration(
         color: defaultBg,
         borderRadius: radius,
-      ),
+        border: Border.all(color: borderColor, width: borderWidth),
+      );
+
+      final clip = circular
+          ? ClipOval(child: child)
+          : ClipRRect(borderRadius: radius, child: child);
+
+      return Container(
+        width: width,
+        height: height,
+        decoration: decoration,
+        clipBehavior: Clip.antiAlias,
+        child: clip,
+      );
+    }
+
+    Widget shadedBox(Widget inner) => Container(
+      color: defaultBg,
       alignment: Alignment.center,
-      child: child,
+      child: inner,
     );
 
-    final loading = placeholder ??
-        shadedBox(const CupertinoActivityIndicator());
+    final loading = placeholder ?? shadedBox(const CupertinoActivityIndicator());
+    final error    = errorPlaceholder ?? shadedBox(const Icon(Icons.broken_image_outlined));
 
-    final error = errorPlaceholder ??
-        shadedBox(const Icon(Icons.broken_image_outlined));
-
-    // If url is null or empty, show error right away
+    // If url is empty, show error in bordered container
     if (url == null || url!.trim().isEmpty) {
-      return ClipRRect(borderRadius: radius, child: error);
+      return withBorder(error);
     }
 
     final image = CachedNetworkImage(
@@ -69,14 +92,11 @@ class AppCachedImage extends StatelessWidget {
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
       placeholder: (_, __) => loading,
-      errorWidget: (_, __, ___) => error,
+      errorWidget:  (_, __, ___) => error,
+      memCacheWidth:  width?.toInt(),
       memCacheHeight: height?.toInt(),
-      memCacheWidth: width?.toInt(),
     );
 
-    return ClipRRect(
-      borderRadius: radius,
-      child: image,
-    );
+    return withBorder(image);
   }
 }
