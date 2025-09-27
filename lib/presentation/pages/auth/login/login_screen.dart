@@ -145,33 +145,50 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
+              const SizedBox(height: AppSizes.kDefaultPadding / 2),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(width: AppSizes.kDefaultPadding / 2),
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 0,
                       children: [
-                        Checkbox(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(
-                              AppSizes.cardCornerRadius / 2,
+                        SizedBox(
+                          width: 24.0,
+                          height: 24.0,
+                          child: Checkbox(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(
+                                AppSizes.cardCornerRadius / 2,
+                              ),
                             ),
+                            side: BorderSide(
+                              width: 0.6,
+                              color: Theme.of(context).dividerColor,
+                            ),
+                            value: _cbRememberMe,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _cbRememberMe = value ?? false;
+                              });
+                            },
                           ),
-                          side: BorderSide(
-                            width: 0.6,
-                            color: Theme.of(context).dividerColor,
-                          ),
-                          value: _cbRememberMe,
-                          onChanged: (bool? value) {
+                        ),
+                        GestureDetector(
+                          onTap: () {
                             setState(() {
-                              _cbRememberMe = value ?? false;
+                              _cbRememberMe = !_cbRememberMe;
                             });
                           },
-                        ),
-                        Text(
-                          'Remember me',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 0.5, left: 4.0),
+                            child: Text(
+                              'Remember me',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
                         ),
                       ],
                     ),
