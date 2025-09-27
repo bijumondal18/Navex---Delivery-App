@@ -11,7 +11,7 @@ class AppSizes {
 
   static const double kDefaultPadding = 16.0;
 
-  static const double blurRadius = 1.0;
+  static const double blurRadius = 2.0;
   static const double spreadRadius = 1.0;
 
   static const double bottomNavigationBarIconSize = 24.0;

@@ -64,7 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 0,
             child: ListView.separated(
               itemCount: 8,
-              physics: const ClampingScrollPhysics(),
               scrollDirection: Axis.vertical,
               padding: const EdgeInsets.only(
                 left: AppSizes.kDefaultPadding,

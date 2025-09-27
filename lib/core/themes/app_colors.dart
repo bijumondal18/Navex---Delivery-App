@@ -30,10 +30,10 @@ class AppColors {
   static const cardDark = Color(0xFF282828);
   static const cardLight = Color(0xFFFFFFFF);
 
-  static const dividerLight = Color(0xFFE1E1E1);
+  static const dividerLight = Color(0xFFC4C4C4);
   static const dividerDark = Color(0xFF363636);
 
-  static const hintLight = Color(0xFF878787);
+  static const hintLight = Color(0xFF737373);
   static const hintDark = Color(0xFFA2A2A2);
 
   static const errorLight = Color(0xFFEA1B1B);
