@@ -4,6 +4,7 @@ import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/logout_dialog.dart';
 
 class SideDrawer extends StatelessWidget {
@@ -14,7 +15,7 @@ class SideDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.sizeOf(context).width*0.65,
+      width: MediaQuery.sizeOf(context).width * 0.65,
       child: Drawer(
         shape: RoundedRectangleBorder(),
         child: ListView(
@@ -36,18 +37,25 @@ class SideDrawer extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         spacing: AppSizes.kDefaultPadding,
                         children: [
-                          CircleAvatar(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).scaffoldBackgroundColor,
-                            radius: 48,
-                            child: CircleAvatar(
-                              radius: 46,
-                              backgroundImage: NetworkImage(
+                          AppCachedImage(
+                            width: 96,
+                            height: 96,
+                            circular: true,
+                            url:
                                 'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
-                              ),
-                            ),
                           ),
+                          // CircleAvatar(
+                          //   backgroundColor: Theme.of(
+                          //     context,
+                          //   ).scaffoldBackgroundColor,
+                          //   radius: 48,
+                          //   child: CircleAvatar(
+                          //     radius: 46,
+                          //     backgroundImage: NetworkImage(
+                          //       'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
+                          //     ),
+                          //   ),
+                          // ),
                           Expanded(
                             child: Text(
                               'Larry Davis',
@@ -128,8 +136,15 @@ class SideDrawer extends StatelessWidget {
                   if (context.mounted) showLogoutDialog(context, () {});
                 });
               },
-              leading: SvgPicture.asset(AppImages.logout, width: 24, height: 24),
-              title: Text('Logout', style: Theme.of(context).textTheme.bodyLarge),
+              leading: SvgPicture.asset(
+                AppImages.logout,
+                width: 24,
+                height: 24,
+              ),
+              title: Text(
+                'Logout',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
             ),
           ],
         ),
