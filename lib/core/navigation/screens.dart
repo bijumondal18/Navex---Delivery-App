@@ -4,6 +4,7 @@ class Screens{
   static const String main = '/main';
   static const String login = '/login';
   static const String forgotPassword = '/forgot_password';
+  static const String accountVerification = '/account_verification';
 
   // static const String globalSearch = '/globalSearch';
   // static const String connection = '/connection';

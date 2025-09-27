@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/screens.dart';
+import 'package:navex/presentation/pages/auth/account_verification/account_verification_screen.dart';
 import 'package:navex/presentation/pages/auth/forgot_password/forgot_password_screen.dart';
 
 import '../../presentation/pages/auth/login/login_screen.dart';
@@ -25,6 +26,11 @@ final GoRouter appRouter = GoRouter(
       path: Screens.forgotPassword,
       name: 'forgot_password',
       builder: (context, state) => ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: Screens.accountVerification,
+      name: 'account_verification',
+      builder: (context, state) => AccountVerificationScreen(),
     ),
     GoRoute(
       path: Screens.main,

@@ -4,6 +4,7 @@ import 'package:navex/core/extensions/status_bar_configs.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
+import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
@@ -136,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: PrimaryButton(
                         label: 'Log In',
                         size: ButtonSize.lg,
-                        onPressed: () {},
+                        onPressed: () => appRouter.go(Screens.main),
                         fullWidth: true,
                         isLoading: false,
                       ),
@@ -159,6 +160,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 24.0,
                           height: 24.0,
                           child: Checkbox(
+                            activeColor: Theme.of(context).primaryColor,
+                            checkColor: AppColors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadiusGeometry.circular(
                                 AppSizes.cardCornerRadius / 2,
