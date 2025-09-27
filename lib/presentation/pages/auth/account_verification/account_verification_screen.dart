@@ -47,7 +47,13 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => PasswordResetSuccessfulDialog(),
+      barrierDismissible: false, // prevent tap-out dismiss
+      builder: (context) {
+        Future.delayed(const Duration(milliseconds: 3000), () {
+          appRouter.go(Screens.login);
+        });
+        return const PasswordResetSuccessfulDialog();
+      },
     );
   }
 
