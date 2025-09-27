@@ -17,7 +17,7 @@ class AppColors {
   static const canvasDark = Color(0xFF333333);
 
   static const scaffoldBackgroundLight = Color(0xFFF3F7FD);
-  static const scaffoldBackgroundDark = Color(0xFF121212);
+  static const scaffoldBackgroundDark = Color(0xFF22242A);
 
   static const textFieldLight = Color(0xFFF1FAF0);
 
@@ -31,13 +31,13 @@ class AppColors {
   static const cardLight = Color(0xFFFEFEFE);
 
   static const dividerLight = Color(0xFFC4C4C4);
-  static const dividerDark = Color(0xFF363636);
+  static const dividerDark = Color(0xFF414141);
 
   static const hintLight = Color(0xFF737373);
   static const hintDark = Color(0xFFA2A2A2);
 
-  static const errorLight = Color(0xFFEA1B1B);
-  static const errorDark = Color(0xFFDC4949);
+  static const errorLight = Color(0xFFCB2B2B);
+  static const errorDark = Color(0xFFC42240);
 
   static const red = Color(0xFFEA1B1B);
 

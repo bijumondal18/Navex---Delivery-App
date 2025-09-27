@@ -1,9 +1,10 @@
 // lib/widgets/app_text_field.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 
-enum AppTextFieldType { text, email, password, address, mobile }
+enum AppTextFieldType { text, email, password, address, mobile, otp }
 
 class AppTextField extends StatefulWidget {
   final AppTextFieldType type;
@@ -69,6 +70,8 @@ class _AppTextFieldState extends State<AppTextField> {
         return TextInputType.streetAddress;
       case AppTextFieldType.mobile:
         return TextInputType.phone;
+      case AppTextFieldType.otp:
+        return TextInputType.number;
       case AppTextFieldType.text:
       default:
         return TextInputType.text;
@@ -121,11 +124,15 @@ class _AppTextFieldState extends State<AppTextField> {
         return null;
       case AppTextFieldType.password:
         if (v.isEmpty) return null;
-        if (v.length < 8) return 'Password must be at least 8 characters';
+        if (v.length < 6) return 'Password must be at least 6 characters';
         return null;
       case AppTextFieldType.mobile:
         if (v.isEmpty) return null;
         if (v.length < 10) return 'Enter a valid mobile number';
+        return null;
+      case AppTextFieldType.otp:
+        if (v.isEmpty) return null;
+        if (v.length < 6) return 'Enter a valid OTP';
         return null;
       case AppTextFieldType.address:
       case AppTextFieldType.text:
@@ -162,11 +169,14 @@ class _AppTextFieldState extends State<AppTextField> {
       enabledBorder: base,
       focusedBorder: focused,
       errorBorder: base.copyWith(
-        borderSide: BorderSide(color: theme.colorScheme.error),
+        borderSide: BorderSide(color: AppColors.errorLight),
       ),
       focusedErrorBorder: focused.copyWith(
-        borderSide: BorderSide(color: theme.colorScheme.error),
+        borderSide: BorderSide(color: AppColors.errorLight),
       ),
+      errorStyle: Theme.of(
+        context,
+      ).textTheme.labelMedium!.copyWith(color: AppColors.errorLight),
       counterText: '', // keeps UI tidy when maxLength used
     );
   }

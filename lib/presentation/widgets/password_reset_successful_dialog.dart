@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 
-class PasswordResetSuccessfullDialog extends StatelessWidget {
-  const PasswordResetSuccessfullDialog({super.key});
+class PasswordResetSuccessfulDialog extends StatelessWidget {
+  const PasswordResetSuccessfulDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class PasswordResetSuccessfullDialog extends StatelessWidget {
           spacing: AppSizes.kDefaultPadding,
           children: [
             SvgPicture.asset(AppImages.checkGreen),
-            Text('Successfull', style: Theme.of(context).textTheme.titleMedium),
+            Text('Successful', style: Theme.of(context).textTheme.titleMedium),
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.kDefaultPadding * 2,
