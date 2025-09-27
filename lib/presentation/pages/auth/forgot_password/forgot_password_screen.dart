@@ -16,9 +16,19 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  late TextEditingController _emailController;
 
-  final TextEditingController _emailController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+  }
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,18 +56,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
 
-              Container(
+              Card(
                 margin: const EdgeInsets.only(top: AppSizes.kDefaultPadding),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(
-                    AppSizes.cardCornerRadius,
-                  ),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                    width: 0.6,
-                  ),
-                ),
+                color: Theme.of(context).cardColor,
+                shadowColor: Theme.of(context).shadowColor,
+                elevation: AppSizes.elevationSmall,
                 child: Column(
                   children: [
                     Padding(
@@ -108,7 +111,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: PrimaryButton(
                         label: 'Next',
                         size: ButtonSize.lg,
-                        onPressed: () => appRouter.push(Screens.accountVerification),
+                        onPressed: () =>
+                            appRouter.push(Screens.accountVerification),
                         fullWidth: true,
                         isLoading: false,
                       ),

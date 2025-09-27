@@ -65,18 +65,11 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                 ),
               ),
 
-              Container(
+              Card(
                 margin: const EdgeInsets.only(top: AppSizes.kDefaultPadding),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(
-                    AppSizes.cardCornerRadius,
-                  ),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                    width: 0.6,
-                  ),
-                ),
+                color: Theme.of(context).cardColor,
+                shadowColor: Theme.of(context).shadowColor,
+                elevation: AppSizes.elevationSmall,
                 child: Column(
                   children: [
                     Padding(
@@ -112,7 +105,7 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                       child: AppTextField(
                         type: AppTextFieldType.mobile,
                         controller: _otpController,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         hint: 'OTP',
                       ),
                     ),
@@ -125,7 +118,7 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                       child: AppTextField(
                         type: AppTextFieldType.password,
                         controller: _newPasswordController,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         hint: 'New Password',
                       ),
                     ),

@@ -9,25 +9,21 @@ class RouteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      elevation: 0.1,
+    return Card(
+      elevation: AppSizes.elevationSmall,
       color: Theme.of(context).cardColor,
-      shadowColor: Theme.of(context).colorScheme.surfaceContainer,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
-      ),
+      shadowColor: Theme.of(context).colorScheme.surface.withAlpha(50),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppSizes.kDefaultPadding / 2,
+          vertical: AppSizes.kDefaultPadding,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: AppSizes.kDefaultPadding / 2,
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.kDefaultPadding / 2,
+                horizontal: AppSizes.kDefaultPadding,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,11 +78,11 @@ class RouteCard extends StatelessWidget {
               ),
             ),
 
-            Divider(color: Theme.of(context).dividerColor, height: 0),
+            Divider(),
 
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.kDefaultPadding / 2,
+                horizontal: AppSizes.kDefaultPadding ,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -99,7 +95,7 @@ class RouteCard extends StatelessWidget {
                   const SizedBox(width: AppSizes.kDefaultPadding / 2),
                   Text(
                     "4 hr",
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),

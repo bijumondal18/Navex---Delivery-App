@@ -17,11 +17,27 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _pharmacyKeyController = TextEditingController();
-  final TextEditingController _mobileController = TextEditingController();
+  late TextEditingController _emailController;
+  late TextEditingController _pharmacyKeyController;
+  late TextEditingController _passwordController;
 
   bool _cbRememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _pharmacyKeyController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _pharmacyKeyController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,18 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              Container(
+              Card(
                 margin: const EdgeInsets.only(top: AppSizes.kDefaultPadding),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(
-                    AppSizes.cardCornerRadius,
-                  ),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                    width: 0.6,
-                  ),
-                ),
+                color: Theme.of(context).cardColor,
+                shadowColor: Theme.of(context).shadowColor,
+                elevation: AppSizes.elevationSmall,
                 child: Column(
                   children: [
                     Padding(
@@ -97,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: AppTextField(
                         type: AppTextFieldType.email,
                         controller: _emailController,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         hint: 'Email Id',
                       ),
                     ),
@@ -110,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: AppTextField(
                         type: AppTextFieldType.text,
                         controller: _pharmacyKeyController,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         hint: 'Pharmacy Key',
                       ),
                     ),
@@ -121,10 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         top: AppSizes.kDefaultPadding,
                       ),
                       child: AppTextField(
-                        type: AppTextFieldType.mobile,
-                        controller: _mobileController,
+                        type: AppTextFieldType.password,
+                        controller: _passwordController,
                         textInputAction: TextInputAction.done,
-                        hint: 'Mobile Number',
+                        hint: 'Password',
                       ),
                     ),
                     Padding(
