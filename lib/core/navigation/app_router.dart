@@ -11,6 +11,7 @@ import 'package:navex/presentation/pages/settings/settings_screen.dart';
 import 'package:navex/presentation/pages/trip_details/trip_details_screen.dart';
 
 import '../../presentation/pages/auth/login/login_screen.dart';
+import '../../presentation/pages/auth/profile/profile_screen.dart';
 import '../../presentation/pages/home/home_screen.dart';
 import '../../presentation/pages/main_bottom_nav/main_bottom_nav_screen.dart';
 import '../../presentation/pages/spalsh/splash_screen.dart';
@@ -41,6 +42,11 @@ final GoRouter appRouter = GoRouter(
       path: Screens.accountVerification,
       name: 'account_verification',
       builder: (context, state) => AccountVerificationScreen(),
+    ),
+    GoRoute(
+      path: Screens.profile,
+      name: 'profile',
+      builder: (context, state) => ProfileScreen(),
     ),
     ShellRoute(
       navigatorKey: _shellKey,

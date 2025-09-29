@@ -53,9 +53,7 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
 
     // 3) After the drawer is closed, always navigate from the root GoRouter
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      appRouter.go(
-        target,
-      );
+      appRouter.go(target);
     });
   }
 
@@ -101,6 +99,9 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
             ),
           ),
           actions: [
+            /**
+             * Online/Offline switch to go user online or offline
+             * */
             CustomSwitch(
               value: _isOnline,
               onChanged: (value) {
@@ -110,16 +111,21 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
               },
             ),
 
+            /**
+             * Notification Icon click to open Notifications Screen
+             * */
             IconButton(
-              onPressed: () {},
+              onPressed: () => appRouter.go(Screens.notifications),
               icon: Icon(Icons.notifications_none_rounded, size: 24),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: AppSizes.kDefaultPadding),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  AppSizes.cardCornerRadius / 1.5,
-                ),
+
+            /**
+             * Profile Avatar click to open Profile Screen
+             * */
+            GestureDetector(
+              onTap: () => appRouter.push(Screens.profile),
+              child: Padding(
+                padding: const EdgeInsets.only(right: AppSizes.kDefaultPadding),
                 child: AppCachedImage(
                   url:
                       'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
