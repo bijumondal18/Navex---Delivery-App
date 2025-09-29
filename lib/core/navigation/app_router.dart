@@ -54,34 +54,40 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: 'trip/:id',
               name: Screens.tripDetails,
-              builder: (_, state) => TripDetailsScreen(routeId: state.pathParameters['id']!,),
+              pageBuilder: (_, state) => NoTransitionPage(
+                child: TripDetailsScreen(routeId: state.pathParameters['id']!),
+              ),
             ),
           ],
         ),
         GoRoute(
           path: Screens.availableRoutes,
           name: 'available_routes',
-          builder: (_, state) => const AvailableRoutesScreen(),
+          pageBuilder: (_, state) =>
+              NoTransitionPage(child: AvailableRoutesScreen()),
         ),
         GoRoute(
           path: Screens.acceptedRoutes,
           name: 'accepted_routes',
-          builder: (_, state) => const MyAcceptedRoutesScreen(),
+          pageBuilder: (_, state) =>
+              NoTransitionPage(child: MyAcceptedRoutesScreen()),
         ),
         GoRoute(
           path: Screens.routeHistory,
           name: 'route_history',
-          builder: (_, state) => const RouteHistoryScreen(),
+          pageBuilder: (_, state) =>
+              NoTransitionPage(child: RouteHistoryScreen()),
         ),
         GoRoute(
           path: Screens.settings,
           name: 'settings',
-          builder: (_, state) => const SettingsScreen(),
+          pageBuilder: (_, state) => NoTransitionPage(child: SettingsScreen()),
         ),
         GoRoute(
           path: Screens.notifications,
           name: 'notifications',
-          builder: (_, state) => const NotificationsScreen(),
+          pageBuilder: (_, state) =>
+              NoTransitionPage(child: NotificationsScreen()),
         ),
       ],
     ),
@@ -108,6 +114,5 @@ final GoRouter appRouter = GoRouter(
     //     );
     //   },
     // ),
-
   ],
 );

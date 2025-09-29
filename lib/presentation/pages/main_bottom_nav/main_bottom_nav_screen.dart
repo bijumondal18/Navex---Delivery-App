@@ -33,38 +33,29 @@ class MainBottomNavScreen extends StatefulWidget {
 class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   bool _isOnline = false;
 
-  void _onDrawerItemTap(int index) {
+  void _onDrawerItemTap(int index) async {
     // 1) Close the drawer
     Navigator.of(context, rootNavigator: true).pop();
 
+    // Let the drawer animation finish (~250–300ms feels right)
+    await Future.delayed(const Duration(milliseconds: 280));
+
     // 2) After the drawer is closed, navigate
-    String target;
-    switch (index) {
-      case 0:
-        target = Screens.main;
-        break; // e.g. '/' or '/main'
-      case 1:
-        target = Screens.availableRoutes;
-        break; // '/routes/available'
-      case 2:
-        target = Screens.acceptedRoutes;
-        break; // '/routes/accepted'
-      case 3:
-        target = Screens.routeHistory;
-        break; // '/routes/history'
-      case 4:
-        target = Screens.notifications;
-        break; // '/notifications'
-      case 5:
-        target = Screens.settings;
-        break; // '/settings'
-      default:
-        target = Screens.main;
-    }
+    final target = switch (index) {
+      0 => Screens.main,
+      1 => Screens.availableRoutes,
+      2 => Screens.acceptedRoutes,
+      3 => Screens.routeHistory,
+      4 => Screens.notifications,
+      5 => Screens.settings,
+      _ => Screens.main,
+    };
 
     // 3) After the drawer is closed, always navigate from the root GoRouter
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      appRouter.go(target); // or GoRouter.of(appRouter.routerDelegate.navigatorKey.currentContext!).go(target);
+      appRouter.go(
+        target,
+      );
     });
   }
 
