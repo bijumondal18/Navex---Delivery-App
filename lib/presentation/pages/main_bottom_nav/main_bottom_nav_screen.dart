@@ -62,11 +62,9 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
         target = Screens.main;
     }
 
+    // 3) After the drawer is closed, always navigate from the root GoRouter
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final current = GoRouterState.of(context).matchedLocation;
-      if (current != target) {
-        context.go(target);
-      }
+      appRouter.go(target); // or GoRouter.of(appRouter.routerDelegate.navigatorKey.currentContext!).go(target);
     });
   }
 
