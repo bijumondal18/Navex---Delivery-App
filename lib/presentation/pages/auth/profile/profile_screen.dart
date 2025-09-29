@@ -23,11 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      body: ListView(
-        children: [
-          
-        ],
-      ),
+      body: ListView(children: []),
     );
   }
 }
