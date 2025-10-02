@@ -14,12 +14,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Register background handler early
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
 
   // Init notifications with router
-  await PushNotificationService.instance.init(router: appRouter);
+  // await PushNotificationService.instance.init(router: appRouter);
 
   // Over The Air Updating App Silently
   final ota = OtaUpdater();

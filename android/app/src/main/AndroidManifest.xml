@@ -5,8 +5,9 @@
 
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:label="navex"
+        android:icon="@mipmap/launcher_icon"
+        android:label="Navex"
+        android:enableOnBackInvokedCallback="true"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
