@@ -28,11 +28,11 @@ class PrimaryButton extends StatelessWidget {
   double get _height {
     switch (size) {
       case ButtonSize.sm:
-        return 40;
+        return 44;
       case ButtonSize.md:
-        return 48;
+        return 52;
       case ButtonSize.lg:
-        return 48;
+        return 56;
     }
   }
 

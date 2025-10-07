@@ -64,139 +64,102 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           ),
 
           Positioned(
-            left: 0,
-            bottom: 0,
-            right: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadiusGeometry.vertical(
-                top: Radius.circular(AppSizes.cardCornerRadius),
-              ),
-              child: Material(
-                color: Theme.of(context).cardColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                  child: SafeArea(
-                    child: Column(
-                      spacing: AppSizes.kDefaultPadding,
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              flex: 4,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+            left: 16,
+            bottom: 48,
+            right: 16,
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadiusGeometry.all(
+                     Radius.circular(AppSizes.cardCornerRadius),
+                  ),
+                  child: Material(
+                    color: Theme.of(context).cardColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      child: Column(
+                        spacing: AppSizes.kDefaultPadding,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: AppSizes.kDefaultPadding / 3,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 2.0,
-                                      right: 8.0,
-                                    ),
-                                    child: SvgPicture.asset(
-                                      AppImages.pinRed,
-                                      width: 20,
-                                      height: 20,
-                                    ),
+                                  SvgPicture.asset(
+                                    AppImages.pinRed,
+                                    width: 20,
+                                    height: 20,
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    spacing: AppSizes.kDefaultPadding / 3,
-                                    children: [
-                                      Text(
-                                        'Distance'.toUpperCase(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall!
-                                            .copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).hintColor,
-                                            ),
-                                      ),
-                                      Text(
-                                        '0.2 km',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ],
+                                  Text(
+                                    '0.2 km',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  Text(
+                                    'Distance',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall!
+                                        .copyWith(
+                                          color: Theme.of(context).hintColor,
+                                        ),
                                   ),
                                 ],
                               ),
-                            ),
-                            Flexible(
-                              flex: 1,
-                              child: const VerticalDottedDivider(
-                                height: 64,
-                                dotSize: 3,
-                                gap: 8,
-                              ),
-                            ),
-                            Flexible(
-                              flex: 4,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: AppSizes.kDefaultPadding / 3,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 2.0,
-                                      right: 8.0,
-                                    ),
-                                    child: SvgPicture.asset(
-                                      AppImages.clockGreen,
-                                      width: 20,
-                                      height: 20,
-                                    ),
+                                  SvgPicture.asset(
+                                    AppImages.clockGreen,
+                                    width: 20,
+                                    height: 20,
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    spacing: AppSizes.kDefaultPadding / 3,
-                                    children: [
-                                      Text(
-                                        'Time'.toUpperCase(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall!
-                                            .copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).hintColor,
-                                            ),
-                                      ),
-                                      Text(
-                                        '2 min',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                    ],
+                                  Text(
+                                    '2 min',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  Text(
+                                    'Time',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall!
+                                        .copyWith(
+                                          color: Theme.of(context).hintColor,
+                                        ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        PrimaryButton(
-                          label: 'Accept',
-                          onPressed: () {},
-                          fullWidth: true,
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: AppSizes.kDefaultPadding),
+                PrimaryButton(
+                  label: 'Accept',
+                  onPressed: () {},
+                  fullWidth: true,
+                ),
+              ],
             ),
           ),
         ],

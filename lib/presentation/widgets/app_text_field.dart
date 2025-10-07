@@ -143,16 +143,18 @@ class _AppTextFieldState extends State<AppTextField> {
   InputDecoration _decoration(ThemeData theme) {
     final base = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
-      borderSide: BorderSide(color: theme.dividerColor, width: 0.6),
+      borderSide: BorderSide(color: theme.dividerColor, width: 0.2),
     );
     final focused = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
-      borderSide: BorderSide(color: theme.primaryColor, width: 0.6),
+      borderSide: BorderSide(color: theme.primaryColor, width: 0.2),
     );
 
     return InputDecoration(
       labelText: widget.label,
       hintText: widget.hint,
+      filled: true,
+      fillColor: AppColors.textFieldLight,
       hintStyle: Theme.of(
         context,
       ).textTheme.bodyMedium!.copyWith(color: Theme.of(context).hintColor),

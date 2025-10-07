@@ -2,10 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const primaryDark = Color(0xFF242E42);
-  static const primaryLight = Color(0xFF084C35);
-
-  static const ctaPrimary = Color(0xFF084C35);
+  static const primaryDark = Color(0xFF213448);
+  static const primaryLight = Color(0xFF213448);
 
   static const labelPrimary = Color(0xFF000000);
   static const labelSecondary = Color(0xFF616161);
@@ -13,13 +11,13 @@ class AppColors {
   static const shadowDark = Color(0xFF181818);
   static const shadowLight = Color(0xE2E8E8E8);
 
-  static const canvasLight = Color(0xFFD0D0D0);
-  static const canvasDark = Color(0xFF333333);
+  static const canvasLight = Color(0xFFECEFCA);
+  static const canvasDark = Color(0xFFECEFCA);
 
   static const scaffoldBackgroundLight = Color(0xFFF3F7FD);
   static const scaffoldBackgroundDark = Color(0xFF22242A);
 
-  static const textFieldLight = Color(0xFFF1FAF0);
+  static const textFieldLight = Color(0xFFECEFCA);
 
   static const white = Color(0xFFFFFFFF);
   static const black = Color(0xFF121212);
@@ -27,8 +25,8 @@ class AppColors {
   static const darkGrey = Color(0xFF383838);
   static const grey = Color(0xFF696969);
 
-  static const cardDark = Color(0xFF171616);
-  static const cardLight = Color(0xFFFEFEFE);
+  static const cardDark = Color(0xFFECEFCA);
+  static const cardLight = Color(0xFFECEFCA);
 
   static const dividerLight = Color(0xFFBDBDBD);
   static const dividerDark = Color(0xFF4D4D4D);
