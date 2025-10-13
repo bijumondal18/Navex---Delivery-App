@@ -34,6 +34,24 @@ class AuthRepository {
     return response.data;
   }
 
+  Future<dynamic> resetPassword(
+    String email,
+    String otp,
+    String password,
+    String confirmPassword,
+  ) async {
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.resetPasswordURL,
+      data: {
+        'email': email,
+        'otp': otp,
+        'password': password,
+        'password_confirmation': confirmPassword,
+      },
+    );
+    return response.data;
+  }
+
   // Future<dynamic> uploadProfilePhoto(File imageFile) async {
   //   final response = await _apiClient.postRequest(
   //     ApiEndpoints.uploadProfilePhotoURL,

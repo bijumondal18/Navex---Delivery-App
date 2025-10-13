@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:navex/presentation/widgets/password_reset_successful_dialog.dart';
 
@@ -7,11 +8,14 @@ import '../../../../core/navigation/screens.dart';
 import '../../../../core/resources/app_images.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
+import '../../../bloc/auth_bloc.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
 
 class AccountVerificationScreen extends StatefulWidget {
-  const AccountVerificationScreen({super.key});
+  final String registeredEmail;
+
+  const AccountVerificationScreen({super.key, required this.registeredEmail});
 
   @override
   State<AccountVerificationScreen> createState() =>
@@ -45,15 +49,13 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) return;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false, // prevent tap-out dismiss
-      builder: (context) {
-        Future.delayed(const Duration(milliseconds: 3000), () {
-          appRouter.go(Screens.login);
-        });
-        return const PasswordResetSuccessfulDialog();
-      },
+    BlocProvider.of<AuthBloc>(context).add(
+      ResetPasswordEvent(
+        email: widget.registeredEmail,
+        otp: _otpController.text.trim().toString(),
+        password: _newPasswordController.text.trim().toString(),
+        confirmPassword: _confirmPasswordController.text.trim().toString(),
+      ),
     );
   }
 
@@ -169,12 +171,56 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                           top: AppSizes.kDefaultPadding * 2,
                           bottom: AppSizes.kDefaultPadding * 2,
                         ),
-                        child: PrimaryButton(
-                          label: 'Submit',
-                          size: ButtonSize.lg,
-                          onPressed: () => _submit(),
-                          fullWidth: true,
-                          isLoading: false,
+                        child: BlocConsumer<AuthBloc, AuthState>(
+                          listener: (context, state) {
+                            if (state is ResetPasswordStateLoaded) {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                // prevent tap-out dismiss
+                                builder: (context) {
+                                  Future.delayed(
+                                    const Duration(milliseconds: 3000),
+                                    () {
+                                      appRouter.go(Screens.login);
+                                    },
+                                  );
+                                  return const PasswordResetSuccessfulDialog();
+                                },
+                              );
+                            }
+                            if (state is ResetPasswordStateFailed) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    state.error,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is ResetPasswordStateLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              );
+                            }
+                            return PrimaryButton(
+                              label: 'Submit',
+                              size: ButtonSize.lg,
+                              onPressed: () => _submit(),
+                              fullWidth: true,
+                              isLoading: false,
+                            );
+                          },
                         ),
                       ),
                     ],

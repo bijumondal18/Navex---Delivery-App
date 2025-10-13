@@ -41,7 +41,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Screens.accountVerification,
       name: 'account_verification',
-      builder: (context, state) => AccountVerificationScreen(),
+      builder: (context, state) {
+        final flag = state.extra as String;
+        return AccountVerificationScreen(registeredEmail: flag);
+      },
     ),
     GoRoute(
       path: Screens.profile,

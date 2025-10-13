@@ -119,5 +119,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(ForgotPasswordStateFailed(error: e.toString()));
       }
     });
+
+    /**
+     * Forgot Password States Handling
+     * */
+    on<ResetPasswordEvent>((event, emit) async {
+      emit(ResetPasswordStateLoading());
+      try {
+        final response = await authRepository.resetPassword(
+          event.email,
+          event.otp,
+          event.password,
+          event.confirmPassword,
+        );
+        if (response['status'] == true) {
+          final resetPasswordResponse = ForgotPasswordResponse.fromJson(
+            response,
+          );
+
+          emit(
+            ResetPasswordStateLoaded(
+              resetPasswordResponse: resetPasswordResponse,
+            ),
+          );
+        } else {
+          emit(
+            ResetPasswordStateFailed(
+              error: response['message'] ?? "Something went wrong",
+            ),
+          );
+        }
+      } catch (e) {
+        emit(ResetPasswordStateFailed(error: e.toString()));
+      }
+    });
   }
 }

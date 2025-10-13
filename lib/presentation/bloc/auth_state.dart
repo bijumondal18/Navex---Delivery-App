@@ -79,3 +79,28 @@ final class ForgotPasswordStateFailed extends AuthState {
   @override
   List<Object> get props => [error];
 }
+
+/**
+ * Reset Password/ Set new Password States Handling
+ * */
+
+final class ResetPasswordStateLoading extends AuthState {}
+
+final class ResetPasswordStateLoaded extends AuthState {
+  final ForgotPasswordResponse resetPasswordResponse;
+
+  const ResetPasswordStateLoaded({required this.resetPasswordResponse});
+
+  @override
+  List<Object> get props => [resetPasswordResponse];
+}
+
+final class ResetPasswordStateFailed extends AuthState {
+  final String error;
+
+  const ResetPasswordStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}
+
