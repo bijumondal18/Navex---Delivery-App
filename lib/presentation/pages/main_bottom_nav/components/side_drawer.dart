@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:navex/core/navigation/app_router.dart';
+import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/core/utils/app_preference.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/show_logout_dialog.dart';
 
@@ -159,7 +161,12 @@ class SideDrawer extends StatelessWidget {
               onTap: () {
                 appRouter.pop();
                 Future.delayed(const Duration(milliseconds: 200), () {
-                  if (context.mounted) showLogoutDialog(context, () {});
+                  if (context.mounted) {
+                    showLogoutDialog(context, () async {
+                      await AppPreference.clearPreference();
+                      appRouter.go(Screens.login);
+                    });
+                  }
                 });
               },
               leading: SvgPicture.asset(
