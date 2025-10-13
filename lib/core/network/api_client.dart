@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:navex/core/utils/app_preference.dart';
 import '../config/api_config.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -20,6 +21,19 @@ class ApiClient {
         headers: {
           'Accept': 'application/json',
           'API-Version': ApiConfig.apiVersion,
+        },
+      ),
+    );
+
+    // ✅ Auth Token interceptor
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await AppPreference.getString(AppPreference.token);
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
         },
       ),
     );

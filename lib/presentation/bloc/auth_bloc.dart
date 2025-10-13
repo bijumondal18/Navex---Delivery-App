@@ -41,6 +41,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             loginResponse.token ?? "",
           );
 
+
           await AppPreference.setString(
             AppPreference.fullName,
             loginResponse.user?.name ?? "",
