@@ -26,12 +26,20 @@ class AuthRepository {
     return response.data;
   }
 
-  Future<dynamic> uploadProfilePhoto(File imageFile) async {
+  Future<dynamic> forgotPassword(String email) async {
     final response = await _apiClient.postRequest(
-      ApiEndpoints.uploadProfilePhotoURL,
-      file: imageFile,
-      fileField: 'profile_image',
+      ApiEndpoints.forgotPasswordURL,
+      data: {'email': email},
     );
     return response.data;
   }
+
+  // Future<dynamic> uploadProfilePhoto(File imageFile) async {
+  //   final response = await _apiClient.postRequest(
+  //     ApiEndpoints.uploadProfilePhotoURL,
+  //     file: imageFile,
+  //     fileField: 'profile_image',
+  //   );
+  //   return response.data;
+  // }
 }

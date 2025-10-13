@@ -22,5 +22,13 @@ class LoginSubmittedEvent extends AuthEvent {
   List<Object> get props => [email, password, pharmacyKey];
 }
 
-
 class FetchUserProfileEvent extends AuthEvent {}
+
+class ForgotPasswordEvent extends AuthEvent {
+  final String email;
+
+  const ForgotPasswordEvent({required this.email});
+
+  @override
+  List<Object> get props => [email];
+}

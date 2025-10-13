@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
+import 'package:navex/presentation/bloc/auth_bloc.dart';
 
 import '../../../../core/resources/app_images.dart';
+import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
@@ -36,8 +39,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final isValid = _formKey.currentState!.validate();
 
     if (!isValid) return;
-
-    appRouter.push(Screens.accountVerification);
+    BlocProvider.of<AuthBloc>(
+      context,
+    ).add(ForgotPasswordEvent(email: _emailController.text.trim().toString()));
   }
 
   @override
@@ -124,12 +128,59 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           top: AppSizes.kDefaultPadding * 2,
                           bottom: AppSizes.kDefaultPadding * 2,
                         ),
-                        child: PrimaryButton(
-                          label: 'Next',
-                          size: ButtonSize.lg,
-                          onPressed: () => _submit(),
-                          fullWidth: true,
-                          isLoading: false,
+                        child: BlocConsumer<AuthBloc, AuthState>(
+                          listener: (context, state) {
+                            if (state is ForgotPasswordStateLoaded) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    state.forgotPasswordResponse.message ??
+                                        'OTP has been sent to your email.',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              appRouter.push(Screens.accountVerification);
+                            }
+                            if (state is ForgotPasswordStateFailed) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    state.error,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is ForgotPasswordStateLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              );
+                            }
+                            return PrimaryButton(
+                              label: 'Next',
+                              size: ButtonSize.lg,
+                              onPressed: () => _submit(),
+                              fullWidth: true,
+                              isLoading: false,
+                            );
+                          },
                         ),
                       ),
                     ],

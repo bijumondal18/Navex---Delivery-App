@@ -55,3 +55,27 @@ final class FetchUserProfileStateFailed extends AuthState {
   @override
   List<Object> get props => [error];
 }
+
+/**
+ * Forgot Password Get OTP States Handling
+ * */
+
+final class ForgotPasswordStateLoading extends AuthState {}
+
+final class ForgotPasswordStateLoaded extends AuthState {
+  final ForgotPasswordResponse forgotPasswordResponse;
+
+  const ForgotPasswordStateLoaded({required this.forgotPasswordResponse});
+
+  @override
+  List<Object> get props => [forgotPasswordResponse];
+}
+
+final class ForgotPasswordStateFailed extends AuthState {
+  final String error;
+
+  const ForgotPasswordStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

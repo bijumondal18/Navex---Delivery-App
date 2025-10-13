@@ -6,7 +6,7 @@ class ApiEndpoints {
 
   // ✅ AUTH API Endpoints
   static const String loginURL = '${baseUrl}${appVersion}/login';
-  static const String forgotPasswordURL = '/auth/forgot_password';
+  static const String forgotPasswordURL = '${baseUrl}${appVersion}/forgot-password';
   static const String verifyAccountURL = '/auth/verify_account';
   static const String fetchUserProfileURL = '${baseUrl}${appVersion}/driver/details';
   static const String uploadProfilePhotoURL = '/users/upload_profile_photo';

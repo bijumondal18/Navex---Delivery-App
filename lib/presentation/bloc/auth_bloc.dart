@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:navex/core/utils/app_preference.dart';
+import 'package:navex/data/models/forgot_password_response.dart';
 import 'package:navex/data/models/login_response.dart';
 import 'package:navex/data/models/profile_response.dart';
 import 'package:navex/data/repositories/auth_repository.dart';
@@ -87,6 +88,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       } catch (e) {
         emit(FetchUserProfileStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Forgot Password States Handling
+     * */
+    on<ForgotPasswordEvent>((event, emit) async {
+      emit(ForgotPasswordStateLoading());
+      try {
+        final response = await authRepository.forgotPassword(event.email);
+        if (response['status'] == true) {
+          final forgotPasswordResponse = ForgotPasswordResponse.fromJson(
+            response,
+          );
+
+          emit(
+            ForgotPasswordStateLoaded(
+              forgotPasswordResponse: forgotPasswordResponse,
+            ),
+          );
+        } else {
+          emit(
+            ForgotPasswordStateFailed(
+              error: response['message'] ?? "Something went wrong",
+            ),
+          );
+        }
+      } catch (e) {
+        emit(ForgotPasswordStateFailed(error: e.toString()));
       }
     });
   }
