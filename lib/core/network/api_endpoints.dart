@@ -1,6 +1,11 @@
 class ApiEndpoints {
+
+  static const baseUrl = "https://portal.navex.app/api";
+  static const appVersion = "/v1";
+
+
   // ✅ AUTH API Endpoints
-  static const String loginURL = '/auth/login';
+  static const String loginURL = '${baseUrl}${appVersion}/login';
   static const String forgotPasswordURL = '/auth/forgot_password';
   static const String verifyAccountURL = '/auth/verify_account';
   static const String fetchUserProfileURL = '/users/profile';

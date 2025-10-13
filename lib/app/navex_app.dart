@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:navex/app/global_bloc.dart';
 
 import '../core/navigation/app_router.dart';
 import '../core/themes/theme.dart';
@@ -10,19 +11,21 @@ class NavexApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Navex',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      routerConfig: appRouter,
-      scaffoldMessengerKey: SnackBarHelper.messengerKey,
-      builder: (context, routedChild){
-        return Scaffold(
-          body: routedChild,
-        );
-      },
+    return GlobalBloc(
+      child: MaterialApp.router(
+        title: 'Navex',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: appRouter,
+        scaffoldMessengerKey: SnackBarHelper.messengerKey,
+        builder: (context, routedChild){
+          return Scaffold(
+            body: routedChild,
+          );
+        },
+      ),
     );
   }
 }

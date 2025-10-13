@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:navex/core/extensions/status_bar_configs.dart';
 import 'package:navex/core/navigation/app_router.dart';
@@ -8,6 +9,8 @@ import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
+
+import '../../../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,7 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) return;
 
-    appRouter.go(Screens.main);
+    BlocProvider.of<AuthBloc>(context).add(
+      LoginSubmittedEvent(
+        email: _emailController.text.trim().toString(),
+        password: _passwordController.text.trim().toString(),
+        pharmacyKey: _pharmacyKeyController.text.trim().toString(),
+      ),
+    );
   }
 
   @override
@@ -160,14 +169,45 @@ class _LoginScreenState extends State<LoginScreen> {
                           top: AppSizes.kDefaultPadding * 2,
                           bottom: AppSizes.kDefaultPadding * 2,
                         ),
-                        child: PrimaryButton(
-                          label: 'Log In',
-                          size: ButtonSize.lg,
-                          onPressed: () {
-                            _submit();
+                        child: BlocConsumer<AuthBloc, AuthState>(
+                          listener: (context, state) {
+                            if (state is LoginStateLoaded) {
+                              appRouter.go(Screens.main);
+                            }
+                            if (state is LoginStateFailed) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    state.error,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
+                                  ),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
                           },
-                          fullWidth: true,
-                          isLoading: false,
+                          builder: (context, state) {
+                            if (state is LoginStateLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              );
+                            }
+                            return PrimaryButton(
+                              label: 'Log In',
+                              size: ButtonSize.lg,
+                              onPressed: () {
+                                _submit();
+                              },
+                              fullWidth: true,
+                              isLoading: false,
+                            );
+                          },
                         ),
                       ),
                     ],

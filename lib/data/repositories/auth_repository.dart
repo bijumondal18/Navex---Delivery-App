@@ -13,7 +13,7 @@ class AuthRepository {
       data: {
         'email': email,
         'password': password,
-        'pharmacyKey': pharmacyKey,
+        'pharmacy_key': pharmacyKey,
       },
     );
     return response.data;
