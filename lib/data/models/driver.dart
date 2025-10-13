@@ -1,3 +1,6 @@
+import 'package:navex/data/models/pharmacy.dart';
+import 'package:navex/data/models/state_details.dart';
+
 class Driver {
   int? id;
   String? name;
@@ -13,6 +16,8 @@ class Driver {
   String? location;
   String? locationLat;
   String? locationLong;
+  StateDetails? stateDetails;
+  Pharmacy? pharmacy;
 
   Driver({
     this.id,
@@ -29,6 +34,8 @@ class Driver {
     this.location,
     this.locationLat,
     this.locationLong,
+    this.stateDetails,
+    this.pharmacy
   });
 
   Driver.fromJson(Map<String, dynamic> json) {
@@ -46,24 +53,36 @@ class Driver {
     location = json['location'];
     locationLat = json['location_lat'];
     locationLong = json['location_long'];
+    stateDetails = json['state_details'] != null
+        ?  StateDetails.fromJson(json['state_details'])
+        : null;
+    pharmacy = json['pharmacy'] != null
+        ?  Pharmacy.fromJson(json['pharmacy'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['phone'] = this.phone;
-    data['bio'] = this.bio;
-    data['address'] = this.address;
-    data['address_lat'] = this.addressLat;
-    data['address_long'] = this.addressLong;
-    data['city'] = this.city;
-    data['state'] = this.state;
-    data['zip'] = this.zip;
-    data['location'] = this.location;
-    data['location_lat'] = this.locationLat;
-    data['location_long'] = this.locationLong;
+    final Map<String, dynamic> data =  <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['email'] = email;
+    data['phone'] = phone;
+    data['bio'] = bio;
+    data['address'] = address;
+    data['address_lat'] = addressLat;
+    data['address_long'] = addressLong;
+    data['city'] = city;
+    data['state'] = state;
+    data['zip'] = zip;
+    data['location'] = location;
+    data['location_lat'] = locationLat;
+    data['location_long'] = locationLong;
+    if (stateDetails != null) {
+      data['state_details'] = stateDetails!.toJson();
+    }
+    if (pharmacy != null) {
+      data['pharmacy'] = pharmacy!.toJson();
+    }
     return data;
   }
 }

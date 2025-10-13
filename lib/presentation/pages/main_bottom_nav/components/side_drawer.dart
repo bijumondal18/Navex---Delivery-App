@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/resources/app_images.dart';
@@ -6,6 +7,8 @@ import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/show_logout_dialog.dart';
+
+import '../../../bloc/auth_bloc.dart';
 
 class SideDrawer extends StatelessWidget {
   final Function(int) onItemTap;
@@ -38,23 +41,57 @@ class SideDrawer extends StatelessWidget {
                         spacing: AppSizes.kDefaultPadding,
                         children: [
                           const SizedBox(height: AppSizes.kDefaultPadding),
-                          AppCachedImage(
-                            width: 96,
-                            height: 96,
-                            borderRadius: BorderRadius.circular(40),
-                            url:
-                                'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
+                          BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              if (state is FetchUserProfileStateLoaded) {
+                                return AppCachedImage(
+                                  width: 96,
+                                  height: 96,
+                                  borderRadius: BorderRadius.circular(40),
+                                  url:
+                                      state
+                                          .profileResponse
+                                          .user
+                                          ?.profileImage ??
+                                      '',
+                                );
+                              }
+                              return AppCachedImage(
+                                width: 96,
+                                height: 96,
+                                borderRadius: BorderRadius.circular(40),
+                                url: '',
+                              );
+                            },
                           ),
                           Expanded(
-                            child: Text(
-                              'Larry Davis',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleLarge!
-                                  .copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.white,
-                                  ),
+                            child: BlocBuilder<AuthBloc, AuthState>(
+                              builder: (context, state) {
+                                if (state is FetchUserProfileStateLoaded) {
+                                  return Text(
+                                    '${state.profileResponse.user?.name}',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.white,
+                                        ),
+                                  );
+                                }
+                                return Text(
+                                  '',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleLarge!
+                                      .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.white,
+                                      ),
+                                );
+                              },
                             ),
                           ),
                         ],

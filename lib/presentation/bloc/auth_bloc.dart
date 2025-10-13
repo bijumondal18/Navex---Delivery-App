@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:navex/core/utils/app_preference.dart';
 import 'package:navex/data/models/login_response.dart';
+import 'package:navex/data/models/profile_response.dart';
 import 'package:navex/data/repositories/auth_repository.dart';
 
 part 'auth_event.dart';
@@ -41,7 +42,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             loginResponse.token ?? "",
           );
 
-
           await AppPreference.setString(
             AppPreference.fullName,
             loginResponse.user?.name ?? "",
@@ -64,6 +64,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       } catch (e) {
         emit(LoginStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Fetch Profile States Handling
+     * */
+    on<FetchUserProfileEvent>((event, emit) async {
+      emit(FetchUserProfileStateLoading());
+      try {
+        final response = await authRepository.fetchUserProfile();
+        if (response['status'] == true) {
+          final profileResponse = ProfileResponse.fromJson(response);
+
+          emit(FetchUserProfileStateLoaded(profileResponse: profileResponse));
+        } else {
+          emit(
+            FetchUserProfileStateFailed(
+              error: response['message'] ?? "Something went wrong",
+            ),
+          );
+        }
+      } catch (e) {
+        emit(FetchUserProfileStateFailed(error: e.toString()));
       }
     });
   }

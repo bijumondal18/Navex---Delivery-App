@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/app_router.dart';
@@ -13,6 +14,7 @@ import 'package:navex/presentation/pages/main_bottom_nav/components/side_drawer.
 import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/custom_switch.dart';
 
+import '../../bloc/auth_bloc.dart';
 import '../../widgets/show_exit_confirm_dialog.dart';
 import '../available_routes/available_routes_screen.dart';
 import '../home/home_screen.dart';
@@ -86,6 +88,7 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
 
   @override
   Widget build(BuildContext context) {
+    BlocProvider.of<AuthBloc>(context).add(FetchUserProfileEvent());
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -126,12 +129,23 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
               onTap: () => appRouter.push(Screens.profile),
               child: Padding(
                 padding: const EdgeInsets.only(right: AppSizes.kDefaultPadding),
-                child: AppCachedImage(
-                  url:
-                      'https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg',
-                  width: 34,
-                  height: 34,
-                  fit: BoxFit.cover,
+                child: BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state is FetchUserProfileStateLoaded) {
+                      return AppCachedImage(
+                        url: state.profileResponse.user?.profileImage ?? '',
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.cover,
+                      );
+                    }
+                    return AppCachedImage(
+                      url: '',
+                      width: 34,
+                      height: 34,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),

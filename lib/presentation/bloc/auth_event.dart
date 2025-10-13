@@ -21,3 +21,6 @@ class LoginSubmittedEvent extends AuthEvent {
   @override
   List<Object> get props => [email, password, pharmacyKey];
 }
+
+
+class FetchUserProfileEvent extends AuthEvent {}

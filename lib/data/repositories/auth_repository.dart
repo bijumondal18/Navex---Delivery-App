@@ -7,20 +7,22 @@ import '../../core/network/api_client.dart';
 class AuthRepository {
   final ApiClient _apiClient = ApiClient();
 
-  Future<dynamic> login(String email, String password, String pharmacyKey) async {
+  Future<dynamic> login(
+    String email,
+    String password,
+    String pharmacyKey,
+  ) async {
     final response = await _apiClient.postRequest(
       ApiEndpoints.loginURL,
-      data: {
-        'email': email,
-        'password': password,
-        'pharmacy_key': pharmacyKey,
-      },
+      data: {'email': email, 'password': password, 'pharmacy_key': pharmacyKey},
     );
-    return  response.data;
+    return response.data;
   }
 
   Future<dynamic> fetchUserProfile() async {
-    final response = await _apiClient.getRequest(ApiEndpoints.fetchUserProfileURL);
+    final response = await _apiClient.getRequest(
+      ApiEndpoints.fetchUserProfileURL,
+    );
     return response.data;
   }
 
@@ -32,5 +34,4 @@ class AuthRepository {
     );
     return response.data;
   }
-
 }

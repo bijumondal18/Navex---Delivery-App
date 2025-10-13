@@ -5,7 +5,7 @@ class User {
   String? name;
   String? email;
   String? profileImage;
-  Null? emailVerifiedAt;
+  String? emailVerifiedAt;
   int? role;
   String? status;
   Driver? driver;
@@ -29,20 +29,20 @@ class User {
     role = json['role'];
     status = json['status'];
     driver =
-    json['driver'] != null ? new Driver.fromJson(json['driver']) : null;
+    json['driver'] != null ?  Driver.fromJson(json['driver']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['email'] = this.email;
-    data['profile_image'] = this.profileImage;
-    data['email_verified_at'] = this.emailVerifiedAt;
-    data['role'] = this.role;
-    data['status'] = this.status;
-    if (this.driver != null) {
-      data['driver'] = this.driver!.toJson();
+    final Map<String, dynamic> data =  <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['email'] = email;
+    data['profile_image'] = profileImage;
+    data['email_verified_at'] = emailVerifiedAt;
+    data['role'] = role;
+    data['status'] = status;
+    if (driver != null) {
+      data['driver'] = driver!.toJson();
     }
     return data;
   }
