@@ -16,7 +16,7 @@ class AuthRepository {
         'pharmacy_key': pharmacyKey,
       },
     );
-    return response.data;
+    return  response.data;
   }
 
   Future<dynamic> fetchUserProfile() async {

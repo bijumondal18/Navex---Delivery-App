@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:navex/core/extensions/string_extensions.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
+import 'package:navex/core/utils/app_preference.dart';
 
 import '../../../core/extensions/status_bar_configs.dart';
 import '../../../service/force_update/version_check_service.dart';
@@ -18,7 +20,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   // final VersionCheckService _versionService = VersionCheckService();
-
 
   // Future<void> _checkVersion() async {
   //   final info = await _versionService.checkForUpdate(
@@ -47,9 +48,20 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // _checkVersion();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      appRouter.go(Screens.login);
+    Future.delayed(const Duration(milliseconds: 500),(){
+      _navigateNext();
     });
+  }
+
+  Future<void> _navigateNext() async {
+    final token = await AppPreference.getString(AppPreference.token);
+    final isLoggedIn = await AppPreference.getBool(AppPreference.isLoggedIn);
+
+    if (token != null && isLoggedIn == true) {
+      appRouter.go(Screens.main);
+    } else {
+      appRouter.go(Screens.login);
+    }
   }
 
   @override

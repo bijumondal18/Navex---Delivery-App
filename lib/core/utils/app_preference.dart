@@ -9,6 +9,7 @@ class AppPreference {
   static const String token = 'AUTH_TOKEN';
   static const String userId = 'USER_ID';
   static const String userType = 'USER_TYPE';
+  static const String pharmacyKey = 'PHARMACY_KEY';
   static const String companyId = 'COMPANY_ID';
   static const String currentLat = 'CURRENT_LAT';
   static const String currentLong = 'CURRENT_LNG';
