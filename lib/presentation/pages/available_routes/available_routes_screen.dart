@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:navex/presentation/pages/home/components/build_route_list.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
@@ -63,20 +64,7 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: ListView.separated(
-              itemCount: 3,
-              padding: EdgeInsets.only(
-                left: AppSizes.kDefaultPadding,
-                right: AppSizes.kDefaultPadding,
-                top: AppSizes.kDefaultPadding,
-                bottom: AppSizes.kDefaultPadding*4,
-              ),
-              itemBuilder: (context, index) {
-                return RouteCard(route: null,);
-              },
-              separatorBuilder: (BuildContext context, int index) =>
-              const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
-            ),
+            child: BuildRouteList(),
           ),
         ],
       ),

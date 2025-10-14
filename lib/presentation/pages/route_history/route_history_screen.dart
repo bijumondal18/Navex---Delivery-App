@@ -4,6 +4,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../widgets/route_card.dart';
+import '../home/components/build_route_list.dart';
 
 class RouteHistoryScreen extends StatefulWidget {
   const RouteHistoryScreen({super.key});
@@ -63,20 +64,7 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: ListView.separated(
-              itemCount: 3,
-              padding: EdgeInsets.only(
-                left: AppSizes.kDefaultPadding,
-                right: AppSizes.kDefaultPadding,
-                top: AppSizes.kDefaultPadding,
-                bottom: AppSizes.kDefaultPadding*4,
-              ),
-              itemBuilder: (context, index) {
-                return RouteCard(route: null,);
-              },
-              separatorBuilder: (BuildContext context, int index) =>
-              const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
-            ),
+            child: BuildRouteList(),
           ),
         ],
       ),
