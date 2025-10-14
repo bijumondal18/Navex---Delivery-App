@@ -133,7 +133,7 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                           textInputAction: TextInputAction.next,
                           hint: 'OTP',
                           required: true,
-                          maxLength: 6,
+                          maxLength: 4,
                         ),
                       ),
                       Padding(

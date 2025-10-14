@@ -147,7 +147,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
-                              appRouter.push(Screens.accountVerification);
+                              appRouter.push(
+                                Screens.accountVerification,
+                                extra: _emailController.text.trim().toString(),
+                              );
                             }
                             if (state is ForgotPasswordStateFailed) {
                               ScaffoldMessenger.of(context).showSnackBar(

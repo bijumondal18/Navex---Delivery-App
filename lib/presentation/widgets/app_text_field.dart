@@ -132,7 +132,7 @@ class _AppTextFieldState extends State<AppTextField> {
         return null;
       case AppTextFieldType.otp:
         if (v.isEmpty) return null;
-        if (v.length < 6) return 'Enter a valid OTP';
+        if (v.length < 4) return 'Enter a valid OTP';
         return null;
       case AppTextFieldType.address:
       case AppTextFieldType.text:
