@@ -73,4 +73,33 @@ class DateTimeUtils {
     return formatter.format(now);
   }
 
+  static String getCurrentDate() {
+    final now = DateTime.now();
+    // Format: YYYY-MM-DD
+    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  }
+
+  static String convertMinutesToHoursMinutes(String minutesStr) {
+    final totalMinutes = int.tryParse(minutesStr) ?? 0; // Safely parse to int
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+    return "${hours}h ${minutes}m";
+  }
+
+  static String convertToAmPm(String time24) {
+    try {
+      // Parse the 24-hour format time string
+      final dateTime = DateTime.parse("1970-01-01 $time24");
+
+      // Format into 12-hour format with AM/PM
+      final hour = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      final period = dateTime.hour >= 12 ? "PM" : "AM";
+
+      return "$hour:$minute $period";
+    } catch (e) {
+      return "Invalid time format";
+    }
+  }
+
 }

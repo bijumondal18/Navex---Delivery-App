@@ -72,7 +72,7 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
                 bottom: AppSizes.kDefaultPadding*4,
               ),
               itemBuilder: (context, index) {
-                return RouteCard();
+                return RouteCard(route: null,);
               },
               separatorBuilder: (BuildContext context, int index) =>
               const SizedBox(height: AppSizes.kDefaultPadding / 1.5),

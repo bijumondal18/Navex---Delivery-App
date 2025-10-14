@@ -12,7 +12,7 @@ class ApiEndpoints {
   static const String uploadProfilePhotoURL = '/users/upload_profile_photo';
 
   // ✅ ROUTE API Endpoints
-  static const String fetchAllRoutesURL = '/routes/all_routes';
+  static const String fetchUpcomingRoutesURL = '${baseUrl}${appVersion}/driver/upcoming-routes';
   static const String fetchAvailableRoutesURL = '/routes/available_routes';
 
 }

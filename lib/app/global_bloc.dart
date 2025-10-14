@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:navex/data/repositories/auth_repository.dart';
+import 'package:navex/data/repositories/route_repository.dart';
 import 'package:navex/presentation/bloc/auth_bloc.dart';
+
+import '../presentation/bloc/route_bloc.dart';
 
 class GlobalBloc extends StatelessWidget {
   final Widget child;
@@ -13,6 +16,7 @@ class GlobalBloc extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (create) => AuthBloc(AuthRepository())),
+        BlocProvider(create: (create) => RouteBloc(RouteRepository())),
         //
       ],
       child: child,
