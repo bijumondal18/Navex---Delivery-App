@@ -3,19 +3,19 @@ import 'package:navex/data/models/route.dart';
 import 'links.dart';
 
 class RouteResponse {
-  int? currentPage;
+  dynamic currentPage;
   List<RouteData>? route;
-  String? firstPageUrl;
-  int? from;
-  int? lastPage;
-  String? lastPageUrl;
+  dynamic firstPageUrl;
+  dynamic from;
+  dynamic lastPage;
+  dynamic lastPageUrl;
   List<Links>? links;
-  Null? nextPageUrl;
-  String? path;
-  int? perPage;
-  Null? prevPageUrl;
-  int? to;
-  int? total;
+  dynamic nextPageUrl;
+  dynamic path;
+  dynamic perPage;
+  dynamic prevPageUrl;
+  dynamic to;
+  dynamic total;
 
   RouteResponse(
       {this.currentPage,
@@ -47,7 +47,7 @@ class RouteResponse {
     if (json['links'] != null) {
       links = <Links>[];
       json['links'].forEach((v) {
-        links!.add(new Links.fromJson(v));
+        links!.add( Links.fromJson(v));
       });
     }
     nextPageUrl = json['next_page_url'];
@@ -59,24 +59,24 @@ class RouteResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['current_page'] = this.currentPage;
-    if (this.route != null) {
-      data['data'] = this.route!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data =  <String, dynamic>{};
+    data['current_page'] = currentPage;
+    if (route != null) {
+      data['data'] = route!.map((v) => v.toJson()).toList();
     }
-    data['first_page_url'] = this.firstPageUrl;
-    data['from'] = this.from;
-    data['last_page'] = this.lastPage;
-    data['last_page_url'] = this.lastPageUrl;
-    if (this.links != null) {
-      data['links'] = this.links!.map((v) => v.toJson()).toList();
+    data['first_page_url'] = firstPageUrl;
+    data['from'] = from;
+    data['last_page'] = lastPage;
+    data['last_page_url'] = lastPageUrl;
+    if (links != null) {
+      data['links'] = links!.map((v) => v.toJson()).toList();
     }
-    data['next_page_url'] = this.nextPageUrl;
-    data['path'] = this.path;
-    data['per_page'] = this.perPage;
-    data['prev_page_url'] = this.prevPageUrl;
-    data['to'] = this.to;
-    data['total'] = this.total;
+    data['next_page_url'] = nextPageUrl;
+    data['path'] = path;
+    data['per_page'] = perPage;
+    data['prev_page_url'] = prevPageUrl;
+    data['to'] = to;
+    data['total'] = total;
     return data;
   }
 }

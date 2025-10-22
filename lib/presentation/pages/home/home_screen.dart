@@ -4,7 +4,7 @@ import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/core/utils/date_time_utils.dart';
 import 'package:navex/data/models/route.dart';
-import 'package:navex/presentation/pages/home/components/build_route_list.dart';
+import 'package:navex/presentation/pages/home/components/build_upcoming_route_list.dart';
 import 'package:navex/presentation/pages/trip_details/trip_details_screen.dart';
 import 'package:navex/presentation/widgets/route_card.dart';
 
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: BuildRouteList()
+            child: BuildUpcomingRouteList()
             ),
         ],
       ),

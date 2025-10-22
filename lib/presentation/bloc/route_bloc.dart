@@ -26,5 +26,21 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(FetchUpcomingRoutesStateFailed(error: e.toString()));
       }
     });
+
+    /**
+     * Fetch Accepted Routes States Handling
+     * */
+    on<FetchAcceptedRoutesEvent>((event, emit) async {
+      emit(FetchAcceptedRoutesStateLoading());
+      try {
+        final response = await routeRepository.fetchAcceptedRoutes(event.date);
+        // if (response['status'] == true) {
+        final routeResponse = RouteResponse.fromJson(response);
+        emit(FetchAcceptedRoutesStateLoaded(routeResponse: routeResponse));
+        //}
+      } catch (e) {
+        emit(FetchAcceptedRoutesStateFailed(error: e.toString()));
+      }
+    });
   }
 }

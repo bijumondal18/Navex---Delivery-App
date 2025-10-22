@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navex/presentation/pages/home/components/build_route_list.dart';
+import 'package:navex/presentation/pages/home/components/build_upcoming_route_list.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
@@ -87,7 +87,7 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: BuildRouteList(pickedDate: _selectedDate,),
+            child: BuildUpcomingRouteList(pickedDate: _selectedDate,),
           ),
         ],
       ),

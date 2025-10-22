@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:navex/presentation/pages/my_accepted_routes/components/build_accepted_route_list.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
@@ -12,9 +13,29 @@ class MyAcceptedRoutesScreen extends StatefulWidget {
 }
 
 class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
+  DateTime? _selectedDate;
+
+  Future<void> _openCalendar() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      barrierDismissible: false,
+      initialDate: _selectedDate ?? DateTime.now(),
+      // current date
+      firstDate: DateTime.now(),
+      // no previous date allowed
+      lastDate: DateTime(2100), // latest date allowed
+    );
+
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return  SizedBox(
+    return SizedBox(
       height: MediaQuery.sizeOf(context).height,
       child: Stack(
         clipBehavior: Clip.none,
@@ -34,22 +55,28 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
                       context,
                     ).textTheme.titleLarge!.copyWith(color: AppColors.white),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSizes.kDefaultPadding,
-                      vertical: AppSizes.kDefaultPadding / 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.scaffoldBackgroundDark.withAlpha(100),
-                      borderRadius: BorderRadius.circular(
-                        AppSizes.cardCornerRadius * 5,
+                  GestureDetector(
+                    onTap: () => _openCalendar(),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSizes.kDefaultPadding,
+                        vertical: AppSizes.kDefaultPadding / 4,
                       ),
-                    ),
-                    child: Text(
-                      DateTimeUtils.getFormattedCurrentDate(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge!.copyWith(color: AppColors.white),
+                      decoration: BoxDecoration(
+                        color: AppColors.scaffoldBackgroundDark.withAlpha(100),
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius * 5,
+                        ),
+                      ),
+                      child: Text(
+                        DateTimeUtils.getFormattedSelectedDate(
+                              _selectedDate ?? DateTime.now(),
+                            ) ??
+                            DateTimeUtils.getFormattedCurrentDate(),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge!.copyWith(color: AppColors.white),
+                      ),
                     ),
                   ),
                 ],
@@ -62,7 +89,7 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: SizedBox(),
+            child: BuildAcceptedRouteList(pickedDate: _selectedDate),
           ),
         ],
       ),

@@ -4,7 +4,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../widgets/route_card.dart';
-import '../home/components/build_route_list.dart';
+import '../home/components/build_upcoming_route_list.dart';
 
 class RouteHistoryScreen extends StatefulWidget {
   const RouteHistoryScreen({super.key});
@@ -87,7 +87,7 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: BuildRouteList(pickedDate: _selectedDate,),
+            child: BuildUpcomingRouteList(pickedDate: _selectedDate,),
           ),
         ],
       ),

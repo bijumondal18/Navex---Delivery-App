@@ -12,5 +12,13 @@ class RouteRepository {
     return response.data;
   }
 
+  Future<dynamic> fetchAcceptedRoutes(String date) async {
+    final response = await _apiClient.getRequest(
+      ApiEndpoints.fetchAcceptedRoutesURL,
+      queryParams: {'date': date},
+    );
+    return response.data;
+  }
+
 
 }

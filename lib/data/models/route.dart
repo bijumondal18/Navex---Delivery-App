@@ -8,7 +8,7 @@ class RouteData {
   String? pickupAddress;
   String? pickupLat;
   String? pickupLong;
-  Null? asignedDriver;
+  int? asignedDriver;
   String? totalDistance;
   String? totalDistanceKm;
   String? totalTimeSeconds;
@@ -23,9 +23,9 @@ class RouteData {
   String? isLoaded;
   String? currentWaypoint;
   int? status;
-  Null? acceptedBy;
-  Null? tripStartTime;
-  Null? tripEndTime;
+  int? acceptedBy;
+  String? tripStartTime;
+  String? tripEndTime;
   String? delFlag;
   String? createdBy;
   String? createdByIp;
