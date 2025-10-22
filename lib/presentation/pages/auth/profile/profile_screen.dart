@@ -1,6 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/presentation/widgets/app_cached_image.dart';
 
 import '../../../../core/themes/app_colors.dart';
+import '../../../bloc/auth_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,18 +17,174 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    BlocProvider.of<AuthBloc>(context).add(FetchUserProfileEvent());
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         title: Text(
-          'Profile',
-          style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            color: AppColors.white,
-            fontWeight: FontWeight.w600,
-          ),
+          "Profile",
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge!.copyWith(color: AppColors.white),
         ),
       ),
-      body: ListView(children: []),
+      body: Column(
+        children: [
+          // Top Section with Background and Profile
+          Container(
+            height: MediaQuery.of(context).size.height * 0.3,
+            width: double.infinity,
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: Column(
+              children: [
+                // Profile Image
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        if (state is FetchUserProfileStateLoaded) {
+                          return AppCachedImage(
+                            url: state.profileResponse.user?.profileImage ?? '',
+                            width: 150,
+                            height: 150,
+                            borderRadius: BorderRadius.circular(
+                              AppSizes.cardCornerRadius * 100,
+                            ),
+                            fit: BoxFit.cover,
+                          );
+                        }
+                        return AppCachedImage(
+                          url: '',
+                          width: 150,
+                          height: 150,
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.cardCornerRadius * 100,
+                          ),
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(
+                        AppSizes.kDefaultPadding / 2,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        size: 28,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSizes.kDefaultPadding * 2),
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state is FetchUserProfileStateLoaded) {
+                      return Text(
+                        '${state.profileResponse.user?.name}',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }
+                    return Text(
+                      '',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // White Card Floating Section
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding,
+              ),
+              child: Transform.translate(
+                offset: const Offset(0, -50),
+                child: Card(
+                  elevation: AppSizes.elevationMedium,
+                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                  color: Theme.of(context).cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppSizes.cardCornerRadius,
+                    ),
+                  ),
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    children: [
+                      _buildProfileOption(
+                        icon: Icons.edit,
+                        title: "Edit Profile Name",
+                        onTap: () {},
+                      ),
+                      _buildProfileOption(
+                        icon: Icons.lock_outline,
+                        title: "Change Password",
+                        onTap: () {},
+                      ),
+
+                      _buildProfileOption(
+                        icon: Icons.settings_outlined,
+                        title: "Settings",
+                        onTap: () {},
+                      ),
+
+                      const Divider(),
+                      _buildProfileOption(
+                        icon: Icons.logout,
+                        title: "Logout",
+                        onTap: () {},
+                        color: Colors.red,
+                      ),
+                      _buildProfileOption(
+                        icon: Icons.delete_outline,
+                        title: "Delete Account",
+                        onTap: () {},
+                        color: Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = Colors.black87,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: color),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: Theme.of(context).colorScheme.surfaceContainer.withAlpha(120),
+      ),
+      onTap: onTap,
     );
   }
 }

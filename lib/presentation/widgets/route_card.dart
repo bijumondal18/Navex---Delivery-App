@@ -21,9 +21,14 @@ class RouteCard extends StatelessWidget {
         appRouter.pushNamed(Screens.tripDetails, pathParameters: {'id': route!.id.toString()});
       },
       child: Card(
-        elevation: AppSizes.elevationSmall,
+        elevation: AppSizes.elevationMedium,
+        shadowColor: Theme.of(context).shadowColor.withAlpha(100),
         color: Theme.of(context).cardColor,
-        shadowColor: Theme.of(context).colorScheme.onSurface.withAlpha(200),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            AppSizes.cardCornerRadius,
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: AppSizes.kDefaultPadding,

@@ -41,7 +41,7 @@ class AppCachedImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? BorderRadius.circular(AppSizes.cardCornerRadius);
-    final defaultBg = bgColor ?? Theme.of(context).colorScheme.surfaceVariant;
+    final defaultBg = bgColor ?? Theme.of(context).colorScheme.surface.withAlpha(100);
 
     // Outer decorated container draws the border
     Widget withBorder(Widget child) {
