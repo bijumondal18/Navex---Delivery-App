@@ -7,13 +7,21 @@ import '../../../bloc/route_bloc.dart';
 import '../../../widgets/route_card.dart';
 
 class BuildRouteList extends StatelessWidget {
-  const BuildRouteList({super.key});
+  final DateTime? pickedDate;
+
+  const BuildRouteList({super.key, this.pickedDate});
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<RouteBloc>(
-      context,
-    ).add(FetchUpcomingRoutesEvent(date: DateTimeUtils.getCurrentDate()));
+    BlocProvider.of<RouteBloc>(context).add(
+      FetchUpcomingRoutesEvent(
+        date:
+            DateTimeUtils.getFormattedPickedDate(
+              pickedDate ?? DateTime.now(),
+            ) ??
+            DateTimeUtils.getCurrentDate(),
+      ),
+    );
     return BlocBuilder<RouteBloc, RouteState>(
       builder: (context, state) {
         if (state is FetchUpcomingRoutesStateLoading) {
@@ -38,11 +46,11 @@ class BuildRouteList extends StatelessWidget {
                       const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
                 )
               : Center(
-                child: Text(
+                  child: Text(
                     'No Upcoming Routes',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-              );
+                );
         }
         return SizedBox();
       },

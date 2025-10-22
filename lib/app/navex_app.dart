@@ -17,7 +17,7 @@ class NavexApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.light,
         routerConfig: appRouter,
         scaffoldMessengerKey: SnackBarHelper.messengerKey,
         builder: (context, routedChild){

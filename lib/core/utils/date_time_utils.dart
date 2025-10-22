@@ -73,10 +73,20 @@ class DateTimeUtils {
     return formatter.format(now);
   }
 
+  static String getFormattedSelectedDate(DateTime selectedDate) {
+    final formatter = DateFormat('MMM dd, yyyy');
+    return formatter.format(selectedDate);
+  }
+
   static String getCurrentDate() {
     final now = DateTime.now();
     // Format: YYYY-MM-DD
     return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  }
+
+
+  static String getFormattedPickedDate(DateTime selectedDate) {
+    return "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
   }
 
   static String convertMinutesToHoursMinutes(String minutesStr) {
