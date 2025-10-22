@@ -73,6 +73,22 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             ),
           ),
 
+          Card(
+            elevation: AppSizes.elevationMedium,
+            shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+            color: Theme.of(context).cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                AppSizes.cardCornerRadius,
+              ),
+            ),
+            child: Column(
+              children: [
+
+              ],
+            ),
+          ),
+
           Positioned(
             left: 16,
             bottom: 48,
