@@ -14,5 +14,6 @@ class ApiEndpoints {
   // ✅ ROUTE API Endpoints
   static const String fetchUpcomingRoutesURL = '${baseUrl}${appVersion}/driver/upcoming-routes';
   static const String fetchAcceptedRoutesURL = '${baseUrl}${appVersion}/driver/accepted-routes';
+  static const String fetchRouteDetailsURL = '${baseUrl}${appVersion}/driver/route-details';
 
 }

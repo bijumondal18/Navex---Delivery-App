@@ -64,7 +64,9 @@ final GoRouter appRouter = GoRouter(
               path: 'trip/:id',
               name: Screens.tripDetails,
               pageBuilder: (_, state) => NoTransitionPage(
-                child: TripDetailsScreen(routeId: state.pathParameters['id']!),
+                child: TripDetailsScreen(
+                  routeId: '${state.pathParameters['id']}',
+                ),
               ),
             ),
           ],

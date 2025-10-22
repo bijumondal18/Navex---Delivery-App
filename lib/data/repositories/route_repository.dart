@@ -20,5 +20,10 @@ class RouteRepository {
     return response.data;
   }
 
-
+  Future<dynamic> fetchRouteDetails(String routeId) async {
+    final response = await _apiClient.getRequest(
+      '${ApiEndpoints.fetchRouteDetailsURL}/$routeId',
+    );
+    return response.data;
+  }
 }

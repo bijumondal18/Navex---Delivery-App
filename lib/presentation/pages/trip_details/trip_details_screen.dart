@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:navex/presentation/bloc/route_bloc.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
 import '../../../core/resources/app_images.dart';
@@ -18,6 +20,14 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  @override
+  void initState() {
+    BlocProvider.of<RouteBloc>(
+      context,
+    ).add(FetchRouteDetailsEvent(routeId: widget.routeId));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -71,7 +81,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadiusGeometry.all(
-                     Radius.circular(AppSizes.cardCornerRadius),
+                    Radius.circular(AppSizes.cardCornerRadius),
                   ),
                   child: Material(
                     color: Theme.of(context).cardColor,
@@ -95,14 +105,42 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                     width: 20,
                                     height: 20,
                                   ),
-                                  Text(
-                                    '0.2 km',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  BlocBuilder<RouteBloc, RouteState>(
+                                    builder: (context, state) {
+                                      if (state
+                                          is FetchRouteDetailsStateLoaded) {
+                                        return Text(
+                                          '${state.routeData.totalDistanceKm} km',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge!
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        );
+                                      }
+                                      if (state
+                                          is FetchRouteDetailsStateFailed) {
+                                        return Text(
+                                          state.error,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge!
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        );
+                                      }
+                                      return Text(
+                                        '0 km',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      );
+                                    },
                                   ),
                                   Text(
                                     'Distance',
@@ -126,14 +164,41 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                     width: 20,
                                     height: 20,
                                   ),
-                                  Text(
-                                    '2 min',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  BlocBuilder<RouteBloc, RouteState>(
+                                    builder: (context, state) {
+                                      if (state
+                                          is FetchRouteDetailsStateLoaded) {
+                                        return Text(
+                                          DateTimeUtils.convertMinutesToHoursMinutes(state.routeData.totalTime),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge!
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        );
+                                      }
+                                      if(state is FetchRouteDetailsStateFailed){
+                                        return Text(
+                                          state.error,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge!
+                                              .copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        );
+                                      }
+                                      return Text(
+                                        '0 min',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      );
+                                    },
                                   ),
                                   Text(
                                     'Time',
