@@ -19,48 +19,38 @@ class BuildUpcomingRouteList extends StatefulWidget {
 class _BuildUpcomingRouteListState extends State<BuildUpcomingRouteList> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RouteBloc(RouteRepository())
-        ..add(
-          FetchUpcomingRoutesEvent(
-            date: DateTimeUtils.getFormattedPickedDate(
-              widget.pickedDate ?? DateTime.now(),
-            ),
-          ),
-        ),
-      child: BlocBuilder<RouteBloc, RouteState>(
-        builder: (context, state) {
-          if (state is FetchUpcomingRoutesStateLoading) {
-            return const Center(child: CircularProgressIndicator.adaptive());
-          }
-          if (state is FetchUpcomingRoutesStateLoaded) {
-            final route = state.routeResponse.route ?? [];
-            return route.isNotEmpty
-                ? ListView.separated(
-                    itemCount: route.length,
-                    scrollDirection: Axis.vertical,
-                    padding: const EdgeInsets.only(
-                      left: AppSizes.kDefaultPadding,
-                      right: AppSizes.kDefaultPadding,
-                      top: AppSizes.kDefaultPadding,
-                      bottom: AppSizes.kDefaultPadding * 4,
-                    ),
-                    itemBuilder: (context, index) {
-                      return RouteCard(route: route[index]);
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
-                  )
-                : Center(
-                    child: Text(
-                      'No Upcoming Routes',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  );
-          }
-          return SizedBox();
-        },
-      ),
+    return BlocBuilder<RouteBloc, RouteState>(
+      builder: (context, state) {
+        if (state is FetchUpcomingRoutesStateLoading) {
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+        if (state is FetchUpcomingRoutesStateLoaded) {
+          final route = state.routeResponse.route ?? [];
+          return route.isNotEmpty
+              ? ListView.separated(
+                  itemCount: route.length,
+                  scrollDirection: Axis.vertical,
+                  padding: const EdgeInsets.only(
+                    left: AppSizes.kDefaultPadding,
+                    right: AppSizes.kDefaultPadding,
+                    top: AppSizes.kDefaultPadding,
+                    bottom: AppSizes.kDefaultPadding * 4,
+                  ),
+                  itemBuilder: (context, index) {
+                    return RouteCard(route: route[index]);
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: AppSizes.kDefaultPadding / 1.5),
+                )
+              : Center(
+                  child: Text(
+                    'No Upcoming Routes',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                );
+        }
+        return SizedBox();
+      },
     );
   }
 }

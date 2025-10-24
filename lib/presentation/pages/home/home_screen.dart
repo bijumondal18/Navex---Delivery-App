@@ -19,10 +19,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime? _selectedDate;
+  late final RouteBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = RouteBloc(RouteRepository())
+      ..add(
+        FetchUpcomingRoutesEvent(
+          date: DateTimeUtils.getFormattedPickedDate(DateTime.now()),
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RouteBloc(RouteRepository()),
+    return BlocProvider.value(
+      value: _bloc,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height,
         child: Stack(
@@ -71,7 +92,44 @@ class _HomeScreenState extends State<HomeScreen> {
               left: 0,
               bottom: 0,
               right: 0,
-              child: BuildUpcomingRouteList(),
+              child: BlocBuilder<RouteBloc, RouteState>(
+                builder: (context, state) {
+                  if (state is FetchUpcomingRoutesStateLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  }
+                  if (state is FetchUpcomingRoutesStateLoaded) {
+                    final route = state.routeResponse.route ?? [];
+                    return route.isNotEmpty
+                        ? ListView.separated(
+                      itemCount: route.length,
+                      scrollDirection: Axis.vertical,
+                      padding: const EdgeInsets.only(
+                        left: AppSizes.kDefaultPadding,
+                        right: AppSizes.kDefaultPadding,
+                        top: AppSizes.kDefaultPadding,
+                        bottom: AppSizes.kDefaultPadding * 4,
+                      ),
+                      itemBuilder: (context, index) {
+                        return RouteCard(route: route[index]);
+                      },
+                      separatorBuilder:
+                          (BuildContext context, int index) =>
+                      const SizedBox(
+                        height: AppSizes.kDefaultPadding / 1.5,
+                      ),
+                    )
+                        : Center(
+                      child: Text(
+                        'No Available Routes',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    );
+                  }
+                  return SizedBox();
+                },
+              ),
             ),
           ],
         ),

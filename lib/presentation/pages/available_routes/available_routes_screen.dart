@@ -18,29 +18,48 @@ class AvailableRoutesScreen extends StatefulWidget {
 
 class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
   DateTime? _selectedDate;
+  late final RouteBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = RouteBloc(RouteRepository())
+      ..add(
+        FetchUpcomingRoutesEvent(
+          date: DateTimeUtils.getFormattedPickedDate(DateTime.now()),
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
 
   Future<void> _openCalendar() async {
-    final DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
       barrierDismissible: false,
       initialDate: _selectedDate ?? DateTime.now(),
-      // current date
       firstDate: DateTime.now(),
-      // no previous date allowed
-      lastDate: DateTime(2100), // latest date allowed
+      lastDate: DateTime(2100),
     );
 
     if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+      setState(() => _selectedDate = pickedDate);
+      _bloc.add(
+        FetchUpcomingRoutesEvent(
+          date: DateTimeUtils.getFormattedPickedDate(pickedDate),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RouteBloc(RouteRepository()),
+    return BlocProvider.value(
+      value: _bloc,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height,
         child: Stack(
@@ -78,9 +97,8 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
                         ),
                         child: Text(
                           DateTimeUtils.getFormattedSelectedDate(
-                                _selectedDate ?? DateTime.now(),
-                              ) ??
-                              DateTimeUtils.getFormattedCurrentDate(),
+                            _selectedDate ?? DateTime.now(),
+                          ),
                           style: Theme.of(context).textTheme.bodyLarge!
                               .copyWith(color: AppColors.white),
                         ),
@@ -96,7 +114,44 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
               left: 0,
               bottom: 0,
               right: 0,
-              child: BuildUpcomingRouteList(pickedDate: _selectedDate),
+              child: BlocBuilder<RouteBloc, RouteState>(
+                builder: (context, state) {
+                  if (state is FetchUpcomingRoutesStateLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  }
+                  if (state is FetchUpcomingRoutesStateLoaded) {
+                    final route = state.routeResponse.route ?? [];
+                    return route.isNotEmpty
+                        ? ListView.separated(
+                            itemCount: route.length,
+                            scrollDirection: Axis.vertical,
+                            padding: const EdgeInsets.only(
+                              left: AppSizes.kDefaultPadding,
+                              right: AppSizes.kDefaultPadding,
+                              top: AppSizes.kDefaultPadding,
+                              bottom: AppSizes.kDefaultPadding * 4,
+                            ),
+                            itemBuilder: (context, index) {
+                              return RouteCard(route: route[index]);
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) =>
+                                    const SizedBox(
+                                      height: AppSizes.kDefaultPadding / 1.5,
+                                    ),
+                          )
+                        : Center(
+                            child: Text(
+                              'No Available Routes',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          );
+                  }
+                  return SizedBox();
+                },
+              ),
             ),
           ],
         ),
