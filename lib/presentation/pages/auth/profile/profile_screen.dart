@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
+import 'package:navex/presentation/widgets/show_delete_account_dialog.dart';
 
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/navigation/screens.dart';
 import '../../../../core/themes/app_colors.dart';
+import '../../../../core/utils/app_preference.dart';
 import '../../../bloc/auth_bloc.dart';
+import '../../../widgets/show_logout_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -127,8 +132,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     children: [
                       _buildProfileOption(
-                        icon: Icons.edit,
-                        title: "Edit Profile Name",
+                        icon: Icons.edit_outlined,
+                        title: "Edit Profile",
                         onTap: () {},
                       ),
                       _buildProfileOption(
@@ -137,23 +142,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () {},
                       ),
 
+                      const Divider(),
                       _buildProfileOption(
-                        icon: Icons.settings_outlined,
-                        title: "Settings",
+                        icon: Icons.info_outline,
+                        title: "About Us",
                         onTap: () {},
                       ),
-
+                      _buildProfileOption(
+                        icon: Icons.list_alt_rounded,
+                        title: "Terms & Conditions",
+                        onTap: () {},
+                      ),
+                      _buildProfileOption(
+                        icon: Icons.privacy_tip_outlined,
+                        title: "Privacy Policy",
+                        onTap: () {},
+                      ),
                       const Divider(),
                       _buildProfileOption(
                         icon: Icons.logout,
                         title: "Logout",
-                        onTap: () {},
+                        onTap: () => showLogoutDialog(context, () async {
+                          await AppPreference.clearPreference();
+                          appRouter.go(Screens.login);
+                        }),
                         color: Colors.red,
                       ),
                       _buildProfileOption(
                         icon: Icons.delete_outline,
                         title: "Delete Account",
-                        onTap: () {},
+                        onTap: () => showDeleteAccountDialog(context, () async {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Account Deleted Successfully. Please contact with you admin.',
+                                style: Theme.of(context).textTheme.labelLarge!
+                                    .copyWith(color: AppColors.white),
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: AppColors.errorLight.withAlpha(
+                                200,
+                              ),
+                            ),
+                          );
+                          // await AppPreference.clearPreference();
+                          // appRouter.go(Screens.login);
+                        }),
                         color: Colors.red,
                       ),
                     ],

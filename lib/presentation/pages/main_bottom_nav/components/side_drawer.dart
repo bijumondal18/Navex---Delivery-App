@@ -145,18 +145,18 @@ class SideDrawer extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
-            ListTile(
-              onTap: () => onItemTap(5),
-              leading: SvgPicture.asset(
-                AppImages.settings,
-                width: 24,
-                height: 24,
-              ),
-              title: Text(
-                'Settings',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
+            // ListTile(
+            //   onTap: () => onItemTap(5),
+            //   leading: SvgPicture.asset(
+            //     AppImages.settings,
+            //     width: 24,
+            //     height: 24,
+            //   ),
+            //   title: Text(
+            //     'Settings',
+            //     style: Theme.of(context).textTheme.bodyLarge,
+            //   ),
+            // ),
             ListTile(
               onTap: () {
                 appRouter.pop();
