@@ -77,6 +77,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final response = await authRepository.fetchUserProfile();
         if (response['status'] == true) {
           final profileResponse = ProfileResponse.fromJson(response);
+          await AppPreference.setString(
+            AppPreference.fullName,
+            profileResponse.user?.name ?? '',
+          );
+          await AppPreference.setString(
+            AppPreference.email,
+            profileResponse.user?.email ?? '',
+          );
 
           emit(FetchUserProfileStateLoaded(profileResponse: profileResponse));
         } else {

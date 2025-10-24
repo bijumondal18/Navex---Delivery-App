@@ -20,6 +20,20 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String? name;
+
+  Future<void> _getUserFullName() async {
+    final fullName = await AppPreference.getString(AppPreference.fullName);
+    if (!mounted) return;
+    setState(() => name = fullName);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserFullName();
+  }
+
   @override
   Widget build(BuildContext context) {
     BlocProvider.of<AuthBloc>(context).add(FetchUserProfileEvent());
@@ -99,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     }
                     return Text(
-                      '',
+                      '$name',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

@@ -12,10 +12,29 @@ import 'package:navex/presentation/widgets/show_logout_dialog.dart';
 
 import '../../../bloc/auth_bloc.dart';
 
-class SideDrawer extends StatelessWidget {
+class SideDrawer extends StatefulWidget {
   final Function(int) onItemTap;
 
   const SideDrawer({super.key, required this.onItemTap});
+
+  @override
+  State<SideDrawer> createState() => _SideDrawerState();
+}
+
+class _SideDrawerState extends State<SideDrawer> {
+  String? name;
+
+  Future<void> _getUserFullName() async {
+    final fullName = await AppPreference.getString(AppPreference.fullName);
+    if (!mounted) return;
+    setState(() => name = fullName);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserFullName();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +103,7 @@ class SideDrawer extends StatelessWidget {
                                   );
                                 }
                                 return Text(
-                                  '',
+                                  '$name',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.titleLarge!
@@ -105,7 +124,7 @@ class SideDrawer extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.kDefaultPadding),
             ListTile(
-              onTap: () => onItemTap(0),
+              onTap: () => widget.onItemTap(0),
               leading: SvgPicture.asset(
                 AppImages.home,
                 width: 24,
@@ -118,7 +137,7 @@ class SideDrawer extends StatelessWidget {
               title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
             ),
             ListTile(
-              onTap: () => onItemTap(1),
+              onTap: () => widget.onItemTap(1),
               leading: Image.asset(
                 AppImages.pin,
                 width: 24,
@@ -133,7 +152,7 @@ class SideDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
-              onTap: () => onItemTap(2),
+              onTap: () => widget.onItemTap(2),
               leading: Image.asset(
                 AppImages.pin,
                 width: 24,
@@ -148,7 +167,7 @@ class SideDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
-              onTap: () => onItemTap(3),
+              onTap: () => widget.onItemTap(3),
               leading: Image.asset(
                 AppImages.pin,
                 width: 24,
@@ -163,7 +182,7 @@ class SideDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
-              onTap: () => onItemTap(4),
+              onTap: () => widget.onItemTap(4),
               leading: SvgPicture.asset(
                 AppImages.notifications,
                 width: 24,
