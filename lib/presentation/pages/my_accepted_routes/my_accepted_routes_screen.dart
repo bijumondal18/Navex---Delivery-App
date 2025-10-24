@@ -7,6 +7,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../bloc/route_bloc.dart';
+import '../../widgets/route_card.dart';
 
 class MyAcceptedRoutesScreen extends StatefulWidget {
   const MyAcceptedRoutesScreen({super.key});
@@ -17,29 +18,48 @@ class MyAcceptedRoutesScreen extends StatefulWidget {
 
 class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
   DateTime? _selectedDate;
+  late final RouteBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = RouteBloc(RouteRepository())
+      ..add(
+        FetchAcceptedRoutesEvent(
+          date: DateTimeUtils.getFormattedPickedDate(DateTime.now()),
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
 
   Future<void> _openCalendar() async {
-    final DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
       barrierDismissible: false,
       initialDate: _selectedDate ?? DateTime.now(),
-      // current date
       firstDate: DateTime.now(),
-      // no previous date allowed
-      lastDate: DateTime(2100), // latest date allowed
+      lastDate: DateTime(2100),
     );
 
     if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+      setState(() => _selectedDate = pickedDate);
+      _bloc.add(
+        FetchAcceptedRoutesEvent(
+          date: DateTimeUtils.getFormattedPickedDate(pickedDate),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RouteBloc(RouteRepository()),
+    return BlocProvider.value(
+      value: _bloc,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height,
         child: Stack(
@@ -95,7 +115,52 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
               left: 0,
               bottom: 0,
               right: 0,
-              child: BuildAcceptedRouteList(pickedDate: _selectedDate),
+              child: BlocBuilder<RouteBloc, RouteState>(
+                builder: (context, state) {
+                  if (state is FetchAcceptedRoutesStateLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  }
+                  if (state is FetchAcceptedRoutesStateFailed) {
+                    return Center(
+                      child: Text(
+                        state.error,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
+                  if (state is FetchAcceptedRoutesStateLoaded) {
+                    final route = state.routeResponse.route ?? [];
+                    return route.isNotEmpty
+                        ? ListView.separated(
+                            itemCount: route.length,
+                            scrollDirection: Axis.vertical,
+                            padding: const EdgeInsets.only(
+                              left: AppSizes.kDefaultPadding,
+                              right: AppSizes.kDefaultPadding,
+                              top: AppSizes.kDefaultPadding,
+                              bottom: AppSizes.kDefaultPadding * 4,
+                            ),
+                            itemBuilder: (context, index) {
+                              return RouteCard(route: route[index]);
+                            },
+                            separatorBuilder:
+                                (BuildContext context, int index) =>
+                                    const SizedBox(
+                                      height: AppSizes.kDefaultPadding / 1.5,
+                                    ),
+                          )
+                        : Center(
+                            child: Text(
+                              'No Accepted Routes',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          );
+                  }
+                  return SizedBox();
+                },
+              ),
             ),
           ],
         ),
