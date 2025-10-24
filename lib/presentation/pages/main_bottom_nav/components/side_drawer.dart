@@ -106,12 +106,27 @@ class SideDrawer extends StatelessWidget {
             const SizedBox(height: AppSizes.kDefaultPadding),
             ListTile(
               onTap: () => onItemTap(0),
-              leading: SvgPicture.asset(AppImages.home, width: 24, height: 24),
+              leading: SvgPicture.asset(
+                AppImages.home,
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.surfaceContainer.withAlpha(200),
+                  BlendMode.srcIn,
+                ),
+              ),
               title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
             ),
             ListTile(
               onTap: () => onItemTap(1),
-              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              leading: Image.asset(
+                AppImages.pin,
+                width: 24,
+                height: 24,
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainer.withAlpha(200),
+              ),
               title: Text(
                 'Available Routes',
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -119,7 +134,14 @@ class SideDrawer extends StatelessWidget {
             ),
             ListTile(
               onTap: () => onItemTap(2),
-              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              leading: Image.asset(
+                AppImages.pin,
+                width: 24,
+                height: 24,
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainer.withAlpha(200),
+              ),
               title: Text(
                 'My Accepted Routes',
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -127,7 +149,14 @@ class SideDrawer extends StatelessWidget {
             ),
             ListTile(
               onTap: () => onItemTap(3),
-              leading: Image.asset(AppImages.pin, width: 24, height: 24),
+              leading: Image.asset(
+                AppImages.pin,
+                width: 24,
+                height: 24,
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainer.withAlpha(200),
+              ),
               title: Text(
                 'Route History',
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -139,6 +168,10 @@ class SideDrawer extends StatelessWidget {
                 AppImages.notifications,
                 width: 24,
                 height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.surfaceContainer.withAlpha(200),
+                  BlendMode.srcIn,
+                ),
               ),
               title: Text(
                 'Notifications',
@@ -173,10 +206,16 @@ class SideDrawer extends StatelessWidget {
                 AppImages.logout,
                 width: 24,
                 height: 24,
+                colorFilter: ColorFilter.mode(
+                  AppColors.errorDark.withAlpha(200),
+                  BlendMode.srcIn,
+                ),
               ),
               title: Text(
                 'Logout',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge!.copyWith(color: AppColors.errorDark),
               ),
             ),
           ],

@@ -175,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Account Deleted Successfully. Please contact with you admin.',
+                                'Account Deleted Successfully. Please contact with your admin.',
                                 style: Theme.of(context).textTheme.labelLarge!
                                     .copyWith(color: AppColors.white),
                               ),
