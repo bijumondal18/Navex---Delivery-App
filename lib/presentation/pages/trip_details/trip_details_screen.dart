@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:navex/presentation/bloc/route_bloc.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
@@ -20,6 +24,33 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  final Completer<GoogleMapController> _controller = Completer();
+  static const LatLng _start = LatLng(28.6139, 77.2090); // New Delhi
+  final Set<Marker> _markers = {};
+
+  Future<void> _showPickupOnMap({
+    required double lat,
+    required double lng,
+  }) async {
+    final pickup = LatLng(lat, lng);
+
+    setState(() {
+      _markers
+        ..removeWhere((m) => m.markerId.value == 'pickup')
+        ..add(
+          Marker(
+            markerId: const MarkerId('pickup'),
+            position: pickup,
+            infoWindow: const InfoWindow(title: 'Pickup Address'),
+          ),
+        );
+    });
+
+    final controller = await _controller.future;
+    await controller.animateCamera(
+      CameraUpdate.newCameraPosition(CameraPosition(target: pickup, zoom: 14)),
+    );
+  }
 
   @override
   void initState() {
@@ -28,6 +59,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       context,
     ).add(FetchRouteDetailsEvent(routeId: widget.routeId));
   }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -256,17 +288,46 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 ),
 
                 Expanded(
-                  child: Card(
-                    elevation: AppSizes.elevationMedium,
-                    margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                    color: Theme.of(context).cardColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppSizes.cardCornerRadius,
+                  child: BlocListener<RouteBloc, RouteState>(
+                    listenWhen: (prev, curr) =>
+                        curr is FetchRouteDetailsStateLoaded,
+                    listener: (context, state) {
+                      if (state is FetchRouteDetailsStateLoaded) {
+                        final double lat = double.parse(
+                          state.routeData.pickupLat,
+                        );
+                        final double lng = double.parse(
+                          state.routeData.pickupLong,
+                        );
+                        _showPickupOnMap(lat: lat, lng: lng);
+                      }
+                    },
+                    child: Card(
+                      elevation: AppSizes.elevationMedium,
+                      margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                      color: Theme.of(context).cardColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius,
+                        ),
                       ),
-                    ),
-                    child: SizedBox(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius,
+                        ),
+                        child: GoogleMap(
+                          initialCameraPosition: const CameraPosition(
+                            target: _start,
+                            zoom: 12,
+                          ),
+                          onMapCreated: (c) => _controller.complete(c),
+                          markers: _markers,
+                          myLocationEnabled: false,
+                          zoomControlsEnabled: false,
+                          myLocationButtonEnabled: false,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -309,8 +370,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                             .textTheme
                                             .labelLarge!
                                             .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       );
                                     }
                                     if (state is FetchRouteDetailsStateFailed) {
@@ -320,8 +381,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                             .textTheme
                                             .labelLarge!
                                             .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       );
                                     }
                                     return Text(
@@ -330,8 +391,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                           .textTheme
                                           .labelLarge!
                                           .copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     );
                                   },
                                 ),
@@ -339,8 +400,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   'Distance',
                                   style: Theme.of(context).textTheme.titleSmall!
                                       .copyWith(
-                                    color: Theme.of(context).hintColor,
-                                  ),
+                                        color: Theme.of(context).hintColor,
+                                      ),
                                 ),
                               ],
                             ),
@@ -366,8 +427,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                             .textTheme
                                             .labelLarge!
                                             .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       );
                                     }
                                     if (state is FetchRouteDetailsStateFailed) {
@@ -377,8 +438,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                             .textTheme
                                             .labelLarge!
                                             .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       );
                                     }
                                     return Text(
@@ -387,8 +448,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                           .textTheme
                                           .labelLarge!
                                           .copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     );
                                   },
                                 ),
@@ -396,8 +457,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   'Time',
                                   style: Theme.of(context).textTheme.titleSmall!
                                       .copyWith(
-                                    color: Theme.of(context).hintColor,
-                                  ),
+                                        color: Theme.of(context).hintColor,
+                                      ),
                                 ),
                               ],
                             ),
