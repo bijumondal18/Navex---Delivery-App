@@ -20,14 +20,14 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
+
   @override
   void initState() {
+    super.initState();
     BlocProvider.of<RouteBloc>(
       context,
     ).add(FetchRouteDetailsEvent(routeId: widget.routeId));
-    super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -50,180 +50,200 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       context,
                     ).textTheme.titleLarge!.copyWith(color: AppColors.white),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSizes.kDefaultPadding,
-                      vertical: AppSizes.kDefaultPadding / 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.scaffoldBackgroundDark.withAlpha(100),
-                      borderRadius: BorderRadius.circular(
-                        AppSizes.cardCornerRadius * 5,
-                      ),
-                    ),
-                    child: Text(
-                      DateTimeUtils.getFormattedCurrentDate(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge!.copyWith(color: AppColors.white),
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
 
-          Card(
-            elevation: AppSizes.elevationMedium,
-            shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-            color: Theme.of(context).cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppSizes.cardCornerRadius,
-              ),
-            ),
-            child: Column(
-              children: [
-
-              ],
-            ),
-          ),
-
           Positioned(
-            left: 16,
-            bottom: 48,
-            right: 16,
+            top: 60,
+            left: 0,
+            bottom: 0,
+            right: 0,
             child: Column(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadiusGeometry.all(
-                    Radius.circular(AppSizes.cardCornerRadius),
+                Card(
+                  elevation: AppSizes.elevationMedium,
+                  margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                  color: Theme.of(context).cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppSizes.cardCornerRadius,
+                    ),
                   ),
-                  child: Material(
-                    color: Theme.of(context).cardColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                      child: Column(
-                        spacing: AppSizes.kDefaultPadding,
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                    child: SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.3,
+                      child: ListView(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                spacing: AppSizes.kDefaultPadding / 3,
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: AppSizes.kDefaultPadding * 1.5,
+                                ),
+                                child: Text(
+                                  'Pickup'.toUpperCase(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceContainer
+                                            .withAlpha(150),
+                                      ),
+                                ),
+                              ),
+                              Row(
+                                spacing: AppSizes.kDefaultPadding / 2,
+                                children: [
+                                  Icon(
+                                    Icons.circle_rounded,
+                                    color: AppColors.greenDark,
+                                    size: 20,
+                                  ),
+                                  Expanded(
+                                    child: BlocBuilder<RouteBloc, RouteState>(
+                                      builder: (context, state) {
+                                        if (state
+                                            is FetchRouteDetailsStateLoaded) {
+                                          return Text(
+                                            '${state.routeData.pickupAddress}',
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          );
+                                        }
+                                        return Text(
+                                          'Loading...',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: AppSizes.kDefaultPadding),
+                          BlocBuilder<RouteBloc, RouteState>(
+                            builder: (context, state) {
+                              if (state is FetchRouteDetailsStateLoaded) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: AppSizes.kDefaultPadding * 2,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: state.routeData.waypoints!
+                                        .map(
+                                          (waypoint) => Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4.0,
+                                            ),
+                                            child: Text(
+                                              "\u2022 ${waypoint.address}",
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.labelLarge,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                );
+                              }
+                              return SizedBox.shrink();
+                            },
+                          ),
+                          const SizedBox(height: AppSizes.kDefaultPadding),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: AppSizes.kDefaultPadding * 1.5,
+                                ),
+                                child: Text(
+                                  'Drop'.toUpperCase(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceContainer
+                                            .withAlpha(150),
+                                      ),
+                                ),
+                              ),
+                              Row(
+                                spacing: AppSizes.kDefaultPadding / 2,
                                 children: [
                                   SvgPicture.asset(
                                     AppImages.pinRed,
                                     width: 20,
                                     height: 20,
                                   ),
-                                  BlocBuilder<RouteBloc, RouteState>(
-                                    builder: (context, state) {
-                                      if (state
-                                          is FetchRouteDetailsStateLoaded) {
-                                        return Text(
-                                          '${state.routeData.totalDistanceKm} km',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge!
-                                              .copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        );
-                                      }
-                                      if (state
-                                          is FetchRouteDetailsStateFailed) {
-                                        return Text(
-                                          state.error,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge!
-                                              .copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        );
-                                      }
-                                      return Text(
-                                        '0 km',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    },
-                                  ),
-                                  Text(
-                                    'Distance',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall!
-                                        .copyWith(
-                                          color: Theme.of(context).hintColor,
-                                        ),
-                                  ),
-                                ],
-                              ),
+                                  Expanded(
+                                    child: BlocBuilder<RouteBloc, RouteState>(
+                                      builder: (context, state) {
+                                        if (state
+                                            is FetchRouteDetailsStateLoaded) {
+                                          var lastWaypoint = "";
+                                          if (state.routeData.waypoints !=
+                                                  null &&
+                                              state
+                                                  .routeData
+                                                  .waypoints!
+                                                  .isNotEmpty) {
+                                            lastWaypoint = state
+                                                .routeData
+                                                .waypoints
+                                                ?.last
+                                                .address;
+                                          }
 
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                spacing: AppSizes.kDefaultPadding / 3,
-                                children: [
-                                  SvgPicture.asset(
-                                    AppImages.clockGreen,
-                                    width: 20,
-                                    height: 20,
-                                  ),
-                                  BlocBuilder<RouteBloc, RouteState>(
-                                    builder: (context, state) {
-                                      if (state
-                                          is FetchRouteDetailsStateLoaded) {
+                                          String drop = "";
+                                          if (state
+                                                  .routeData
+                                                  .driverShouldReturn ==
+                                              1) {
+                                            drop =
+                                                "${state.routeData.pickupAddress}";
+                                          } else {
+                                            drop = lastWaypoint;
+                                          }
+                                          return Text(
+                                            drop,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          );
+                                        }
                                         return Text(
-                                          DateTimeUtils.convertMinutesToHoursMinutes(state.routeData.totalTime),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge!
-                                              .copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                          'Loading...',
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge,
                                         );
-                                      }
-                                      if(state is FetchRouteDetailsStateFailed){
-                                        return Text(
-                                          state.error,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge!
-                                              .copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        );
-                                      }
-                                      return Text(
-                                        '0 min',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    },
-                                  ),
-                                  Text(
-                                    'Time',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall!
-                                        .copyWith(
-                                          color: Theme.of(context).hintColor,
-                                        ),
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
@@ -234,15 +254,185 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSizes.kDefaultPadding),
-                PrimaryButton(
-                  label: 'Accept',
-                  onPressed: () {},
-                  fullWidth: true,
+
+                Expanded(
+                  child: Card(
+                    elevation: AppSizes.elevationMedium,
+                    margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                    color: Theme.of(context).cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
+                    ),
+                    child: SizedBox(
+                    ),
+                  ),
+                ),
+                Card(
+                  elevation: AppSizes.elevationMedium,
+                  margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                  color: Theme.of(context).cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppSizes.cardCornerRadius,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                    child: Column(
+                      spacing: AppSizes.kDefaultPadding,
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: AppSizes.kDefaultPadding / 3,
+                              children: [
+                                SvgPicture.asset(
+                                  AppImages.pinRed,
+                                  width: 20,
+                                  height: 20,
+                                ),
+                                BlocBuilder<RouteBloc, RouteState>(
+                                  builder: (context, state) {
+                                    if (state is FetchRouteDetailsStateLoaded) {
+                                      return Text(
+                                        '${state.routeData.totalDistanceKm} km',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      );
+                                    }
+                                    if (state is FetchRouteDetailsStateFailed) {
+                                      return Text(
+                                        state.error,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      );
+                                    }
+                                    return Text(
+                                      '0 km',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge!
+                                          .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Text(
+                                  'Distance',
+                                  style: Theme.of(context).textTheme.titleSmall!
+                                      .copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: AppSizes.kDefaultPadding / 3,
+                              children: [
+                                SvgPicture.asset(
+                                  AppImages.clockGreen,
+                                  width: 20,
+                                  height: 20,
+                                ),
+                                BlocBuilder<RouteBloc, RouteState>(
+                                  builder: (context, state) {
+                                    if (state is FetchRouteDetailsStateLoaded) {
+                                      return Text(
+                                        DateTimeUtils.convertMinutesToHoursMinutes(
+                                          state.routeData.totalTime,
+                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      );
+                                    }
+                                    if (state is FetchRouteDetailsStateFailed) {
+                                      return Text(
+                                        state.error,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      );
+                                    }
+                                    return Text(
+                                      '0 min',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge!
+                                          .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Text(
+                                  'Time',
+                                  style: Theme.of(context).textTheme.titleSmall!
+                                      .copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.kDefaultPadding,
+                  ),
+                  child: SafeArea(
+                    child: PrimaryButton(
+                      label: 'Accept',
+                      onPressed: () {},
+                      fullWidth: true,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+
+          // Positioned(
+          //   left: 0,
+          //   bottom: 48,
+          //   right: 0,
+          //   child: Column(
+          //     children: [
+          //
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );

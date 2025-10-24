@@ -6,22 +6,32 @@ import '../../../../core/themes/app_sizes.dart';
 import '../../../bloc/route_bloc.dart';
 import '../../../widgets/route_card.dart';
 
-class BuildUpcomingRouteList extends StatelessWidget {
+class BuildUpcomingRouteList extends StatefulWidget {
   final DateTime? pickedDate;
 
   const BuildUpcomingRouteList({super.key, this.pickedDate});
 
   @override
-  Widget build(BuildContext context) {
+  State<BuildUpcomingRouteList> createState() => _BuildUpcomingRouteListState();
+}
+
+class _BuildUpcomingRouteListState extends State<BuildUpcomingRouteList> {
+  @override
+  void initState() {
+    super.initState();
     BlocProvider.of<RouteBloc>(context).add(
       FetchUpcomingRoutesEvent(
         date:
-            DateTimeUtils.getFormattedPickedDate(
-              pickedDate ?? DateTime.now(),
-            ) ??
+        DateTimeUtils.getFormattedPickedDate(
+          widget.pickedDate ?? DateTime.now(),
+        ) ??
             DateTimeUtils.getCurrentDate(),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<RouteBloc, RouteState>(
       builder: (context, state) {
         if (state is FetchUpcomingRoutesStateLoading) {
