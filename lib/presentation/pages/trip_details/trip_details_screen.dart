@@ -60,6 +60,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     ).add(FetchRouteDetailsEvent(routeId: widget.routeId));
   }
 
+  int? routeStatus;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -468,32 +470,31 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.kDefaultPadding,
-                  ),
+                BlocListener<RouteBloc, RouteState>(
+                  listener: (context, state) {
+                    if (state is FetchRouteDetailsStateLoaded) {
+                      routeStatus = state.routeData.status;
+                    }
+                  },
                   child: SafeArea(
-                    child: PrimaryButton(
-                      label: 'Accept',
-                      onPressed: () {},
-                      fullWidth: true,
+                    child: Visibility(
+                      visible: routeStatus == 2,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.kDefaultPadding,
+                        ),
+                        child: PrimaryButton(
+                          label: 'Accept',
+                          onPressed: () {},
+                          fullWidth: true,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-
-          // Positioned(
-          //   left: 0,
-          //   bottom: 48,
-          //   right: 0,
-          //   child: Column(
-          //     children: [
-          //
-          //     ],
-          //   ),
-          // ),
         ],
       ),
     );
