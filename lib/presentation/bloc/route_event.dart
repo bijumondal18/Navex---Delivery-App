@@ -33,3 +33,12 @@ class FetchRouteDetailsEvent extends RouteEvent {
   @override
   List<Object> get props => [routeId];
 }
+
+class AcceptRouteEvent extends RouteEvent {
+  final String routeId;
+
+  const AcceptRouteEvent({required this.routeId});
+
+  @override
+  List<Object> get props => [routeId];
+}

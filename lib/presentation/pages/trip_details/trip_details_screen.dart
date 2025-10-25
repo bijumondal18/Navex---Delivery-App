@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:navex/core/navigation/app_router.dart';
+import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/presentation/bloc/route_bloc.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
@@ -483,10 +485,56 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSizes.kDefaultPadding,
                         ),
-                        child: PrimaryButton(
-                          label: 'Accept',
-                          onPressed: () {},
-                          fullWidth: true,
+                        child: BlocConsumer<RouteBloc, RouteState>(
+                          listener: (context, state) {
+                            if (state is AcceptRouteStateLoaded) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${state.acceptedRouteResponse.message}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelLarge,
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Theme.of(context).cardColor,
+                                ),
+                              );
+                              appRouter.go(Screens.home);
+                            }
+                            if (state is AcceptRouteStateFailed) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    state.error,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: AppColors.errorLight
+                                      .withAlpha(150),
+                                ),
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is AcceptRouteStateLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              );
+                            }
+                            return PrimaryButton(
+                              label: 'Accept',
+                              onPressed: () {
+                                context.read<RouteBloc>().add(
+                                  AcceptRouteEvent(routeId: widget.routeId),
+                                );
+                              },
+                              fullWidth: true,
+                            );
+                          },
                         ),
                       ),
                     ),

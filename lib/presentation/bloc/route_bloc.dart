@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:navex/data/models/accepted_route_response.dart';
 import 'package:navex/data/models/route.dart';
 import 'package:navex/data/models/route_response.dart';
 import 'package:navex/data/repositories/route_repository.dart';
@@ -51,6 +52,20 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(FetchRouteDetailsStateLoaded(routeData: routeData));
       } catch (e) {
         emit(FetchRouteDetailsStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Accept Route States Handling
+     * */
+    on<AcceptRouteEvent>((event, emit) async {
+      emit(AcceptRouteStateLoading());
+      try {
+        final response = await routeRepository.acceptRoute(event.routeId);
+        final routeData = AcceptedRouteResponse.fromJson(response);
+        emit(AcceptRouteStateLoaded(acceptedRouteResponse: routeData));
+      } catch (e) {
+        emit(AcceptRouteStateFailed(error: e.toString()));
       }
     });
   }

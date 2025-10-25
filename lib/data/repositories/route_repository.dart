@@ -26,4 +26,14 @@ class RouteRepository {
     );
     return response.data;
   }
+
+  Future<dynamic> acceptRoute(String routeId) async {
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.acceptRouteURL,
+      data: {'route_id': routeId},
+    );
+    return response.data;
+  }
+
+
 }

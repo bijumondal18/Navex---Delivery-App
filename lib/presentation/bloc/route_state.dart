@@ -68,3 +68,24 @@ final class FetchRouteDetailsStateFailed extends RouteState {
   @override
   List<Object> get props => [error];
 }
+
+
+final class AcceptRouteStateLoading extends RouteState {}
+
+final class AcceptRouteStateLoaded extends RouteState {
+  final AcceptedRouteResponse acceptedRouteResponse;
+
+  const AcceptRouteStateLoaded({required this.acceptedRouteResponse});
+
+  @override
+  List<Object> get props => [acceptedRouteResponse];
+}
+
+final class AcceptRouteStateFailed extends RouteState {
+  final String error;
+
+  const AcceptRouteStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}
