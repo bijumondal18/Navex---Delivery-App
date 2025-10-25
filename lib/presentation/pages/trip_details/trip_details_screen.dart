@@ -492,15 +492,18 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 SnackBar(
                                   content: Text(
                                     '${state.acceptedRouteResponse.message}',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.labelLarge,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: AppColors.white),
                                   ),
                                   behavior: SnackBarBehavior.floating,
-                                  backgroundColor: Theme.of(context).cardColor,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainer,
                                 ),
                               );
-                              appRouter.go(Screens.home);
+                              // appRouter.go(Screens.home);
                             }
                             if (state is AcceptRouteStateFailed) {
                               ScaffoldMessenger.of(context).showSnackBar(
