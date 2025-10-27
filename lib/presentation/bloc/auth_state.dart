@@ -104,3 +104,26 @@ final class ResetPasswordStateFailed extends AuthState {
   List<Object> get props => [error];
 }
 
+/**
+ * Update Profile  States Handling
+ * */
+
+final class UpdateProfileStateLoading extends AuthState {}
+
+final class UpdateProfileStateLoaded extends AuthState {
+  final CommonResponse commonResponse;
+
+  const UpdateProfileStateLoaded({required this.commonResponse});
+
+  @override
+  List<Object> get props => [commonResponse];
+}
+
+final class UpdateProfileStateFailed extends AuthState {
+  final String error;
+
+  const UpdateProfileStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

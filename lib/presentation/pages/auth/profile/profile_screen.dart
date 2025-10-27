@@ -148,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildProfileOption(
                         icon: Icons.edit_outlined,
                         title: "Edit Profile",
-                        onTap: () {},
+                        onTap: ()  => appRouter.push(Screens.editProfile),
                       ),
                       _buildProfileOption(
                         icon: Icons.lock_outline,

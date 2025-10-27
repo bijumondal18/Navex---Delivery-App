@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/presentation/pages/auth/account_verification/account_verification_screen.dart';
+import 'package:navex/presentation/pages/auth/edit_profile/edit_profile_screen.dart';
 import 'package:navex/presentation/pages/auth/forgot_password/forgot_password_screen.dart';
 import 'package:navex/presentation/pages/available_routes/available_routes_screen.dart';
 import 'package:navex/presentation/pages/my_accepted_routes/my_accepted_routes_screen.dart';
@@ -50,6 +51,11 @@ final GoRouter appRouter = GoRouter(
       path: Screens.profile,
       name: 'profile',
       builder: (context, state) => ProfileScreen(),
+    ),
+    GoRoute(
+      path: Screens.editProfile,
+      name: 'edit_profile',
+      builder: (context, state) => EditProfileScreen(),
     ),
     ShellRoute(
       navigatorKey: _shellKey,

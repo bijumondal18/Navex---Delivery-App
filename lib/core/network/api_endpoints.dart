@@ -9,7 +9,8 @@ class ApiEndpoints {
   static const String forgotPasswordURL = '${baseUrl}${appVersion}/forgot-password';
   static const String resetPasswordURL = '${baseUrl}${appVersion}/password-reset';
   static const String fetchUserProfileURL = '${baseUrl}${appVersion}/driver/details';
-  static const String uploadProfilePhotoURL = '/users/upload_profile_photo';
+  static const String updateUserProfileURL = '${baseUrl}${appVersion}/driver/profile/update';
+  // static const String uploadProfilePhotoURL = '/users/upload_profile_photo';
 
   // ✅ ROUTE API Endpoints
   static const String fetchUpcomingRoutesURL = '${baseUrl}${appVersion}/driver/upcoming-routes';

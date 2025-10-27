@@ -24,7 +24,7 @@ android {
         applicationId = "com.navex.navex"
         minSdk = 24 //flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.1"
     }
 

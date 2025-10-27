@@ -52,9 +52,33 @@ class AuthRepository {
     return response.data;
   }
 
+  Future<dynamic> updateUserProfile(
+    String? name,
+    String? email,
+    String? phone,
+    String? address,
+    String? bio,
+    String? city,
+    String? zipcode,
+  ) async {
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.updateUserProfileURL,
+      data: {
+        'legal_name': name,
+        'email': email,
+        'phone': phone,
+        'bio': bio,
+        'address': address,
+        'city': city,
+        'zip': zipcode,
+      }
+    );
+    return response.data;
+  }
+
   // Future<dynamic> uploadProfilePhoto(File imageFile) async {
   //   final response = await _apiClient.postRequest(
-  //     ApiEndpoints.uploadProfilePhotoURL,
+  //     ApiEndpoints.updateUserProfileURL,
   //     file: imageFile,
   //     fileField: 'profile_image',
   //   );
