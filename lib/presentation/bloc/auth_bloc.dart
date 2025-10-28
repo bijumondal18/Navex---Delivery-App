@@ -5,6 +5,7 @@ import 'package:navex/data/models/common_response.dart';
 import 'package:navex/data/models/forgot_password_response.dart';
 import 'package:navex/data/models/login_response.dart';
 import 'package:navex/data/models/profile_response.dart';
+import 'package:navex/data/models/state_details.dart';
 import 'package:navex/data/repositories/auth_repository.dart';
 
 part 'auth_event.dart';
@@ -176,7 +177,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           event.address,
           event.city,
           event.bio,
-          event.zipCode
+          event.zipCode,
+          event.stateId,
         );
         if (response['status'] == true) {
           final commonResponse = CommonResponse.fromJson(response);
@@ -191,6 +193,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       } catch (e) {
         emit(UpdateProfileStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Fetch Profile States Handling
+     * */
+    on<FetchStateListEvent>((event, emit) async {
+      emit(FetchStateListStateLoading());
+      try {
+        final response = await authRepository.fetchStateList();
+        final List<StateDetails> stateList = (response as List)
+            .map((e) => StateDetails.fromJson(e))
+            .toList();
+        emit(FetchStateListStateLoaded(stateList: stateList));
+      } catch (e) {
+        emit(FetchStateListStateFailed(error: e.toString()));
       }
     });
   }

@@ -127,3 +127,27 @@ final class UpdateProfileStateFailed extends AuthState {
   @override
   List<Object> get props => [error];
 }
+
+/**
+ * Fetch State List States
+ * */
+
+final class FetchStateListStateLoading extends AuthState {}
+
+final class FetchStateListStateLoaded extends AuthState {
+  final List<StateDetails> stateList;
+
+  const FetchStateListStateLoaded({required this.stateList});
+
+  @override
+  List<Object> get props => [stateList];
+}
+
+final class FetchStateListStateFailed extends AuthState {
+  final String error;
+
+  const FetchStateListStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

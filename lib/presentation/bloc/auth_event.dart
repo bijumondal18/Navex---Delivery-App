@@ -24,6 +24,8 @@ class LoginSubmittedEvent extends AuthEvent {
 
 class FetchUserProfileEvent extends AuthEvent {}
 
+class FetchStateListEvent extends AuthEvent {}
+
 class ForgotPasswordEvent extends AuthEvent {
   final String email;
 
@@ -58,6 +60,7 @@ class UpdateProfileEvent extends AuthEvent {
   final String? bio;
   final String? zipCode;
   final String? phoneNumber;
+  final String? stateId;
 
   const UpdateProfileEvent({
     this.name,
@@ -67,6 +70,7 @@ class UpdateProfileEvent extends AuthEvent {
     this.zipCode,
     this.phoneNumber,
     this.city,
+    this.stateId,
   });
 
   @override
@@ -78,5 +82,6 @@ class UpdateProfileEvent extends AuthEvent {
     zipCode ?? '',
     phoneNumber ?? '',
     city ?? '',
+    stateId ?? '2',
   ];
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/data/models/state_details.dart';
+import 'package:navex/presentation/widgets/app_dropdown_button.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
@@ -22,6 +24,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _addressController;
   late TextEditingController _cityController;
 
+  StateDetails? selectedState;
+  List<StateDetails> items = [];
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +38,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _cityController = TextEditingController();
 
     context.read<AuthBloc>().add(FetchUserProfileEvent());
+    context.read<AuthBloc>().add(FetchStateListEvent());
   }
 
   @override
@@ -63,10 +69,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (state is FetchUserProfileStateLoaded) {
             _nameController.text = state.profileResponse.user?.name ?? '';
             _emailController.text = state.profileResponse.user?.email ?? '';
-            _phoneController.text = state.profileResponse.user?.driver?.phone ?? '';
+            _phoneController.text =
+                state.profileResponse.user?.driver?.phone ?? '';
             _addressController.text =
                 state.profileResponse.user?.driver?.address ?? '';
             _bioController.text = state.profileResponse.user?.driver?.bio ?? '';
+
+            final stateDetails =
+                state.profileResponse.user?.driver?.stateDetails;
+            if (stateDetails != null) {
+              selectedState = stateDetails;
+            }
+          }
+
+          if (state is FetchStateListStateLoaded) {
+            items = state.stateList;
+
+            // ✅ Match preselected state from API with list
+            if (selectedState != null) {
+              final match = items.firstWhere(
+                    (item) => item.id == selectedState!.id,
+                orElse: () => items.first,
+              );
+              selectedState = match;
+            }
+
           }
         },
         builder: (context, state) {
@@ -96,6 +123,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 type: AppTextFieldType.text,
                 controller: _addressController,
                 hint: 'Address',
+              ),
+              const SizedBox(height: AppSizes.kDefaultPadding),
+              AppDropdownButton(
+                items: items,
+                selectedItem: selectedState,
+                onChanged: (value) {
+                  setState(() {
+                    selectedState = value;
+                  });
+                },
+                hint: 'Select State',
+                getLabel: (state) => state.state.toString(),
               ),
               const SizedBox(height: AppSizes.kDefaultPadding),
               AppTextField(
@@ -160,6 +199,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           zipCode: '',
                           phoneNumber: _phoneController.text.trim().toString(),
                           city: _cityController.text.trim().toString(),
+                          stateId: selectedState?.id.toString()
                         ),
                       );
                     },
