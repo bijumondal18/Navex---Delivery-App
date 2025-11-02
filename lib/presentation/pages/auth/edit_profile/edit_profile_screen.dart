@@ -23,6 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _bioController;
   late TextEditingController _addressController;
   late TextEditingController _cityController;
+  late TextEditingController _zipController;
 
   StateDetails? selectedState;
   List<StateDetails> items = [];
@@ -36,6 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioController = TextEditingController();
     _addressController = TextEditingController();
     _cityController = TextEditingController();
+    _zipController = TextEditingController();
 
     context.read<AuthBloc>().add(FetchUserProfileEvent());
     context.read<AuthBloc>().add(FetchStateListEvent());
@@ -50,6 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _bioController.dispose();
     _addressController.dispose();
     _cityController.dispose();
+    _zipController.dispose();
   }
 
   @override
@@ -83,17 +86,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
 
           if (state is FetchStateListStateLoaded) {
-            items = state.stateList;
+            setState(() {
+              items = state.stateList;
 
-            // ✅ Match preselected state from API with list
-            if (selectedState != null) {
-              final match = items.firstWhere(
-                    (item) => item.id == selectedState!.id,
-                orElse: () => items.first,
-              );
-              selectedState = match;
-            }
-
+              if (selectedState != null) {
+                final match = items.firstWhere(
+                      (item) => item.id == selectedState!.id,
+                  orElse: () => items.first,
+                );
+                selectedState = match;
+              }
+            });
           }
         },
         builder: (context, state) {
@@ -141,6 +144,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 type: AppTextFieldType.text,
                 controller: _cityController,
                 hint: 'City',
+              ),
+              const SizedBox(height: AppSizes.kDefaultPadding),
+              AppTextField(
+                type: AppTextFieldType.mobile,
+                controller: _zipController,
+                hint: 'Zip Code',
               ),
               const SizedBox(height: AppSizes.kDefaultPadding),
               AppTextField(
@@ -196,7 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           email: _emailController.text.trim().toString(),
                           address: _addressController.text.trim().toString(),
                           bio: _bioController.text.trim().toString(),
-                          zipCode: '',
+                          zipCode: _zipController.text.trim().toString(),
                           phoneNumber: _phoneController.text.trim().toString(),
                           city: _cityController.text.trim().toString(),
                           stateId: selectedState?.id.toString()

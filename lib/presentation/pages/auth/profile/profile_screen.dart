@@ -154,12 +154,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: "Edit Profile",
                           onTap: () => appRouter.push(Screens.editProfile),
                         ),
-                        _buildProfileOption(
-                          icon: Icons.lock_outline,
-                          title: "Change Password",
-                          onTap: () {},
-                        ),
-
+                        // _buildProfileOption(
+                        //   icon: Icons.lock_outline,
+                        //   title: "Change Password",
+                        //   onTap: () {},
+                        // ),
                         const Divider(),
                         _buildProfileOption(
                           icon: Icons.info_outline,
