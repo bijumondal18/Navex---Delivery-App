@@ -13,4 +13,5 @@ class Screens {
   static const String notifications = '/notifications';
   static const String settings = '/settings';
   static const String tripDetails = '/trip_details';
+  static const String inRoute = '/in_route';
 }

@@ -60,5 +60,9 @@
     <key>NSMicrophoneUsageDescription</key>
     <string>This app requires access to your microphone when recording videos.</string>
 
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We use your location to show your position on the map.</string>
+
+
 </dict>
 </plist>

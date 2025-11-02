@@ -48,11 +48,17 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         );
     });
 
+    // Wait a short moment to ensure the map is ready
     final controller = await _controller.future;
-    await controller.animateCamera(
-      CameraUpdate.newCameraPosition(CameraPosition(target: pickup, zoom: 14)),
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: pickup, zoom: 14),
+      ),
     );
   }
+
 
   @override
   void initState() {
@@ -98,6 +104,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             right: 0,
             child: Column(
               children: [
+                // Pickup and Drop location Widget
                 Card(
                   elevation: AppSizes.elevationMedium,
                   margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
@@ -110,9 +117,12 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                    child: SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.3,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+                      ),
                       child: ListView(
+                        shrinkWrap: true,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,7 +301,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   ),
                 ),
 
-                Expanded(
+                // Google Map Widget
+                Flexible(
                   child: BlocListener<RouteBloc, RouteState>(
                     listenWhen: (prev, curr) =>
                         curr is FetchRouteDetailsStateLoaded,
@@ -311,11 +322,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
                       shadowColor: Theme.of(context).shadowColor.withAlpha(100),
                       color: Theme.of(context).cardColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.cardCornerRadius,
-                        ),
-                      ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(
                           AppSizes.cardCornerRadius,
@@ -323,9 +329,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         child: GoogleMap(
                           initialCameraPosition: const CameraPosition(
                             target: _start,
-                            zoom: 12,
+                            zoom: 14,
                           ),
-                          onMapCreated: (c) => _controller.complete(c),
+                          onMapCreated: (c) {
+                            if (!_controller.isCompleted) {
+                              _controller.complete(c);
+                            }
+                          },
                           markers: _markers,
                           myLocationEnabled: false,
                           zoomControlsEnabled: false,
@@ -335,6 +345,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     ),
                   ),
                 ),
+
+                // Distance and Time card Widget
                 Card(
                   elevation: AppSizes.elevationMedium,
                   margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
@@ -369,7 +381,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   builder: (context, state) {
                                     if (state is FetchRouteDetailsStateLoaded) {
                                       return Text(
-                                        '${state.routeData.totalDistanceKm} km',
+                                        '${state.routeData.totalDistance} mi',
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge!
@@ -390,7 +402,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                       );
                                     }
                                     return Text(
-                                      '0 km',
+                                      '0 mi',
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelLarge!

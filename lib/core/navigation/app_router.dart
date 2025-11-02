@@ -5,6 +5,7 @@ import 'package:navex/presentation/pages/auth/account_verification/account_verif
 import 'package:navex/presentation/pages/auth/edit_profile/edit_profile_screen.dart';
 import 'package:navex/presentation/pages/auth/forgot_password/forgot_password_screen.dart';
 import 'package:navex/presentation/pages/available_routes/available_routes_screen.dart';
+import 'package:navex/presentation/pages/in_route/in_route_screen.dart';
 import 'package:navex/presentation/pages/my_accepted_routes/my_accepted_routes_screen.dart';
 import 'package:navex/presentation/pages/notifications/notifications_screen.dart';
 import 'package:navex/presentation/pages/route_history/route_history_screen.dart';
@@ -67,10 +68,19 @@ final GoRouter appRouter = GoRouter(
           builder: (_, __) => const HomeScreen(),
           routes: [
             GoRoute(
-              path: 'trip/:id',
+              path: 'trip/:id/details',
               name: Screens.tripDetails,
               pageBuilder: (_, state) => NoTransitionPage(
                 child: TripDetailsScreen(
+                  routeId: '${state.pathParameters['id']}',
+                ),
+              ),
+            ),
+            GoRoute(
+              path: 'trip/:id/in_route',
+              name: Screens.inRoute,
+              pageBuilder: (_, state) => NoTransitionPage(
+                child: InRouteScreen(
                   routeId: '${state.pathParameters['id']}',
                 ),
               ),

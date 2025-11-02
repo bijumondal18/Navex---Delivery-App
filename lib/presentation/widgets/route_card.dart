@@ -12,22 +12,31 @@ import '../../data/models/route.dart';
 
 class RouteCard extends StatelessWidget {
   final RouteData? route;
+
   const RouteCard({super.key, required this.route});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        appRouter.pushNamed(Screens.tripDetails, pathParameters: {'id': route!.id.toString()});
+        if (route?.status == 3) {
+          appRouter.pushNamed(
+            Screens.inRoute,
+            pathParameters: {'id': route!.id.toString()},
+          );
+        } else {
+          appRouter.pushNamed(
+            Screens.tripDetails,
+            pathParameters: {'id': route!.id.toString()},
+          );
+        }
       },
       child: Card(
         elevation: AppSizes.elevationMedium,
         shadowColor: Theme.of(context).shadowColor.withAlpha(100),
         color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            AppSizes.cardCornerRadius,
-          ),
+          borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -86,7 +95,9 @@ class RouteCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 22),
                           Text(
-                            DateTimeUtils.convertToAmPm(route!.startTime.toString()),
+                            DateTimeUtils.convertToAmPm(
+                              route!.startTime.toString(),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodyLarge,
@@ -110,7 +121,9 @@ class RouteCard extends StatelessWidget {
                     Image.asset(AppImages.timer, width: 20, height: 20),
                     const SizedBox(width: AppSizes.kDefaultPadding / 2),
                     Text(
-                      DateTimeUtils.convertMinutesToHoursMinutes(route!.totalTime.toString()),
+                      DateTimeUtils.convertMinutesToHoursMinutes(
+                        route!.totalTime.toString(),
+                      ),
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
