@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -26,6 +27,28 @@ class ApiClient {
     );
 
     // ✅ Auth Token interceptor
+    // dio.interceptors.add(
+    //   InterceptorsWrapper(
+    //     onRequest: (options, handler) async {
+    //       final token = await AppPreference.getString(AppPreference.token);
+    //       if (token != null && token.isNotEmpty) {
+    //         options.headers['Authorization'] = 'Bearer $token';
+    //       }
+    //       return handler.next(options);
+    //     },
+    //   ),
+    // );
+    //
+    // // ✅ Logging interceptor
+    // dio.interceptors.add(
+    //   PrettyDioLogger(
+    //     requestHeader: true,
+    //     requestBody: true,
+    //     responseBody: true,
+    //   ),
+    // );
+
+    // ✅ Auth Token interceptor
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -33,19 +56,32 @@ class ApiClient {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+
+          // ✅ Simple log instead of PrettyDioLogger
+          log('➡️ [REQUEST] ${options.method} ${options.uri}');
+          log('Headers: ${options.headers}');
+          if (options.data != null) log('Body: ${options.data}');
+          if (options.queryParameters.isNotEmpty) {
+            log('Query: ${options.queryParameters}');
+          }
+
           return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          log('✅ [RESPONSE] ${response.statusCode} ${response.requestOptions.uri}');
+          log('Response data: ${response.data}');
+          return handler.next(response);
+        },
+        onError: (e, handler) {
+          log('❌ [ERROR] ${e.message}');
+          if (e.response != null) {
+            log('Error response: ${e.response?.data}');
+          }
+          return handler.next(e);
         },
       ),
     );
 
-    // ✅ Logging interceptor
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-      ),
-    );
   }
 
   /// 🔑 Set or update bearer token dynamically
