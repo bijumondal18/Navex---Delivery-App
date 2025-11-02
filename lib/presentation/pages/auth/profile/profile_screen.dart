@@ -51,7 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           // Top Section with Background and Profile
           Container(
-            height: MediaQuery.of(context).size.height * 0.3,
+            height: MediaQuery.of(context).size.height * 0.25,
             width: double.infinity,
             decoration: BoxDecoration(color: Theme.of(context).primaryColor),
             child: Column(
@@ -65,8 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (state is FetchUserProfileStateLoaded) {
                           return AppCachedImage(
                             url: state.profileResponse.user?.profileImage ?? '',
-                            width: 150,
-                            height: 150,
+                            width: 120,
+                            height: 120,
                             borderRadius: BorderRadius.circular(
                               AppSizes.cardCornerRadius * 100,
                             ),
@@ -75,8 +75,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                         return AppCachedImage(
                           url: '',
-                          width: 150,
-                          height: 150,
+                          width: 120,
+                          height: 120,
                           borderRadius: BorderRadius.circular(
                             AppSizes.cardCornerRadius * 100,
                           ),
@@ -94,13 +94,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: Icon(
                         Icons.edit,
-                        size: 28,
+                        size: 22,
                         color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSizes.kDefaultPadding * 2),
+                const SizedBox(height: AppSizes.kDefaultPadding),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     if (state is FetchUserProfileStateLoaded) {
@@ -131,80 +131,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.kDefaultPadding,
               ),
-              child: Transform.translate(
-                offset: const Offset(0, -50),
-                child: Card(
-                  elevation: AppSizes.elevationMedium,
-                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                  color: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.cardCornerRadius,
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppSizes.kDefaultPadding),
+                child: Transform.translate(
+                  offset: const Offset(0, -50),
+                  child: Card(
+                    elevation: AppSizes.elevationMedium,
+                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                    color: Theme.of(context).cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
                     ),
-                  ),
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    children: [
-                      _buildProfileOption(
-                        icon: Icons.edit_outlined,
-                        title: "Edit Profile",
-                        onTap: ()  => appRouter.push(Screens.editProfile),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSizes.kDefaultPadding / 2,
                       ),
-                      _buildProfileOption(
-                        icon: Icons.lock_outline,
-                        title: "Change Password",
-                        onTap: () {},
-                      ),
+                      children: [
+                        _buildProfileOption(
+                          icon: Icons.edit_outlined,
+                          title: "Edit Profile",
+                          onTap: () => appRouter.push(Screens.editProfile),
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.lock_outline,
+                          title: "Change Password",
+                          onTap: () {},
+                        ),
 
-                      const Divider(),
-                      _buildProfileOption(
-                        icon: Icons.info_outline,
-                        title: "About Us",
-                        onTap: () {},
-                      ),
-                      _buildProfileOption(
-                        icon: Icons.list_alt_rounded,
-                        title: "Terms & Conditions",
-                        onTap: () {},
-                      ),
-                      _buildProfileOption(
-                        icon: Icons.privacy_tip_outlined,
-                        title: "Privacy Policy",
-                        onTap: () {},
-                      ),
-                      const Divider(),
-                      _buildProfileOption(
-                        icon: Icons.logout,
-                        title: "Logout",
-                        onTap: () => showLogoutDialog(context, () async {
-                          await AppPreference.clearPreference();
-                          appRouter.go(Screens.login);
-                        }),
-                        color: Colors.red,
-                      ),
-                      _buildProfileOption(
-                        icon: Icons.delete_outline,
-                        title: "Delete Account",
-                        onTap: () => showDeleteAccountDialog(context, () async {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Account Deleted Successfully. Please contact with your admin.',
-                                style: Theme.of(context).textTheme.labelLarge!
-                                    .copyWith(color: AppColors.white),
+                        const Divider(),
+                        _buildProfileOption(
+                          icon: Icons.info_outline,
+                          title: "About Us",
+                          onTap: () {},
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.list_alt_rounded,
+                          title: "Terms & Conditions",
+                          onTap: () {},
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.privacy_tip_outlined,
+                          title: "Privacy Policy",
+                          onTap: () {},
+                        ),
+                        const Divider(),
+                        _buildProfileOption(
+                          icon: Icons.logout,
+                          title: "Logout",
+                          onTap: () => showLogoutDialog(context, () async {
+                            await AppPreference.clearPreference();
+                            appRouter.go(Screens.login);
+                          }),
+                          color: Colors.red,
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.delete_outline,
+                          title: "Delete Account",
+                          onTap: () => showDeleteAccountDialog(context, () async {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Account Deleted Successfully. Please contact with your admin.',
+                                  style: Theme.of(context).textTheme.labelLarge!
+                                      .copyWith(color: AppColors.white),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: AppColors.errorLight.withAlpha(
+                                  200,
+                                ),
                               ),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: AppColors.errorLight.withAlpha(
-                                200,
-                              ),
-                            ),
-                          );
-                          // await AppPreference.clearPreference();
-                          // appRouter.go(Screens.login);
-                        }),
-                        color: Colors.red,
-                      ),
-                    ],
+                            );
+                            // await AppPreference.clearPreference();
+                            // appRouter.go(Screens.login);
+                          }),
+                          color: Colors.red,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
