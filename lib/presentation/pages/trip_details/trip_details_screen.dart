@@ -319,7 +319,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     },
                     child: Card(
                       elevation: AppSizes.elevationMedium,
-                      margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      margin: const EdgeInsets.symmetric(horizontal: AppSizes.kDefaultPadding),
                       shadowColor: Theme.of(context).shadowColor.withAlpha(100),
                       color: Theme.of(context).cardColor,
                       child: ClipRRect(
