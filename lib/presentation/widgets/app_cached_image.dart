@@ -35,7 +35,7 @@ class AppCachedImage extends StatelessWidget {
     this.errorPlaceholder,
     this.bgColor,
     this.borderColor = Colors.white,          // <- white border
-    this.borderWidth = 2.0,                   // <- default width
+    this.borderWidth = 1.0,                   // <- default width
   });
 
   @override

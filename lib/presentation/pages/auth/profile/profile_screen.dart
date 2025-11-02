@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/show_delete_account_dialog.dart';
@@ -10,6 +13,7 @@ import '../../../../core/navigation/screens.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/utils/app_preference.dart';
 import '../../../bloc/auth_bloc.dart';
+import '../../../widgets/show_image_picker_bottom_sheet.dart';
 import '../../../widgets/show_logout_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -21,6 +25,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? name;
+
+  final ImagePicker _picker = ImagePicker();
+
+  File? pickedFile;
 
   Future<void> _getUserFullName() async {
     final fullName = await AppPreference.getString(AppPreference.fullName);
@@ -63,15 +71,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
                         if (state is FetchUserProfileStateLoaded) {
-                          return AppCachedImage(
-                            url: state.profileResponse.user?.profileImage ?? '',
-                            width: 120,
-                            height: 120,
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.cardCornerRadius * 100,
-                            ),
-                            fit: BoxFit.cover,
-                          );
+                          return pickedFile == null
+                              ? AppCachedImage(
+                                  url:
+                                      state
+                                          .profileResponse
+                                          .user
+                                          ?.profileImage ??
+                                      '',
+                                  width: 120,
+                                  height: 120,
+                                  borderRadius: BorderRadius.circular(
+                                    AppSizes.cardCornerRadius * 100,
+                                  ),
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 122,
+                                  height: 122,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      width: 1,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Image.file(
+                                      pickedFile!,
+                                      width: 120,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
                         }
                         return AppCachedImage(
                           url: '',
@@ -84,18 +118,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(
-                        AppSizes.kDefaultPadding / 2,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.edit,
-                        size: 22,
-                        color: Theme.of(context).primaryColor,
+                    GestureDetector(
+                      onTap: () {
+                        _showImagePickerBottomSheet(context: context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(
+                          AppSizes.kDefaultPadding / 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.primaryDark,
+                            width: 4,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.edit,
+                          size: 22,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ],
@@ -237,6 +280,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: Theme.of(context).colorScheme.surfaceContainer.withAlpha(120),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showImagePickerBottomSheet({required BuildContext context}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.cardCornerRadius),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSizes.kDefaultPadding,
+            ),
+            child: Wrap(
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(
+                      bottom: AppSizes.kDefaultPadding / 1.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.camera_alt_outlined,
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                  ),
+                  title: Text(
+                    'Take a photo',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  onTap: () async {
+                    final XFile? file = await _picker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 85,
+                    );
+                    if (file != null) {
+                      setState(() => pickedFile = File(file.path));
+                    }
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_library_outlined,
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                  ),
+                  title: Text(
+                    'Choose from gallery',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  onTap: () async {
+                    final XFile? file = await _picker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 85,
+                    );
+                    if (file != null) {
+                      setState(() => pickedFile = File(file.path));
+                    }
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
