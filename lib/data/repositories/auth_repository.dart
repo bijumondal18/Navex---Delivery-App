@@ -56,8 +56,8 @@ class AuthRepository {
     String? name,
     String? email,
     String? phone,
-    String? address,
     String? bio,
+    String? address,
     String? city,
     String? zipcode,
     String? stateId,
@@ -73,7 +73,7 @@ class AuthRepository {
         'city': city,
         'zip': zipcode,
         'state': stateId,
-      }
+      },
     );
     return response.data;
   }
@@ -85,8 +85,7 @@ class AuthRepository {
     return response.data;
   }
 
-
-// Future<dynamic> uploadProfilePhoto(File imageFile) async {
+  // Future<dynamic> uploadProfilePhoto(File imageFile) async {
   //   final response = await _apiClient.postRequest(
   //     ApiEndpoints.updateUserProfileURL,
   //     file: imageFile,

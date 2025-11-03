@@ -55,21 +55,21 @@ class ResetPasswordEvent extends AuthEvent {
 class UpdateProfileEvent extends AuthEvent {
   final String? name;
   final String? email;
+  final String? phoneNumber;
+  final String? bio;
   final String? address;
   final String? city;
-  final String? bio;
   final String? zipCode;
-  final String? phoneNumber;
   final String? stateId;
 
   const UpdateProfileEvent({
     this.name,
     this.email,
-    this.address,
-    this.bio,
-    this.zipCode,
     this.phoneNumber,
+    this.bio,
+    this.address,
     this.city,
+    this.zipCode,
     this.stateId,
   });
 
@@ -77,11 +77,11 @@ class UpdateProfileEvent extends AuthEvent {
   List<Object> get props => [
     name ?? '',
     email ?? '',
-    address ?? '',
-    bio ?? '',
-    zipCode ?? '',
     phoneNumber ?? '',
+    bio ?? '',
+    address ?? '',
     city ?? '',
-    stateId ?? '2',
+    zipCode ?? '',
+    stateId ?? '',
   ];
 }

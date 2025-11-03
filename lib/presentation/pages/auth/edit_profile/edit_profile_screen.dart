@@ -25,6 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _cityController;
   late TextEditingController _zipController;
 
+  bool _isProfileInitialized = false;
+
   StateDetails? selectedState;
   List<StateDetails> items = [];
 
@@ -67,9 +69,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ).textTheme.titleLarge!.copyWith(color: AppColors.white),
         ),
       ),
-      body: BlocConsumer<AuthBloc, AuthState>(
+      body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is FetchUserProfileStateLoaded) {
+          if (state is FetchUserProfileStateLoaded && !_isProfileInitialized) {
             _nameController.text = state.profileResponse.user?.name ?? '';
             _emailController.text = state.profileResponse.user?.email ?? '';
             _phoneController.text =
@@ -77,12 +79,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _addressController.text =
                 state.profileResponse.user?.driver?.address ?? '';
             _bioController.text = state.profileResponse.user?.driver?.bio ?? '';
+            _zipController.text = state.profileResponse.user?.driver?.zip ?? '';
+            _cityController.text = state.profileResponse.user?.driver?.city ?? '';
 
             final stateDetails =
                 state.profileResponse.user?.driver?.stateDetails;
             if (stateDetails != null) {
               selectedState = stateDetails;
             }
+
+            _isProfileInitialized = true;
           }
 
           if (state is FetchStateListStateLoaded) {
@@ -91,7 +97,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               if (selectedState != null) {
                 final match = items.firstWhere(
-                      (item) => item.id == selectedState!.id,
+                  (item) => item.id == selectedState!.id,
                   orElse: () => items.first,
                 );
                 selectedState = match;
@@ -99,126 +105,126 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             });
           }
         },
-        builder: (context, state) {
-          return ListView(
-            padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-            children: [
-              AppTextField(
-                type: AppTextFieldType.text,
-                controller: _nameController,
-                hint: 'Your Name',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.email,
-                controller: _emailController,
-                readOnly: true,
-                hint: 'Email Address',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.mobile,
-                controller: _phoneController,
-                hint: 'Phone Number',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.text,
-                controller: _addressController,
-                hint: 'Address',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppDropdownButton(
-                items: items,
-                selectedItem: selectedState,
-                onChanged: (value) {
-                  setState(() {
-                    selectedState = value;
-                  });
-                },
-                hint: 'Select State',
-                getLabel: (state) => state.state.toString(),
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.text,
-                controller: _cityController,
-                hint: 'City',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.mobile,
-                controller: _zipController,
-                hint: 'Zip Code',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              AppTextField(
-                type: AppTextFieldType.address,
-                controller: _bioController,
-                hint: 'Bio',
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding * 2),
-              BlocConsumer<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is UpdateProfileStateLoaded) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${state.commonResponse.message}',
-                          style: Theme.of(context).textTheme.labelLarge!
-                              .copyWith(color: AppColors.white),
+        child: ListView(
+          padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+          children: [
+            AppTextField(
+              type: AppTextFieldType.text,
+              controller: _nameController,
+              hint: 'Your Name',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.email,
+              controller: _emailController,
+              readOnly: true,
+              hint: 'Email Address',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.mobile,
+              controller: _phoneController,
+              hint: 'Phone Number',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.text,
+              controller: _addressController,
+              hint: 'Address',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppDropdownButton(
+              items: items,
+              selectedItem: selectedState,
+              onChanged: (value) {
+                setState(() {
+                  selectedState = value;
+                });
+              },
+              hint: 'Select State',
+              getLabel: (state) => state.state.toString(),
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.text,
+              controller: _cityController,
+              hint: 'City',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.mobile,
+              controller: _zipController,
+              hint: 'Zip Code',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+            AppTextField(
+              type: AppTextFieldType.address,
+              controller: _bioController,
+              hint: 'Bio',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding * 2),
+            BlocConsumer<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is UpdateProfileStateLoaded) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${state.commonResponse.message}',
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          color: AppColors.white,
                         ),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainer,
                       ),
-                    );
-                  }
-                  if (state is UpdateProfileStateFailed) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.error,
-                          style: Theme.of(context).textTheme.labelLarge!
-                              .copyWith(color: AppColors.white),
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is UpdateProfileStateLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator.adaptive(),
-                    );
-                  }
-                  return PrimaryButton(
-                    label: 'Update',
-                    fullWidth: true,
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                        UpdateProfileEvent(
-                          name: _nameController.text.trim().toString(),
-                          email: _emailController.text.trim().toString(),
-                          address: _addressController.text.trim().toString(),
-                          bio: _bioController.text.trim().toString(),
-                          zipCode: _zipController.text.trim().toString(),
-                          phoneNumber: _phoneController.text.trim().toString(),
-                          city: _cityController.text.trim().toString(),
-                          stateId: selectedState?.id.toString()
-                        ),
-                      );
-                    },
-                    size: ButtonSize.lg,
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainer,
+                    ),
                   );
-                },
-              ),
-            ],
-          );
-        },
+                }
+                if (state is UpdateProfileStateFailed) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        state.error,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                if (state is UpdateProfileStateLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
+                return PrimaryButton(
+                  label: 'Update',
+                  fullWidth: true,
+                  onPressed: () {
+                    context.read<AuthBloc>().add(
+                      UpdateProfileEvent(
+                        name: _nameController.text.trim().toString(),
+                        email: _emailController.text.trim().toString(),
+                        phoneNumber: _phoneController.text.trim().toString(),
+                        bio: _bioController.text.trim().toString(),
+                        address: _addressController.text.trim().toString(),
+                        city: _cityController.text.trim().toString(),
+                        zipCode: _zipController.text.trim().toString(),
+                        stateId: selectedState?.id.toString(),
+                      ),
+                    );
+                  },
+                  size: ButtonSize.lg,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -174,9 +174,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           event.name,
           event.email,
           event.phoneNumber,
+          event.bio,
           event.address,
           event.city,
-          event.bio,
           event.zipCode,
           event.stateId,
         );
