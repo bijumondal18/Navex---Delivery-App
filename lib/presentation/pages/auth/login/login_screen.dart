@@ -7,6 +7,7 @@ import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/core/utils/snackbar_helper.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
@@ -175,20 +176,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               appRouter.go(Screens.main);
                             }
                             if (state is LoginStateFailed) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    state.error,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
+                              SnackBarHelper.showError(
+                                state.error,
+                                context: context,
                               );
                             }
                           },

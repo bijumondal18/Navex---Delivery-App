@@ -12,6 +12,7 @@ import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/screens.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/utils/app_preference.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
 import '../../../widgets/show_image_picker_bottom_sheet.dart';
 import '../../../widgets/show_logout_dialog.dart';
@@ -232,18 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: Icons.delete_outline,
                           title: "Delete Account",
                           onTap: () => showDeleteAccountDialog(context, () async {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Account Deleted Successfully. Please contact with your admin.',
-                                  style: Theme.of(context).textTheme.labelLarge!
-                                      .copyWith(color: AppColors.white),
-                                ),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: AppColors.errorLight.withAlpha(
-                                  200,
-                                ),
-                              ),
+                            SnackBarHelper.showWarning(
+                              'Account Deleted Successfully. Please contact with your admin.',
+                              context: context,
                             );
                             // await AppPreference.clearPreference();
                             // appRouter.go(Screens.login);

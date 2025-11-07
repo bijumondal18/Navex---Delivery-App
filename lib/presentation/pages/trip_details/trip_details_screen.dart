@@ -14,6 +14,7 @@ import '../../../core/resources/app_images.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../widgets/vertical_dotted_divider.dart';
 
 class TripDetailsScreen extends StatefulWidget {
@@ -500,37 +501,16 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         child: BlocConsumer<RouteBloc, RouteState>(
                           listener: (context, state) {
                             if (state is AcceptRouteStateLoaded) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${state.acceptedRouteResponse.message}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.surfaceContainer,
-                                ),
+                              SnackBarHelper.showSuccess(
+                                '${state.acceptedRouteResponse.message}',
+                                context: context,
                               );
-                              // appRouter.go(Screens.home);
+                              appRouter.go(Screens.main);
                             }
                             if (state is AcceptRouteStateFailed) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    state.error,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: AppColors.errorLight
-                                      .withAlpha(150),
-                                ),
+                              SnackBarHelper.showError(
+                                state.error,
+                                context: context,
                               );
                             }
                           },

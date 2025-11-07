@@ -41,7 +41,7 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
       context: context,
       barrierDismissible: false,
       initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
 

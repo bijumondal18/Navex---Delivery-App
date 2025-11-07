@@ -7,6 +7,7 @@ import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
 
 import '../../../../core/themes/app_colors.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -166,33 +167,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             BlocConsumer<AuthBloc, AuthState>(
               listener: (context, state) {
                 if (state is UpdateProfileStateLoaded) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${state.commonResponse.message}',
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainer,
-                    ),
+                  SnackBarHelper.showSuccess(
+                    '${state.commonResponse.message}',
+                    context: context,
                   );
                 }
                 if (state is UpdateProfileStateFailed) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        state.error,
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                    ),
+                  SnackBarHelper.showError(
+                    state.error,
+                    context: context,
                   );
                 }
               },

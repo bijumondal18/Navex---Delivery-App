@@ -27,6 +27,9 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+            <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="AIzaSyA3LkABhWu_NcwPIwe76v-U_HGRXrlur8w" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -44,9 +47,6 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance" />
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA3LkABhWu_NcwPIwe76v-U_HGRXrlur8w" />
 
     </application>
     <!-- Required to query activities that can process text, see:

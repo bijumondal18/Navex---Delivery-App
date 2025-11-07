@@ -8,6 +8,7 @@ import 'package:navex/presentation/bloc/auth_bloc.dart';
 import '../../../../core/resources/app_images.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
 
@@ -131,21 +132,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         child: BlocConsumer<AuthBloc, AuthState>(
                           listener: (context, state) {
                             if (state is ForgotPasswordStateLoaded) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    state.forgotPasswordResponse.message ??
-                                        'OTP has been sent to your email.',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
+                              SnackBarHelper.showInfo(
+                                state.forgotPasswordResponse.message ??
+                                    'OTP has been sent to your email.',
+                                context: context,
                               );
                               appRouter.push(
                                 Screens.accountVerification,
@@ -153,20 +143,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               );
                             }
                             if (state is ForgotPasswordStateFailed) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    state.error,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
+                              SnackBarHelper.showError(
+                                state.error,
+                                context: context,
                               );
                             }
                           },

@@ -8,6 +8,7 @@ import '../../../../core/navigation/screens.dart';
 import '../../../../core/resources/app_images.dart';
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
@@ -190,20 +191,9 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                               );
                             }
                             if (state is ResetPasswordStateFailed) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    state.error,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: AppColors.white),
-                                  ),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
+                              SnackBarHelper.showError(
+                                state.error,
+                                context: context,
                               );
                             }
                           },
