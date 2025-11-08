@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:navex/presentation/pages/home/components/build_upcoming_route_list.dart';
-
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utils/date_picker_utils.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../../data/repositories/route_repository.dart';
 import '../../bloc/route_bloc.dart';
@@ -38,11 +37,11 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
   }
 
   Future<void> _openCalendar() async {
-    final pickedDate = await showDatePicker(
+    final pickedDate = await showAppDatePicker(
       context: context,
       barrierDismissible: false,
       initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
 

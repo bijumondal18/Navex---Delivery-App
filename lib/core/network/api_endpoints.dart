@@ -17,7 +17,8 @@ class ApiEndpoints {
   static const String fetchAcceptedRoutesURL = '${baseUrl}${appVersion}/driver/accepted-routes';
   static const String fetchRouteDetailsURL = '${baseUrl}${appVersion}/driver/route-details';
   static const String acceptRouteURL = '${baseUrl}${appVersion}/driver/accept-route';
-
+  static const String loadVehicleURL = '${baseUrl}${appVersion}/driver/vehicle-load';
+  static const String routeCheckInURL = '${baseUrl}${appVersion}/driver/route-checkin';
   // ✅ ADDRESS API Endpoints
   static const String fetchStateListURL = '${baseUrl}${appVersion}/state-list';
 

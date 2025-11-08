@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +13,6 @@ import '../../../../core/themes/app_colors.dart';
 import '../../../../core/utils/app_preference.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
-import '../../../widgets/show_image_picker_bottom_sheet.dart';
 import '../../../widgets/show_logout_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -30,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
 
   File? pickedFile;
+  bool _isUploadingProfileImage = false;
 
   Future<void> _getUserFullName() async {
     final fullName = await AppPreference.getString(AppPreference.fullName);
@@ -41,11 +40,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _getUserFullName();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<AuthBloc>().add(FetchUserProfileEvent());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthBloc>(context).add(FetchUserProfileEvent());
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (_isUploadingProfileImage && state is UpdateProfileStateLoaded) {
+          setState(() {
+            _isUploadingProfileImage = false;
+            pickedFile = null;
+          });
+          final message =
+              state.commonResponse.message ?? 'Profile updated successfully';
+          SnackBarHelper.showSuccess(message, context: context);
+        } else if (_isUploadingProfileImage &&
+            state is UpdateProfileStateFailed) {
+          setState(() {
+            _isUploadingProfileImage = false;
+            pickedFile = null;
+          });
+          SnackBarHelper.showError(state.error, context: context);
+        }
+      },
+      child: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -119,6 +145,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
+                    if (_isUploadingProfileImage)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                     GestureDetector(
                       onTap: () {
                         _showImagePickerBottomSheet(context: context);
@@ -275,6 +316,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _uploadProfileImage(File file) {
+    setState(() {
+      pickedFile = file;
+      _isUploadingProfileImage = true;
+    });
+    context.read<AuthBloc>().add(UpdateProfileEvent(profileImage: file));
+  }
+
   void _showImagePickerBottomSheet({required BuildContext context}) {
     showModalBottomSheet(
       context: context,
@@ -322,7 +371,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       imageQuality: 85,
                     );
                     if (file != null) {
-                      setState(() => pickedFile = File(file.path));
+                      _uploadProfileImage(File(file.path));
                     }
                     if (context.mounted) Navigator.pop(context);
                   },
@@ -342,7 +391,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       imageQuality: 85,
                     );
                     if (file != null) {
-                      setState(() => pickedFile = File(file.path));
+                      _uploadProfileImage(File(file.path));
                     }
                     if (context.mounted) Navigator.pop(context);
                   },

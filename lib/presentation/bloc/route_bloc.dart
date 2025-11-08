@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:navex/data/models/accepted_route_response.dart';
+import 'package:navex/data/models/common_response.dart';
 import 'package:navex/data/models/route.dart';
 import 'package:navex/data/models/route_response.dart';
 import 'package:navex/data/repositories/route_repository.dart';
@@ -66,6 +67,52 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(AcceptRouteStateLoaded(acceptedRouteResponse: routeData));
       } catch (e) {
         emit(AcceptRouteStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Load Vehicle States Handling
+     * */
+    on<LoadVehicleEvent>((event, emit) async {
+      emit(LoadVehicleStateLoading());
+      try {
+        final response = await routeRepository.loadVehicle(
+          routeId: event.routeId,
+          currentLat: event.currentLat,
+          currentLng: event.currentLng,
+        );
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          emit(LoadVehicleStateLoaded(response: commonResponse));
+          add(FetchRouteDetailsEvent(routeId: event.routeId));
+        } else {
+          emit(LoadVehicleStateFailed(
+            error: response['message'] ?? 'Unable to load vehicle',
+          ));
+        }
+      } catch (e) {
+        emit(LoadVehicleStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Check-In States Handling
+     * */
+    on<CheckInEvent>((event, emit) async {
+      emit(CheckInStateLoading());
+      try {
+        final response = await routeRepository.checkInRoute(event.routeId);
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          emit(CheckInStateLoaded(response: commonResponse));
+          add(FetchRouteDetailsEvent(routeId: event.routeId));
+        } else {
+          emit(CheckInStateFailed(
+            error: response['message'] ?? 'Unable to check in',
+          ));
+        }
+      } catch (e) {
+        emit(CheckInStateFailed(error: e.toString()));
       }
     });
   }

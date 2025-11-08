@@ -4,6 +4,7 @@ import 'package:navex/data/repositories/route_repository.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utils/date_picker_utils.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../bloc/route_bloc.dart';
 import '../../widgets/route_card.dart';
@@ -37,7 +38,7 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
   }
 
   Future<void> _openCalendar() async {
-    final pickedDate = await showDatePicker(
+    final pickedDate = await showAppDatePicker(
       context: context,
       barrierDismissible: false,
       initialDate: _selectedDate ?? DateTime.now(),
@@ -96,9 +97,8 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
                         ),
                         child: Text(
                           DateTimeUtils.getFormattedSelectedDate(
-                                _selectedDate ?? DateTime.now(),
-                              ) ??
-                              DateTimeUtils.getFormattedCurrentDate(),
+                            _selectedDate ?? DateTime.now(),
+                          ),
                           style: Theme.of(context).textTheme.bodyLarge!
                               .copyWith(color: AppColors.white),
                         ),

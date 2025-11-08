@@ -42,3 +42,27 @@ class AcceptRouteEvent extends RouteEvent {
   @override
   List<Object> get props => [routeId];
 }
+
+class LoadVehicleEvent extends RouteEvent {
+  final String routeId;
+  final double currentLat;
+  final double currentLng;
+
+  const LoadVehicleEvent({
+    required this.routeId,
+    required this.currentLat,
+    required this.currentLng,
+  });
+
+  @override
+  List<Object> get props => [routeId, currentLat, currentLng];
+}
+
+class CheckInEvent extends RouteEvent {
+  final String routeId;
+
+  const CheckInEvent({required this.routeId});
+
+  @override
+  List<Object> get props => [routeId];
+}

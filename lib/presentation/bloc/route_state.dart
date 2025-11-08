@@ -89,3 +89,43 @@ final class AcceptRouteStateFailed extends RouteState {
   @override
   List<Object> get props => [error];
 }
+
+final class LoadVehicleStateLoading extends RouteState {}
+
+final class LoadVehicleStateLoaded extends RouteState {
+  final CommonResponse response;
+
+  const LoadVehicleStateLoaded({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class LoadVehicleStateFailed extends RouteState {
+  final String error;
+
+  const LoadVehicleStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}
+
+final class CheckInStateLoading extends RouteState {}
+
+final class CheckInStateLoaded extends RouteState {
+  final CommonResponse response;
+
+  const CheckInStateLoaded({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class CheckInStateFailed extends RouteState {
+  final String error;
+
+  const CheckInStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

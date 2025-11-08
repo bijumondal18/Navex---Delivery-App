@@ -4,6 +4,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
@@ -30,6 +31,12 @@ class _InRouteScreenState extends State<InRouteScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   static const LatLng _start = LatLng(28.6139, 77.2090); // New Delhi
   final Set<Marker> _markers = {};
+
+  bool _isLoadVehicleInProgress = false;
+  bool _hasLoadedVehicle = false;
+  bool _hasCheckedIn = false;
+  bool _isCheckInInProgress = false;
+  RouteData? _currentRouteData;
 
   Future<void> _showPickupOnMap({
     required double lat,
@@ -104,20 +111,97 @@ class _InRouteScreenState extends State<InRouteScreen> {
                 // Google Map Widget
                 SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.3,
-                  child: BlocListener<RouteBloc, RouteState>(
-                    listenWhen: (prev, curr) =>
-                        curr is FetchRouteDetailsStateLoaded,
-                    listener: (context, state) {
-                      if (state is FetchRouteDetailsStateLoaded) {
-                        final double lat = double.parse(
-                          state.routeData.pickupLat,
-                        );
-                        final double lng = double.parse(
-                          state.routeData.pickupLong,
-                        );
-                        _showPickupOnMap(lat: lat, lng: lng);
-                      }
-                    },
+                  child: MultiBlocListener(
+                    listeners: [
+                      BlocListener<RouteBloc, RouteState>(
+                        listenWhen: (prev, curr) =>
+                            curr is FetchRouteDetailsStateLoaded,
+                        listener: (context, state) {
+                          if (state is FetchRouteDetailsStateLoaded) {
+                            final double lat = double.parse(
+                              state.routeData.pickupLat,
+                            );
+                            final double lng = double.parse(
+                              state.routeData.pickupLong,
+                            );
+                            _showPickupOnMap(lat: lat, lng: lng);
+                            if (mounted) {
+                              setState(() {
+                                _currentRouteData = state.routeData;
+                                final bool loaded =
+                                    state.routeData.isLoaded == 1;
+                                final bool checkInServer =
+                                    state.routeData.currentWaypoint != null;
+                                _hasLoadedVehicle = loaded;
+                                _hasCheckedIn =
+                                    checkInServer || loaded || _hasCheckedIn;
+                                _isCheckInInProgress = false;
+                                _isLoadVehicleInProgress = false;
+                              });
+                            }
+                          }
+                        },
+                      ),
+                      BlocListener<RouteBloc, RouteState>(
+                        listenWhen: (prev, curr) =>
+                            curr is CheckInStateLoading ||
+                            curr is CheckInStateLoaded ||
+                            curr is CheckInStateFailed,
+                        listener: (context, state) {
+                          if (!mounted) return;
+                          if (state is CheckInStateLoading) {
+                            setState(() => _isCheckInInProgress = true);
+                          } else if (state is CheckInStateLoaded) {
+                            setState(() {
+                              _isCheckInInProgress = false;
+                              _hasCheckedIn = true;
+                            });
+                            SnackBarHelper.showSuccess(
+                              state.response.message ??
+                                  'Checked in successfully',
+                              context: context,
+                            );
+                          } else if (state is CheckInStateFailed) {
+                            setState(() => _isCheckInInProgress = false);
+                            SnackBarHelper.showError(
+                              state.error,
+                              context: context,
+                            );
+                          }
+                        },
+                      ),
+                      BlocListener<RouteBloc, RouteState>(
+                        listenWhen: (prev, curr) =>
+                            curr is LoadVehicleStateLoading ||
+                            curr is LoadVehicleStateLoaded ||
+                            curr is LoadVehicleStateFailed,
+                        listener: (context, state) {
+                          if (!mounted) return;
+                          if (state is LoadVehicleStateLoading) {
+                            setState(() => _isLoadVehicleInProgress = true);
+                          } else if (state is LoadVehicleStateLoaded) {
+                            setState(() {
+                              _isLoadVehicleInProgress = false;
+                              _hasLoadedVehicle = true;
+                              _hasCheckedIn = true;
+                            });
+                            SnackBarHelper.showSuccess(
+                              state.response.message ??
+                                  'Vehicle loaded successfully',
+                              context: context,
+                            );
+                          } else if (state is LoadVehicleStateFailed) {
+                            setState(() {
+                              _isLoadVehicleInProgress = false;
+                            });
+                            SnackBarHelper.showError(
+                              state.error,
+                              context: context,
+                            );
+                          }
+                        },
+                      ),
+                    ],
                     child: Card(
                       elevation: AppSizes.elevationMedium,
                       margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
@@ -184,9 +268,15 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 ),
                                 BlocBuilder<RouteBloc, RouteState>(
                                   builder: (context, state) {
-                                    if (state is FetchRouteDetailsStateLoaded) {
+                                    final routeData =
+                                        state is FetchRouteDetailsStateLoaded
+                                            ? state.routeData
+                                            : _currentRouteData;
+                                    if (routeData != null) {
+                                      final distance =
+                                          routeData.totalDistance ?? '0';
                                       return Text(
-                                        '${state.routeData.totalDistance} mi',
+                                        '$distance mi',
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge!
@@ -239,10 +329,16 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 ),
                                 BlocBuilder<RouteBloc, RouteState>(
                                   builder: (context, state) {
-                                    if (state is FetchRouteDetailsStateLoaded) {
+                                    final routeData =
+                                        state is FetchRouteDetailsStateLoaded
+                                            ? state.routeData
+                                            : _currentRouteData;
+                                    if (routeData != null) {
+                                      final totalTime = routeData.totalTime ?? 0;
                                       return Text(
-                                        DateTimeUtils.convertMinutesToHoursMinutes(
-                                          state.routeData.totalTime,
+                                        DateTimeUtils
+                                            .convertMinutesToHoursMinutes(
+                                          totalTime,
                                         ),
                                         style: Theme.of(context)
                                             .textTheme
@@ -292,69 +388,107 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
                 BlocBuilder<RouteBloc, RouteState>(
                   builder: (context, state) {
-                    if (state is FetchRouteDetailsStateLoaded) {
-                      final routeData = state.routeData;
-                      final waypoints = routeData.waypoints ?? [];
-                      final shouldReturn = routeData.driverShouldReturn == 1;
-                      
-                      return Card(
-                        elevation: AppSizes.elevationMedium,
-                        margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                        shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                        color: Theme.of(context).cardColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSizes.cardCornerRadius,
-                          ),
+                    final routeData = state is FetchRouteDetailsStateLoaded
+                        ? state.routeData
+                        : _currentRouteData;
+                    if (routeData == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final waypoints = routeData.waypoints ?? [];
+                    final shouldReturn = routeData.driverShouldReturn == 1;
+                    final isVehicleLoaded =
+                        _hasLoadedVehicle || routeData.isLoaded == 1;
+                    final isCheckInCompleted =
+                        _hasCheckedIn || isVehicleLoaded;
+                    final pickupLat =
+                        double.tryParse(routeData.pickupLat) ?? 0.0;
+                    final pickupLng =
+                        double.tryParse(routeData.pickupLong) ?? 0.0;
+
+                    return Card(
+                      elevation: AppSizes.elevationMedium,
+                      margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                      color: Theme.of(context).cardColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight: MediaQuery.sizeOf(context).height * 0.3,
-                            ),
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: [
-                                // Warehouse (Pickup) - First Item
-                                _buildWarehouseItem(
-                                  context,
-                                  routeData: routeData,
-                                  isFirst: true,
-                                  isLast: waypoints.isEmpty && !shouldReturn,
-                                ),
-                                // Waypoints
-                                ...waypoints.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final waypoint = entry.value;
-                                  final isLast = index == waypoints.length - 1 && !shouldReturn;
-                                  final previousCompleted = index == 0 
-                                      ? routeData.isLoaded == 1 
-                                      : (waypoints[index - 1].status != null && waypoints[index - 1].status != 0);
-                                  
-                                  return _buildWaypointItem(
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+                          ),
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              // Warehouse (Pickup) - First Item
+                              _buildWarehouseItem(
+                                context,
+                                routeData: routeData,
+                                isFirst: true,
+                                isLast: waypoints.isEmpty && !shouldReturn,
+                                isVehicleLoaded: isVehicleLoaded,
+                                showCheckInButton: true,
+                                isCheckInCompleted: isCheckInCompleted,
+                                isCheckInLoading: _isCheckInInProgress,
+                                isLoading: _isLoadVehicleInProgress,
+                                onNavigate: () =>
+                                    _navigateToLocation(pickupLat, pickupLng),
+                                onCheckIn: _checkIn,
+                                onLoadVehicle: _loadVehicle,
+                              ),
+                              const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
+                              // Waypoints
+                              ...List.generate(waypoints.length, (index) {
+                                final waypoint = waypoints[index];
+                                final isLast = index == waypoints.length - 1 && !shouldReturn;
+                                final previousCompleted = index == 0
+                                    ? isVehicleLoaded
+                                    : (waypoints[index - 1].status != null &&
+                                        waypoints[index - 1].status != 0);
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: index == waypoints.length - 1
+                                        ? 0
+                                        : AppSizes.kDefaultPadding * 1.5,
+                                  ),
+                                  child: _buildWaypointItem(
                                     context,
                                     waypoint: waypoint,
                                     index: index + 1,
                                     isLast: isLast,
                                     isEnabled: previousCompleted,
-                                  );
-                                }),
-                                // Return to Warehouse (if driverShouldReturn == 1)
-                                if (shouldReturn)
-                                  _buildWarehouseItem(
-                                    context,
-                                    routeData: routeData,
-                                    isFirst: false,
-                                    isLast: true,
                                   ),
-                              ],
-                            ),
+                                );
+                              }),
+                              // Return to Warehouse (if driverShouldReturn == 1)
+                              if (shouldReturn && waypoints.isNotEmpty)
+                                const SizedBox(height: AppSizes.kDefaultPadding),
+                              if (shouldReturn)
+                                _buildWarehouseItem(
+                                  context,
+                                  routeData: routeData,
+                                  isFirst: false,
+                                  isLast: true,
+                                  isVehicleLoaded: true,
+                                  showCheckInButton: false,
+                                  isCheckInCompleted: true,
+                                  isCheckInLoading: false,
+                                  isLoading: false,
+                                  onNavigate: () =>
+                                      _navigateToLocation(pickupLat, pickupLng),
+                                  onCheckIn: () {},
+                                  onLoadVehicle: () {},
+                                ),
+                            ],
                           ),
                         ),
-                      );
-                    }
-                    return const SizedBox.shrink();
+                      ),
+                    );
                   },
                 ),
               ],
@@ -455,10 +589,55 @@ class _InRouteScreenState extends State<InRouteScreen> {
     }
   }
 
+  Future<void> _checkIn() async {
+    if (_isCheckInInProgress) return;
+    setState(() => _isCheckInInProgress = true);
+    context.read<RouteBloc>().add(CheckInEvent(routeId: widget.routeId));
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw 'Location services are disabled.';
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw 'Location permission denied.';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw 'Location permissions are permanently denied.';
+    }
+
+    return Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
+  }
+
   Future<void> _loadVehicle() async {
-    // TODO: Implement load vehicle API call
-    // After success, update routeData.isLoaded = 1
-    SnackBarHelper.showSuccess('Vehicle loaded successfully', context: context);
+    if (_isLoadVehicleInProgress) return;
+    setState(() => _isLoadVehicleInProgress = true);
+    try {
+      final position = await _determinePosition();
+      if (!mounted) return;
+      context.read<RouteBloc>().add(
+            LoadVehicleEvent(
+              routeId: widget.routeId,
+              currentLat: position.latitude,
+              currentLng: position.longitude,
+            ),
+          );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadVehicleInProgress = false);
+      SnackBarHelper.showError(e.toString(), context: context);
+    }
   }
 
   Future<void> _deliverWaypoint(Waypoints waypoint) async {
@@ -478,9 +657,17 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required RouteData routeData,
     required bool isFirst,
     required bool isLast,
+    required bool isVehicleLoaded,
+    required bool showCheckInButton,
+    required bool isCheckInCompleted,
+    required bool isCheckInLoading,
+    required bool isLoading,
+    required VoidCallback onNavigate,
+    required VoidCallback onCheckIn,
+    required VoidCallback onLoadVehicle,
   }) {
     final Color lineColor = Colors.grey.shade400;
-    final isLoaded = routeData.isLoaded == 1;
+    final isLoaded = isVehicleLoaded;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,18 +744,34 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     children: [
                       Expanded(
                         child: PrimaryButton(
-                          onPressed: () => _navigateToLocation(
-                            double.parse('${routeData.pickupLat}'),
-                            double.parse('${routeData.pickupLong}'),
-                          ),
+                          onPressed: onNavigate,
                           label: 'Navigate',
                           size: ButtonSize.sm,
                         ),
                       ),
                       const SizedBox(width: 8),
+                      if (showCheckInButton) ...[
+                        Expanded(
+                          child: PrimaryButton(
+                            onPressed: isCheckInCompleted || isCheckInLoading
+                                ? null
+                                : onCheckIn,
+                            isLoading: isCheckInLoading,
+                            label: 'Check In',
+                            size: ButtonSize.sm,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       Expanded(
                         child: PrimaryButton(
-                          onPressed: isLoaded ? null : _loadVehicle,
+                          onPressed: (!isCheckInCompleted ||
+                                  isCheckInLoading ||
+                                  isLoading ||
+                                  isLoaded)
+                              ? null
+                              : onLoadVehicle,
+                          isLoading: isLoading,
                           label: 'Load Vehicle',
                           size: ButtonSize.sm,
                         ),
@@ -681,16 +884,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     ),
                   ),
                 ],
-                if (waypoint.packageCount != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Packages: ${waypoint.packageCount}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
+               
                 if (waypoint.driverNote != null && '${waypoint.driverNote}'.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Row(
@@ -714,7 +908,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     ],
                   ),
                 ],
-                if (!isCompleted) ...[
+                if (!isCompleted && isEnabled) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [

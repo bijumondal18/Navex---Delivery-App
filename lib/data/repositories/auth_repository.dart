@@ -60,20 +60,24 @@ class AuthRepository {
     String? address,
     String? city,
     String? zipcode,
-    String? stateId,
-  ) async {
+    String? stateId, {
+    File? profileImage,
+  }) async {
+    final Map<String, dynamic> data = {};
+    if (name != null && name.isNotEmpty) data['legal_name'] = name;
+    if (email != null && email.isNotEmpty) data['email'] = email;
+    if (phone != null && phone.isNotEmpty) data['phone'] = phone;
+    if (bio != null && bio.isNotEmpty) data['bio'] = bio;
+    if (address != null && address.isNotEmpty) data['address'] = address;
+    if (city != null && city.isNotEmpty) data['city'] = city;
+    if (zipcode != null && zipcode.isNotEmpty) data['zip'] = zipcode;
+    if (stateId != null && stateId.isNotEmpty) data['state'] = stateId;
+
     final response = await _apiClient.postRequest(
       ApiEndpoints.updateUserProfileURL,
-      data: {
-        'legal_name': name,
-        'email': email,
-        'phone': phone,
-        'bio': bio,
-        'address': address,
-        'city': city,
-        'zip': zipcode,
-        'state': stateId,
-      },
+      data: data.isNotEmpty ? data : null,
+      file: profileImage,
+      fileField: 'profile_image',
     );
     return response.data;
   }

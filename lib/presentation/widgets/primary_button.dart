@@ -28,22 +28,22 @@ class PrimaryButton extends StatelessWidget {
   double get _height {
     switch (size) {
       case ButtonSize.sm:
-        return 44;
+        return 40;
       case ButtonSize.md:
-        return 52;
+        return 48;
       case ButtonSize.lg:
-        return 56;
+        return 52;
     }
   }
 
   EdgeInsets get _padding {
     switch (size) {
       case ButtonSize.sm:
-        return const EdgeInsets.symmetric(horizontal: 14);
+        return const EdgeInsets.symmetric(horizontal:8);
       case ButtonSize.md:
-        return const EdgeInsets.symmetric(horizontal: 18);
+        return const EdgeInsets.symmetric(horizontal: 12);
       case ButtonSize.lg:
-        return const EdgeInsets.symmetric(horizontal: 22);
+        return const EdgeInsets.symmetric(horizontal: 16);
     }
   }
 

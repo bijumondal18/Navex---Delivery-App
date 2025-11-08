@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utils/date_picker_utils.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../../data/repositories/route_repository.dart';
 import '../../bloc/route_bloc.dart';
-import '../../widgets/route_card.dart';
 import '../home/components/build_upcoming_route_list.dart';
 
 class RouteHistoryScreen extends StatefulWidget {
@@ -20,14 +20,12 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
   DateTime? _selectedDate;
 
   Future<void> _openCalendar() async {
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? pickedDate = await showAppDatePicker(
       context: context,
       barrierDismissible: false,
       initialDate: DateTime.now(),
-      // current date
-      firstDate: DateTime.now(),
-      // no previous date allowed
-      lastDate: DateTime(2100), // latest date allowed
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
     );
 
     if (pickedDate != null && pickedDate != _selectedDate) {
@@ -78,9 +76,8 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
                         ),
                         child: Text(
                           DateTimeUtils.getFormattedSelectedDate(
-                                _selectedDate ?? DateTime.now(),
-                              ) ??
-                              DateTimeUtils.getFormattedCurrentDate(),
+                            _selectedDate ?? DateTime.now(),
+                          ),
                           style: Theme.of(context).textTheme.bodyLarge!
                               .copyWith(color: AppColors.white),
                         ),

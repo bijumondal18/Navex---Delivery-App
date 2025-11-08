@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:navex/core/utils/app_preference.dart';
@@ -179,11 +181,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           event.city,
           event.zipCode,
           event.stateId,
+          profileImage: event.profileImage,
         );
         if (response['status'] == true) {
           final commonResponse = CommonResponse.fromJson(response);
 
           emit(UpdateProfileStateLoaded(commonResponse: commonResponse));
+          add(FetchUserProfileEvent());
         } else {
           emit(
             UpdateProfileStateFailed(
