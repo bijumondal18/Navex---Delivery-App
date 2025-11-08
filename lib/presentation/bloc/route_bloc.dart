@@ -43,6 +43,20 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
     });
 
     /**
+     * Fetch Route History States Handling
+     * */
+    on<FetchRouteHistoryEvent>((event, emit) async {
+      emit(FetchRouteHistoryStateLoading());
+      try {
+        final response = await routeRepository.fetchRouteHistory();
+        final routes = _mapToRouteList(response);
+        emit(FetchRouteHistoryStateLoaded(routes: routes));
+      } catch (e) {
+        emit(FetchRouteHistoryStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
      * Fetch Route Details States Handling
      * */
     on<FetchRouteDetailsEvent>((event, emit) async {
@@ -115,5 +129,79 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(CheckInStateFailed(error: e.toString()));
       }
     });
+  }
+
+  List<RouteData> _mapToRouteList(dynamic data) {
+    if (data is List) {
+      return data
+          .map((item) {
+            if (item is Map<String, dynamic>) {
+              return RouteData.fromJson(item);
+            }
+            if (item is Map) {
+              return RouteData.fromJson(
+                item.map(
+                  (key, value) => MapEntry(key.toString(), value),
+                ),
+              );
+            }
+            return null;
+          })
+          .whereType<RouteData>()
+          .toList();
+    } else if (data is Map<String, dynamic>) {
+      final payload = data['data'];
+      if (payload is List) {
+        return payload
+            .map((item) {
+              if (item is Map<String, dynamic>) {
+                return RouteData.fromJson(item);
+              }
+              if (item is Map) {
+                return RouteData.fromJson(
+                  item.map(
+                    (key, value) => MapEntry(key.toString(), value),
+                  ),
+                );
+              }
+              return null;
+            })
+            .whereType<RouteData>()
+            .toList();
+      }
+
+      if (data.containsKey('id')) {
+        return [RouteData.fromJson(data)];
+      }
+    } else if (data is Map) {
+      final mapData = data.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+      final payload = mapData['data'];
+      if (payload is List) {
+        return payload
+            .map((item) {
+              if (item is Map<String, dynamic>) {
+                return RouteData.fromJson(item);
+              }
+              if (item is Map) {
+                return RouteData.fromJson(
+                  item.map(
+                    (key, value) => MapEntry(key.toString(), value),
+                  ),
+                );
+              }
+              return null;
+            })
+            .whereType<RouteData>()
+            .toList();
+      }
+
+      if (mapData.containsKey('id')) {
+        return [RouteData.fromJson(mapData)];
+      }
+    }
+
+    return [];
   }
 }
