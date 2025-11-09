@@ -28,35 +28,43 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: Screens.splash,
       name: 'splash',
-      builder: (context, state) => SplashScreen(),
+      pageBuilder: (context, state) =>
+          _buildAnimatedPage(state, SplashScreen()),
     ),
     GoRoute(
       path: Screens.login,
       name: 'login',
-      builder: (context, state) => LoginScreen(),
+      pageBuilder: (context, state) =>
+          _buildAnimatedPage(state, LoginScreen()),
     ),
     GoRoute(
       path: Screens.forgotPassword,
       name: 'forgot_password',
-      builder: (context, state) => ForgotPasswordScreen(),
+      pageBuilder: (context, state) =>
+          _buildAnimatedPage(state, ForgotPasswordScreen()),
     ),
     GoRoute(
       path: Screens.accountVerification,
       name: 'account_verification',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final flag = state.extra as String;
-        return AccountVerificationScreen(registeredEmail: flag);
+        return _buildAnimatedPage(
+          state,
+          AccountVerificationScreen(registeredEmail: flag),
+        );
       },
     ),
     GoRoute(
       path: Screens.profile,
       name: 'profile',
-      builder: (context, state) => ProfileScreen(),
+      pageBuilder: (context, state) =>
+          _buildAnimatedPage(state, ProfileScreen()),
     ),
     GoRoute(
       path: Screens.editProfile,
       name: 'edit_profile',
-      builder: (context, state) => EditProfileScreen(),
+      pageBuilder: (context, state) =>
+          _buildAnimatedPage(state, EditProfileScreen()),
     ),
     ShellRoute(
       navigatorKey: _shellKey,
@@ -65,13 +73,15 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: Screens.main,
           name: 'main',
-          builder: (_, __) => const HomeScreen(),
+          pageBuilder: (_, state) =>
+              _buildAnimatedPage(state, const HomeScreen()),
           routes: [
             GoRoute(
               path: 'trip/:id/details',
               name: Screens.tripDetails,
-              pageBuilder: (_, state) => NoTransitionPage(
-                child: TripDetailsScreen(
+              pageBuilder: (_, state) => _buildAnimatedPage(
+                state,
+                TripDetailsScreen(
                   routeId: '${state.pathParameters['id']}',
                 ),
               ),
@@ -79,8 +89,9 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: 'trip/:id/in_route',
               name: Screens.inRoute,
-              pageBuilder: (_, state) => NoTransitionPage(
-                child: InRouteScreen(
+              pageBuilder: (_, state) => _buildAnimatedPage(
+                state,
+                InRouteScreen(
                   routeId: '${state.pathParameters['id']}',
                 ),
               ),
@@ -91,30 +102,31 @@ final GoRouter appRouter = GoRouter(
           path: Screens.availableRoutes,
           name: 'available_routes',
           pageBuilder: (_, state) =>
-              NoTransitionPage(child: AvailableRoutesScreen()),
+              _buildAnimatedPage(state, AvailableRoutesScreen()),
         ),
         GoRoute(
           path: Screens.acceptedRoutes,
           name: 'accepted_routes',
           pageBuilder: (_, state) =>
-              NoTransitionPage(child: MyAcceptedRoutesScreen()),
+              _buildAnimatedPage(state, MyAcceptedRoutesScreen()),
         ),
         GoRoute(
           path: Screens.routeHistory,
           name: 'route_history',
           pageBuilder: (_, state) =>
-              NoTransitionPage(child: RouteHistoryScreen()),
+              _buildAnimatedPage(state, RouteHistoryScreen()),
         ),
         GoRoute(
           path: Screens.settings,
           name: 'settings',
-          pageBuilder: (_, state) => NoTransitionPage(child: SettingsScreen()),
+          pageBuilder: (_, state) =>
+              _buildAnimatedPage(state, SettingsScreen()),
         ),
         GoRoute(
           path: Screens.notifications,
           name: 'notifications',
           pageBuilder: (_, state) =>
-              NoTransitionPage(child: NotificationsScreen()),
+              _buildAnimatedPage(state, NotificationsScreen()),
         ),
       ],
     ),
@@ -143,3 +155,35 @@ final GoRouter appRouter = GoRouter(
     // ),
   ],
 );
+
+CustomTransitionPage<void> _buildAnimatedPage(
+  GoRouterState state,
+  Widget child,
+) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: const Duration(milliseconds: 320),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    child: child,
+    transitionsBuilder:
+        (context, animation, secondaryAnimation, pageChild) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      final offsetAnimation = Tween<Offset>(
+        begin: const Offset(0, 1),
+        end: Offset.zero,
+      ).animate(curvedAnimation);
+
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: SlideTransition(
+          position: offsetAnimation,
+          child: pageChild,
+        ),
+      );
+    },
+  );
+}
