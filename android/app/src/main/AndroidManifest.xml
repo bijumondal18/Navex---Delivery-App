@@ -45,9 +45,9 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance" />
 
-<meta-data
-                android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyA3LkABhWu_NcwPIwe76v-U_HGRXrlur8w" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA3LkABhWu_NcwPIwe76v-U_HGRXrlur8w" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -2,20 +2,20 @@ import 'package:navex/data/models/pharmacy.dart';
 import 'package:navex/data/models/state_details.dart';
 
 class Driver {
-  int? id;
-  String? name;
-  String? email;
-  String? phone;
-  String? bio;
-  String? address;
-  String? addressLat;
-  String? addressLong;
-  String? city;
-  String? state;
-  String? zip;
-  String? location;
-  String? locationLat;
-  String? locationLong;
+  dynamic id;
+  dynamic name;
+  dynamic email;
+  dynamic phone;
+  dynamic bio;
+  dynamic address;
+  dynamic addressLat;
+  dynamic addressLong;
+  dynamic city;
+  dynamic state;
+  dynamic zip;
+  dynamic location;
+  dynamic locationLat;
+  dynamic locationLong;
   StateDetails? stateDetails;
   Pharmacy? pharmacy;
 

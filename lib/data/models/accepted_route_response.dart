@@ -1,8 +1,8 @@
 import 'package:navex/data/models/route.dart';
 
 class AcceptedRouteResponse {
-  bool? status;
-  String? message;
+  dynamic status;
+  dynamic message;
   RouteData? route;
 
   AcceptedRouteResponse({this.status, this.message, this.route});

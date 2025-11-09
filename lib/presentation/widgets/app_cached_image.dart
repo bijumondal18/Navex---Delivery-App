@@ -84,6 +84,20 @@ class AppCachedImage extends StatelessWidget {
       return withBorder(error);
     }
 
+    // Compute cache dimensions in physical pixels to keep images crisp without distortion.
+    final mediaQuery = MediaQuery.maybeOf(context);
+    final devicePixelRatio = mediaQuery?.devicePixelRatio ?? 1.0;
+
+    int? cacheWidth;
+    int? cacheHeight;
+
+    if (width != null) {
+      cacheWidth = (width! * devicePixelRatio).round();
+    }
+    if (height != null) {
+      cacheHeight = (height! * devicePixelRatio).round();
+    }
+
     final image = CachedNetworkImage(
       imageUrl: url!,
       width: width,
@@ -93,8 +107,8 @@ class AppCachedImage extends StatelessWidget {
       fadeOutDuration: fadeOutDuration,
       placeholder: (_, __) => loading,
       errorWidget:  (_, __, ___) => error,
-      memCacheWidth:  width?.toInt(),
-      memCacheHeight: height?.toInt(),
+      memCacheWidth: cacheWidth,
+      memCacheHeight: cacheHeight,
     );
 
     return withBorder(image);

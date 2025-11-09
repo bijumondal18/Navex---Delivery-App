@@ -1,7 +1,7 @@
 class Links {
-  String? url;
-  String? label;
-  bool? active;
+  dynamic url;
+  dynamic label;
+  dynamic active;
 
   Links({this.url, this.label, this.active});
 

@@ -1,13 +1,13 @@
 import 'driver.dart';
 
 class User {
-  int? id;
-  String? name;
-  String? email;
-  String? profileImage;
-  String? emailVerifiedAt;
-  int? role;
-  String? status;
+  dynamic id;
+  dynamic name;
+  dynamic email;
+  dynamic profileImage;
+  dynamic emailVerifiedAt;
+  dynamic role;
+  dynamic status;
   Driver? driver;
 
   User(

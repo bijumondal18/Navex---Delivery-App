@@ -75,6 +75,8 @@ class _SideDrawerState extends State<SideDrawer> {
                                           .user
                                           ?.profileImage ??
                                       '',
+                                  circular: true,
+                                  borderWidth: 2,
                                 );
                               }
                               return AppCachedImage(
@@ -82,6 +84,8 @@ class _SideDrawerState extends State<SideDrawer> {
                                 height: 96,
                                 borderRadius: BorderRadius.circular(40),
                                 url: '',
+                                circular: true,
+                                borderWidth: 2,
                               );
                             },
                           ),

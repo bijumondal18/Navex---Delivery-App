@@ -3,11 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
-import 'package:navex/core/resources/app_images.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/presentation/pages/main_bottom_nav/components/side_drawer.dart';
@@ -16,12 +14,6 @@ import 'package:navex/presentation/widgets/custom_switch.dart';
 
 import '../../bloc/auth_bloc.dart';
 import '../../widgets/show_exit_confirm_dialog.dart';
-import '../available_routes/available_routes_screen.dart';
-import '../home/home_screen.dart';
-import '../my_accepted_routes/my_accepted_routes_screen.dart';
-import '../notifications/notifications_screen.dart';
-import '../route_history/route_history_screen.dart';
-import '../settings/settings_screen.dart';
 
 class MainBottomNavScreen extends StatefulWidget {
   final Widget child;
@@ -137,6 +129,8 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
                         width: 34,
                         height: 34,
                         fit: BoxFit.cover,
+                        circular: true,
+                        borderWidth: 1.5,
                       );
                     }
                     return AppCachedImage(
@@ -144,6 +138,8 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
                       width: 34,
                       height: 34,
                       fit: BoxFit.cover,
+                      circular: true,
+                      borderWidth: 1.5,
                     );
                   },
                 ),

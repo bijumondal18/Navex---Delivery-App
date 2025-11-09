@@ -111,6 +111,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   borderRadius: BorderRadius.circular(
                                     AppSizes.cardCornerRadius * 100,
                                   ),
+                                  circular: true,
+                                  borderWidth: 2,
                                   fit: BoxFit.cover,
                                 )
                               : Container(
@@ -141,6 +143,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           borderRadius: BorderRadius.circular(
                             AppSizes.cardCornerRadius * 100,
                           ),
+                          circular: true,
+                          borderWidth: 2,
                           fit: BoxFit.cover,
                         );
                       },
@@ -368,7 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () async {
                     final XFile? file = await _picker.pickImage(
                       source: ImageSource.camera,
-                      imageQuality: 85,
+                    imageQuality: 100,
                     );
                     if (file != null) {
                       _uploadProfileImage(File(file.path));
@@ -388,7 +392,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () async {
                     final XFile? file = await _picker.pickImage(
                       source: ImageSource.gallery,
-                      imageQuality: 85,
+                    imageQuality: 100,
                     );
                     if (file != null) {
                       _uploadProfileImage(File(file.path));

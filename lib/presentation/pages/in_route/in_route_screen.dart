@@ -13,6 +13,7 @@ import '../../../core/resources/app_images.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
+import '../../../core/utils/trip_status_utils.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../bloc/route_bloc.dart';
 import '../../../data/models/waypoints.dart';
@@ -132,9 +133,20 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                     state.routeData.isLoaded == 1;
                                 final bool checkInServer =
                                     state.routeData.currentWaypoint != null;
+                                final int? status =
+                                    state.routeData.status is int
+                                        ? state.routeData.status as int
+                                        : int.tryParse(
+                                            '${state.routeData.status}');
+                                final bool statusCheckedIn =
+                                    TripStatusHelper.isAlreadyCheckedIn(
+                                  status,
+                                );
                                 _hasLoadedVehicle = loaded;
-                                _hasCheckedIn =
-                                    checkInServer || loaded || _hasCheckedIn;
+                                _hasCheckedIn = checkInServer ||
+                                    loaded ||
+                                    statusCheckedIn ||
+                                    _hasCheckedIn;
                                 _isCheckInInProgress = false;
                                 _isLoadVehicleInProgress = false;
                               });
@@ -334,7 +346,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                             ? state.routeData
                                             : _currentRouteData;
                                     if (routeData != null) {
-                                      final totalTime = routeData.totalTime ?? 0;
+                                      final totalTime = routeData.totalTime ?? "0";
                                       return Text(
                                         DateTimeUtils
                                             .convertMinutesToHoursMinutes(
@@ -401,6 +413,11 @@ class _InRouteScreenState extends State<InRouteScreen> {
                         _hasLoadedVehicle || routeData.isLoaded == 1;
                     final isCheckInCompleted =
                         _hasCheckedIn || isVehicleLoaded;
+                    final int? tripStatus = routeData.status is int
+                        ? routeData.status as int
+                        : int.tryParse('${routeData.status}');
+                    final canEnableCheckIn =
+                        TripStatusHelper.canEnableCheckIn(tripStatus);
                     final pickupLat =
                         double.tryParse(routeData.pickupLat) ?? 0.0;
                     final pickupLng =
@@ -433,6 +450,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 isLast: waypoints.isEmpty && !shouldReturn,
                                 isVehicleLoaded: isVehicleLoaded,
                                 showCheckInButton: true,
+                                canEnableCheckIn: canEnableCheckIn,
                                 isCheckInCompleted: isCheckInCompleted,
                                 isCheckInLoading: _isCheckInInProgress,
                                 isLoading: _isLoadVehicleInProgress,
@@ -476,6 +494,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                   isLast: true,
                                   isVehicleLoaded: true,
                                   showCheckInButton: false,
+                                  canEnableCheckIn: false,
                                   isCheckInCompleted: true,
                                   isCheckInLoading: false,
                                   isLoading: false,
@@ -659,6 +678,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required bool isLast,
     required bool isVehicleLoaded,
     required bool showCheckInButton,
+    required bool canEnableCheckIn,
     required bool isCheckInCompleted,
     required bool isCheckInLoading,
     required bool isLoading,
@@ -753,7 +773,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       if (showCheckInButton) ...[
                         Expanded(
                           child: PrimaryButton(
-                            onPressed: isCheckInCompleted || isCheckInLoading
+                            onPressed: (!canEnableCheckIn ||
+                                    isCheckInCompleted ||
+                                    isCheckInLoading)
                                 ? null
                                 : onCheckIn,
                             isLoading: isCheckInLoading,

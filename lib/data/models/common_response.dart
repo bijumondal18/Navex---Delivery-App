@@ -1,6 +1,6 @@
 class CommonResponse {
-  bool? status;
-  String? message;
+  dynamic status;
+  dynamic message;
 
   CommonResponse({this.status, this.message});
 

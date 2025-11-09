@@ -1,7 +1,7 @@
 class Pharmacy {
-  int? id;
-  String? name;
-  String? pharmacyKey;
+  dynamic id;
+  dynamic name;
+  dynamic pharmacyKey;
 
   Pharmacy({this.id, this.name, this.pharmacyKey});
 

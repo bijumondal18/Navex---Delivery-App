@@ -1,9 +1,9 @@
 class StateDetails {
   int? id;
-  String? country;
-  String? countryCode;
-  String? state;
-  String? stateCode;
+  dynamic country;
+  dynamic countryCode;
+  dynamic state;
+  dynamic stateCode;
 
   StateDetails({
     this.id,
