@@ -693,8 +693,80 @@ class _InRouteScreenState extends State<InRouteScreen> {
   }
 
   Future<void> _deliverWaypoint(Waypoints waypoint) async {
-    // TODO: Implement deliver waypoint API call
-    // After success, update waypoint.status
+    final option = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.cardCornerRadius),
+        ),
+      ),
+      builder: (context) {
+        final textTheme = Theme.of(context).textTheme;
+        const entries = [
+          ('recipient', Icons.person_outline, 'Deliver to recipient'),
+          ('third_party', Icons.group_outlined, 'Deliver to third party'),
+          ('mailbox', Icons.markunread_mailbox_outlined, 'Left in mailbox'),
+          ('safe_place', Icons.home_outlined, 'Left in safe place'),
+          ('other', Icons.more_horiz, 'Other'),
+        ];
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.kDefaultPadding,
+            vertical: AppSizes.kDefaultPadding / 1.5,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppSizes.kDefaultPadding),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              Text(
+                'Select delivery outcome',
+                style: textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSizes.kDefaultPadding),
+              ...entries.map((entry) {
+                final (value, icon, label) = entry;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(icon, color: Theme.of(context).primaryColor),
+                      title: Text(label, style: textTheme.bodyLarge),
+                      onTap: () => Navigator.pop(context, value),
+                    ),
+                    if (value != entries.last.$1)
+                      Divider(
+                        height: 0,
+                        color: Theme.of(context).dividerColor.withOpacity(0.6),
+                      ),
+                  ],
+                );
+              }),
+              SafeArea(child: const SizedBox(height: AppSizes.kDefaultPadding) ) ,
+            ],
+          ),
+        );
+      },
+    );
+
+    if (option == null) {
+      return;
+    }
+
+    // TODO: Implement deliver waypoint API call with selected option
     SnackBarHelper.showSuccess('Delivery completed', context: context);
   }
 
