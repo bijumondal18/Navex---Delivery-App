@@ -10,6 +10,7 @@ import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/core/utils/snackbar_helper.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 import '../../../bloc/auth_bloc.dart';
 
@@ -185,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           builder: (context, state) {
                             if (state is LoginStateLoading) {
                               return const Center(
-                                child: CircularProgressIndicator.adaptive(),
+                                child: ThemedActivityIndicator(),
                               );
                             }
                             return PrimaryButton(

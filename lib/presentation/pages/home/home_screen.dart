@@ -4,6 +4,7 @@ import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/core/utils/date_time_utils.dart';
 import 'package:navex/presentation/widgets/route_card.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 import '../../bloc/route_bloc.dart';
 
@@ -85,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, state) {
                 if (state is FetchUpcomingRoutesStateLoading) {
                   return const Center(
-                    child: CircularProgressIndicator.adaptive(),
+                    child: ThemedActivityIndicator(),
                   );
                 }
                 if (state is FetchUpcomingRoutesStateLoaded) {

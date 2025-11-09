@@ -8,6 +8,7 @@ import '../../../core/utils/date_picker_utils.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../bloc/route_bloc.dart';
 import '../../widgets/route_card.dart';
+import '../../widgets/themed_activity_indicator.dart';
 
 class MyAcceptedRoutesScreen extends StatefulWidget {
   const MyAcceptedRoutesScreen({super.key});
@@ -118,7 +119,7 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
                 builder: (context, state) {
                   if (state is FetchAcceptedRoutesStateLoading) {
                     return const Center(
-                      child: CircularProgressIndicator.adaptive(),
+                      child: ThemedActivityIndicator(),
                     );
                   }
                   if (state is FetchAcceptedRoutesStateFailed) {

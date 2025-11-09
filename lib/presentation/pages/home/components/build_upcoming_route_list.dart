@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:navex/core/utils/date_time_utils.dart';
-import 'package:navex/data/repositories/route_repository.dart';
-
 import '../../../../core/themes/app_sizes.dart';
 import '../../../bloc/route_bloc.dart';
 import '../../../widgets/route_card.dart';
+import '../../../widgets/themed_activity_indicator.dart';
 
 class BuildUpcomingRouteList extends StatefulWidget {
   final DateTime? pickedDate;
@@ -22,7 +20,7 @@ class _BuildUpcomingRouteListState extends State<BuildUpcomingRouteList> {
     return BlocBuilder<RouteBloc, RouteState>(
       builder: (context, state) {
         if (state is FetchUpcomingRoutesStateLoading) {
-          return const Center(child: CircularProgressIndicator.adaptive());
+          return const Center(child: ThemedActivityIndicator());
         }
         if (state is FetchUpcomingRoutesStateLoaded) {
           final route = state.routeResponse.route ?? [];

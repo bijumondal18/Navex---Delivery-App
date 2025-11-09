@@ -8,6 +8,7 @@ import '../../../core/utils/date_time_utils.dart';
 import '../../../data/repositories/route_repository.dart';
 import '../../bloc/route_bloc.dart';
 import '../../widgets/route_card.dart';
+import '../../widgets/themed_activity_indicator.dart';
 
 class RouteHistoryScreen extends StatefulWidget {
   const RouteHistoryScreen({super.key});
@@ -119,7 +120,7 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
                 builder: (context, state) {
                   if (state is FetchRouteHistoryStateLoading) {
                     return const Center(
-                      child: CircularProgressIndicator.adaptive(),
+                      child: ThemedActivityIndicator(),
                     );
                   }
 

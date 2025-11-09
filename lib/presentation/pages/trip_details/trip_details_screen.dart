@@ -8,6 +8,7 @@ import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/presentation/bloc/route_bloc.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 import '../../../core/resources/app_images.dart';
 import '../../../core/themes/app_colors.dart';
@@ -134,7 +135,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             builder: (context, state) {
               if (state is FetchRouteDetailsStateLoading) {
                 return const Center(
-                  child: CircularProgressIndicator.adaptive(),
+                  child: ThemedActivityIndicator(),
                 );
               }
 
@@ -409,7 +410,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               builder: (context, state) {
                 if (state is AcceptRouteStateLoading) {
                   return const Center(
-                    child: CircularProgressIndicator.adaptive(),
+                    child: ThemedActivityIndicator(),
                   );
                 }
                 return PrimaryButton(

@@ -1,5 +1,6 @@
 // lib/widgets/app_text_button.dart
 import 'package:flutter/material.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 enum TextBtnVariant { primary, secondary, danger, neutral, link }
 enum TextBtnSize { sm, md, lg }
@@ -88,7 +89,9 @@ class AppTextButton extends StatelessWidget {
         key: const ValueKey('loader'),
         width: _fontSize + 4,
         height: _fontSize + 4,
-        child: CircularProgressIndicator(strokeWidth: 2),
+        child: ThemedActivityIndicator(
+          radius: (_fontSize + 4) / 3,
+        ),
       )
           : Row(
         key: const ValueKey('label'),

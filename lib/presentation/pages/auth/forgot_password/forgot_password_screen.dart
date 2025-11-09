@@ -6,11 +6,11 @@ import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/presentation/bloc/auth_bloc.dart';
 
 import '../../../../core/resources/app_images.dart';
-import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/themed_activity_indicator.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -152,7 +152,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           builder: (context, state) {
                             if (state is ForgotPasswordStateLoading) {
                               return const Center(
-                                child: CircularProgressIndicator.adaptive(),
+                                child: ThemedActivityIndicator(),
                               );
                             }
                             return PrimaryButton(

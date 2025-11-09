@@ -7,6 +7,7 @@ import '../../../core/utils/date_time_utils.dart';
 import '../../../data/repositories/route_repository.dart';
 import '../../bloc/route_bloc.dart';
 import '../../widgets/route_card.dart';
+import '../../widgets/themed_activity_indicator.dart';
 
 class AvailableRoutesScreen extends StatefulWidget {
   const AvailableRoutesScreen({super.key});
@@ -117,7 +118,7 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
                 builder: (context, state) {
                   if (state is FetchUpcomingRoutesStateLoading) {
                     return const Center(
-                      child: CircularProgressIndicator.adaptive(),
+                      child: ThemedActivityIndicator(),
                     );
                   }
                   if (state is FetchUpcomingRoutesStateLoaded) {

@@ -14,6 +14,7 @@ import '../../../../core/utils/app_preference.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
 import '../../../widgets/show_logout_dialog.dart';
+import '../../../widgets/themed_activity_indicator.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -157,8 +158,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: const Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
+                            child: ThemedActivityIndicator(
+                              radius: 14,
                               color: AppColors.white,
                             ),
                           ),

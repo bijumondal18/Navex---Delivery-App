@@ -5,6 +5,7 @@ import 'package:navex/data/models/state_details.dart';
 import 'package:navex/presentation/widgets/app_dropdown_button.dart';
 import 'package:navex/presentation/widgets/app_text_field.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 import '../../../../core/themes/app_colors.dart';
 import '../../../../core/utils/snackbar_helper.dart';
@@ -182,7 +183,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               builder: (context, state) {
                 if (state is UpdateProfileStateLoading) {
                   return const Center(
-                    child: CircularProgressIndicator.adaptive(),
+                            child: const ThemedActivityIndicator(),
                   );
                 }
                 return PrimaryButton(

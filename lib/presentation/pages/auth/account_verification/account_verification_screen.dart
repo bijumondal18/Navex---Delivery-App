@@ -6,12 +6,12 @@ import 'package:navex/presentation/widgets/password_reset_successful_dialog.dart
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/navigation/screens.dart';
 import '../../../../core/resources/app_images.dart';
-import '../../../../core/themes/app_colors.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import '../../../bloc/auth_bloc.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/themed_activity_indicator.dart';
 
 class AccountVerificationScreen extends StatefulWidget {
   final String registeredEmail;
@@ -200,7 +200,7 @@ class _AccountVerificationScreenState extends State<AccountVerificationScreen> {
                           builder: (context, state) {
                             if (state is ResetPasswordStateLoading) {
                               return const Center(
-                                child: CircularProgressIndicator.adaptive(),
+                                child: ThemedActivityIndicator(),
                               );
                             }
                             return PrimaryButton(

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
 enum ButtonSize { sm, md, lg }
 
@@ -71,9 +72,9 @@ class PrimaryButton extends StatelessWidget {
               key: const ValueKey('loader'),
               width: _fontSize + 4,
               height: _fontSize + 4,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(onColor),
+              child: ThemedActivityIndicator(
+                radius: (_fontSize + 4) / 2.6,
+                color: onColor,
               ),
             )
           : Row(
