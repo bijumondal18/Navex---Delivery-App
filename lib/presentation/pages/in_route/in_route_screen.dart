@@ -869,6 +869,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 16),
                 Text(
                   'Drop Off',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -877,16 +878,21 @@ class _InRouteScreenState extends State<InRouteScreen> {
                 ),
                 const SizedBox(height: 4),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.location_pin,
-                      color: Colors.redAccent,
-                      size: 18,
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: const Icon(
+                        Icons.location_pin,
+                        color: Colors.redAccent,
+                        size: 18,
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         '${waypoint.address}',
+                        maxLines: 2,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
