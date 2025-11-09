@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../widgets/app_dropdown_button.dart';
@@ -29,6 +32,8 @@ class DeliveryOutcomeScreen extends StatefulWidget {
 class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
   late TextEditingController _nameController;
   late TextEditingController _notesController;
+  final ImagePicker _picker = ImagePicker();
+  final List<File> _photos = [];
   String? _selectedFailureReason;
   static const _failureReasons = [
     'Recipient unavailable/ No answer',
@@ -59,9 +64,87 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     _nameController.dispose();
     _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? picked = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+    );
+    if (picked != null) {
+      setState(() {
+        _photos.add(File(picked.path));
+      });
+    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.cardCornerRadius),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSizes.kDefaultPadding,
+            ),
+            child: Wrap(
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(
+                      bottom: AppSizes.kDefaultPadding / 1.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.camera_alt_outlined,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainer,
+                  ),
+                  title: Text(
+                    'Take a photo',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  onTap: () => _pickImage(ImageSource.camera),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.photo_library_outlined,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainer,
+                  ),
+                  title: Text(
+                    'Choose from gallery',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -110,27 +193,32 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                   ),
                 ),
               Expanded(
-                child: Card(
-                  elevation: AppSizes.elevationMedium,
-                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                  color: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.cardCornerRadius,
+                child: InkWell(
+                  borderRadius:
+                      BorderRadius.circular(AppSizes.cardCornerRadius),
+                  onTap: _showImagePickerBottomSheet,
+                  child: Card(
+                    elevation: AppSizes.elevationMedium,
+                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                    color: Theme.of(context).cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                    child: Row(
-                      spacing: AppSizes.kDefaultPadding / 2,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.camera_alt),
-                        Text(
-                          'Add Photo',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      child: Row(
+                        spacing: AppSizes.kDefaultPadding / 2,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.camera_alt),
+                          Text(
+                            'Add Photo',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -138,6 +226,31 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
             ],
           ),
           const SizedBox(height: AppSizes.kDefaultPadding),
+          if (_photos.isNotEmpty) ...[
+            SizedBox(
+              height: 90,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _photos.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AppSizes.kDefaultPadding / 2),
+                itemBuilder: (context, index) {
+                  final file = _photos[index];
+                  return ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(AppSizes.cardCornerRadius),
+                    child: Image.file(
+                      file,
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+          ],
           if (_isFailureFlow) ...[
             AppDropdownButton<String>(
               label: 'Failure Reason',
