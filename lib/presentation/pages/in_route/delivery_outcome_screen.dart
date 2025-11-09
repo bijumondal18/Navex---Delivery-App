@@ -70,6 +70,20 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    if (source == ImageSource.gallery) {
+      final List<XFile> pickedList = await _picker.pickMultiImage(
+        imageQuality: 85,
+      );
+      if (pickedList.isNotEmpty) {
+        setState(() {
+          _photos.addAll(pickedList.map((xfile) => File(xfile.path)));
+        });
+      }
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
+
     final XFile? picked = await _picker.pickImage(
       source: source,
       imageQuality: 85,
@@ -119,7 +133,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                   leading: Icon(
                     Icons.camera_alt_outlined,
                     color:
-                        Theme.of(context).colorScheme.surfaceContainer,
+                        Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Take a photo',
@@ -131,7 +145,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                   leading: Icon(
                     Icons.photo_library_outlined,
                     color:
-                        Theme.of(context).colorScheme.surfaceContainer,
+                        Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Choose from gallery',
@@ -236,15 +250,41 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                     const SizedBox(width: AppSizes.kDefaultPadding / 2),
                 itemBuilder: (context, index) {
                   final file = _photos[index];
-                  return ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(AppSizes.cardCornerRadius),
-                    child: Image.file(
-                      file,
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
-                    ),
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.cardCornerRadius),
+                        child: Image.file(
+                          file,
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _photos.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

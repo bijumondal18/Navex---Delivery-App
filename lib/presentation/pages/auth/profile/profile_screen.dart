@@ -364,7 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: Icon(
                     Icons.camera_alt_outlined,
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Take a photo',
@@ -384,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: Icon(
                     Icons.photo_library_outlined,
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Choose from gallery',
