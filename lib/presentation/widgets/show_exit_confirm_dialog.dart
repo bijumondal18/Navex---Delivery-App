@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:navex/core/themes/app_sizes.dart';
-import 'package:navex/presentation/widgets/app_text_button.dart';
-import 'package:navex/presentation/widgets/primary_button.dart';
-
-import '../../core/navigation/app_router.dart';
 import '../../core/themes/app_colors.dart';
 
 Future<bool?> showExitConfirmDialog(BuildContext context) {
@@ -29,8 +25,11 @@ Future<bool?> showExitConfirmDialog(BuildContext context) {
             child: Text(
               "No, Stay",
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.7),
+                  ),
             ),
           ),
           TextButton(

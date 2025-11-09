@@ -76,9 +76,9 @@ class AppDropdownButton<T> extends StatelessWidget {
           color: AppColors.errorLight,
         ),
       ),
-      icon: Icon(
+      icon: const Icon(
         Icons.keyboard_arrow_down_rounded,
-        color: Theme.of(context).colorScheme.surfaceContainer,
+        color: Colors.black,
       ),
       isExpanded: true,
       items: items.map((item) {

@@ -27,8 +27,11 @@ Future<void> showLogoutDialog(
             child: Text(
               "Cancel",
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Theme.of(context).colorScheme.surfaceContainer,
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.7),
+                  ),
             ),
           ),
           TextButton(

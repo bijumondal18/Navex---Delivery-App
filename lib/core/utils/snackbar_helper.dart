@@ -58,39 +58,13 @@ class SnackBarHelper {
     BuildContext? context,
   ) {
     Color backgroundColor;
-    
     if (context != null) {
-      // Use theme colors when context is available
-      switch (type) {
-        case SnackBarType.success:
-          backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
-          break;
-        case SnackBarType.error:
-          backgroundColor = AppColors.errorLight.withValues(alpha: 0.9);
-          break;
-        case SnackBarType.info:
-          backgroundColor = Theme.of(context).primaryColor;
-          break;
-        case SnackBarType.warning:
-          backgroundColor = Colors.orange.withValues(alpha: 0.9);
-          break;
-      }
+      final theme = Theme.of(context);
+      backgroundColor = theme.brightness == Brightness.dark
+          ? theme.colorScheme.surface.withOpacity(0.88)
+          : Colors.black.withOpacity(0.88);
     } else {
-      // Fallback colors when context is not available
-      switch (type) {
-        case SnackBarType.success:
-          backgroundColor = AppColors.greenDark;
-          break;
-        case SnackBarType.error:
-          backgroundColor = AppColors.errorLight;
-          break;
-        case SnackBarType.info:
-          backgroundColor = AppColors.primaryDark;
-          break;
-        case SnackBarType.warning:
-          backgroundColor = Colors.orange;
-          break;
-      }
+      backgroundColor = Colors.black.withOpacity(0.88);
     }
 
     return SnackBar(
