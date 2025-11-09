@@ -19,7 +19,7 @@ class RouteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (route?.status == 3) {
+        if (route?.status == 3 || route?.status == 4) {
           appRouter.pushNamed(
             Screens.inRoute,
             pathParameters: {'id': route!.id.toString()},

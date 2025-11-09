@@ -391,6 +391,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                     state.acceptedRouteResponse.message ?? 'Route accepted',
                     context: context,
                   );
+                  context.read<RouteBloc>().add(
+                        FetchUpcomingRoutesEvent(
+                          date: DateTimeUtils.getFormattedPickedDate(DateTime.now()),
+                        ),
+                      );
                   appRouter.go(Screens.main);
                 }
                 if (state is AcceptRouteStateFailed) {

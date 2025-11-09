@@ -39,6 +39,30 @@ class _InRouteScreenState extends State<InRouteScreen> {
   bool _isCheckInInProgress = false;
   RouteData? _currentRouteData;
 
+  int? _parseToInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  bool _isFlagTrue(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is num) return value == 1;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == '1' || normalized == 'true';
+    }
+    return false;
+  }
+
+  bool _isWaypointCompleted(Waypoints waypoint) {
+    final status = _parseToInt(waypoint.status);
+    return status != null && status != 0;
+  }
+
   Future<void> _showPickupOnMap({
     required double lat,
     required double lng,
@@ -130,22 +154,16 @@ class _InRouteScreenState extends State<InRouteScreen> {
                               setState(() {
                                 _currentRouteData = state.routeData;
                                 final bool loaded =
-                                    state.routeData.isLoaded == 1;
-                                final bool checkInServer =
-                                    state.routeData.currentWaypoint != null;
+                                    _isFlagTrue(state.routeData.isLoaded);
                                 final int? status =
-                                    state.routeData.status is int
-                                        ? state.routeData.status as int
-                                        : int.tryParse(
-                                            '${state.routeData.status}');
+                                    _parseToInt(state.routeData.status);
                                 final bool statusCheckedIn =
                                     TripStatusHelper.isAlreadyCheckedIn(
                                   status,
                                 );
                                 _hasLoadedVehicle = loaded;
-                                _hasCheckedIn = checkInServer ||
+                                _hasCheckedIn = statusCheckedIn ||
                                     loaded ||
-                                    statusCheckedIn ||
                                     _hasCheckedIn;
                                 _isCheckInInProgress = false;
                                 _isLoadVehicleInProgress = false;
@@ -408,16 +426,21 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     }
 
                     final waypoints = routeData.waypoints ?? [];
-                    final shouldReturn = routeData.driverShouldReturn == 1;
+                    final shouldReturn =
+                        _parseToInt(routeData.driverShouldReturn) == 1;
                     final isVehicleLoaded =
-                        _hasLoadedVehicle || routeData.isLoaded == 1;
+                        _hasLoadedVehicle || _isFlagTrue(routeData.isLoaded);
                     final isCheckInCompleted =
                         _hasCheckedIn || isVehicleLoaded;
-                    final int? tripStatus = routeData.status is int
-                        ? routeData.status as int
-                        : int.tryParse('${routeData.status}');
+                    final int? tripStatus = _parseToInt(routeData.status);
                     final canEnableCheckIn =
                         TripStatusHelper.canEnableCheckIn(tripStatus);
+                    final int? currentWaypointId =
+                        _parseToInt(routeData.currentWaypoint);
+                    final bool isInRouteAndLoaded =
+                        tripStatus == 4 && isVehicleLoaded;
+                    final bool shouldHideWarehouseButtons =
+                        isInRouteAndLoaded;
                     final pickupLat =
                         double.tryParse(routeData.pickupLat) ?? 0.0;
                     final pickupLng =
@@ -450,6 +473,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 isLast: waypoints.isEmpty && !shouldReturn,
                                 isVehicleLoaded: isVehicleLoaded,
                                 showCheckInButton: true,
+                                showActionButtons: !shouldHideWarehouseButtons,
                                 canEnableCheckIn: canEnableCheckIn,
                                 isCheckInCompleted: isCheckInCompleted,
                                 isCheckInLoading: _isCheckInInProgress,
@@ -466,8 +490,16 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 final isLast = index == waypoints.length - 1 && !shouldReturn;
                                 final previousCompleted = index == 0
                                     ? isVehicleLoaded
-                                    : (waypoints[index - 1].status != null &&
-                                        waypoints[index - 1].status != 0);
+                                    : _isWaypointCompleted(
+                                        waypoints[index - 1],
+                                      );
+                                final bool isCurrentWaypoint =
+                                    currentWaypointId != null &&
+                                        currentWaypointId == waypoint.id;
+                                final bool isWaypointEnabled =
+                                    isInRouteAndLoaded
+                                        ? isCurrentWaypoint
+                                        : previousCompleted;
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     bottom: index == waypoints.length - 1
@@ -479,7 +511,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                     waypoint: waypoint,
                                     index: index + 1,
                                     isLast: isLast,
-                                    isEnabled: previousCompleted,
+                                    isEnabled: isWaypointEnabled,
                                   ),
                                 );
                               }),
@@ -494,6 +526,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                   isLast: true,
                                   isVehicleLoaded: true,
                                   showCheckInButton: false,
+                                  showActionButtons: false,
                                   canEnableCheckIn: false,
                                   isCheckInCompleted: true,
                                   isCheckInLoading: false,
@@ -678,6 +711,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required bool isLast,
     required bool isVehicleLoaded,
     required bool showCheckInButton,
+    bool showActionButtons = true,
     required bool canEnableCheckIn,
     required bool isCheckInCompleted,
     required bool isCheckInLoading,
@@ -758,7 +792,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     ),
                   ],
                 ),
-                if (isFirst) ...[
+                if (isFirst && showActionButtons) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -817,7 +851,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required bool isEnabled,
   }) {
     final Color lineColor = Colors.grey.shade400;
-    final isCompleted = waypoint.status != null && waypoint.status != 0;
+    final isCompleted = _isWaypointCompleted(waypoint);
     final customerName = waypoint.customer?.name ?? 'Customer';
 
     return Row(
