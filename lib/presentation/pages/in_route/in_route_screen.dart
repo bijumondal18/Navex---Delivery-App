@@ -795,9 +795,14 @@ class _InRouteScreenState extends State<InRouteScreen> {
   }
 
   Future<void> _failWaypoint(Waypoints waypoint) async {
-    // TODO: Implement fail waypoint API call
-    // After success, update waypoint.status
-    SnackBarHelper.showError('Delivery marked as failed', context: context);
+    if (!mounted) return;
+    await appRouter.push(
+      Screens.deliveryOutcome,
+      extra: DeliveryOutcomeArgs(
+        optionKey: 'failed',
+        title: 'Failed',
+      ),
+    );
   }
 
   Widget _buildWarehouseItem(

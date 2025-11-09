@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/themes/app_sizes.dart';
+import '../../widgets/app_dropdown_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/primary_button.dart';
 
@@ -28,9 +29,26 @@ class DeliveryOutcomeScreen extends StatefulWidget {
 class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
   late TextEditingController _nameController;
   late TextEditingController _notesController;
+  String? _selectedFailureReason;
+  static const _failureReasons = [
+    'Recipient unavailable/ No answer',
+    'Recipient changed his/her address',
+    'Refused delivery',
+    'Access issue',
+    'Missing package',
+    'Payment required',
+    'Package damaged',
+    'Delivery timeframe missed',
+    'Incorrect address on maps',
+    'Incorrect package',
+    'Animal interference',
+    'Weather/ Road condition',
+    'Other',
+  ];
 
   bool get _shouldSkipSignature =>
       widget.optionKey == 'mailbox' || widget.optionKey == 'safe_place';
+  bool get _isFailureFlow => widget.optionKey == 'failed';
 
   @override
   void initState() {
@@ -64,7 +82,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
           Row(
             spacing: AppSizes.kDefaultPadding,
             children: [
-              if (!_shouldSkipSignature)
+              if (!_shouldSkipSignature && !_isFailureFlow)
                 Expanded(
                   child: Card(
                     elevation: AppSizes.elevationMedium,
@@ -120,7 +138,21 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
             ],
           ),
           const SizedBox(height: AppSizes.kDefaultPadding),
-          if (!_shouldSkipSignature) ...[
+          if (_isFailureFlow) ...[
+            AppDropdownButton<String>(
+              label: 'Failure Reason',
+              hint: 'Select failure reason',
+              items: _failureReasons,
+              selectedItem: _selectedFailureReason,
+              getLabel: (value) => value,
+              onChanged: (value) {
+                setState(() => _selectedFailureReason = value);
+              },
+              required: true,
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+          ],
+          if (!_shouldSkipSignature && !_isFailureFlow) ...[
             AppTextField(
               type: AppTextFieldType.text,
               controller: _nameController,
