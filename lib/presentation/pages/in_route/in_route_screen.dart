@@ -791,7 +791,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
     // TODO: Implement deliver waypoint API call with selected option
     if (!mounted) return;
-    SnackBarHelper.showSuccess('Delivery completed', context: context);
+    // SnackBarHelper.showSuccess('Delivery completed', context: context);
   }
 
   Future<void> _failWaypoint(Waypoints waypoint) async {

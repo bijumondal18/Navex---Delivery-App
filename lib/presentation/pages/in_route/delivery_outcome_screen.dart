@@ -29,6 +29,9 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
   late TextEditingController _nameController;
   late TextEditingController _notesController;
 
+  bool get _shouldSkipSignature =>
+      widget.optionKey == 'mailbox' || widget.optionKey == 'safe_place';
+
   @override
   void initState() {
     super.initState();
@@ -61,31 +64,33 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
           Row(
             spacing: AppSizes.kDefaultPadding,
             children: [
-              Expanded(
-                child: Card(
-                  elevation: AppSizes.elevationMedium,
-                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                  color: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.cardCornerRadius,
+              if (!_shouldSkipSignature)
+                Expanded(
+                  child: Card(
+                    elevation: AppSizes.elevationMedium,
+                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                    color: Theme.of(context).cardColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                    child: Row(
-                      spacing: AppSizes.kDefaultPadding / 2,
-                      children: [
-                        Icon(Icons.edit),
-                        Text(
-                          'Add Signature',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                      child: Row(
+                        spacing: AppSizes.kDefaultPadding / 2,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.edit),
+                          Text(
+                            'Add Signature',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               Expanded(
                 child: Card(
                   elevation: AppSizes.elevationMedium,
@@ -100,8 +105,9 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                     padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
                     child: Row(
                       spacing: AppSizes.kDefaultPadding / 2,
+                                              mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt),
+                        const Icon(Icons.camera_alt),
                         Text(
                           'Add Photo',
                           style: Theme.of(context).textTheme.bodyLarge,
@@ -114,12 +120,14 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
             ],
           ),
           const SizedBox(height: AppSizes.kDefaultPadding),
-          AppTextField(
-            type: AppTextFieldType.text,
-            controller: _nameController,
-            hint: 'Recipient Name',
-          ),
-          const SizedBox(height: AppSizes.kDefaultPadding),
+          if (!_shouldSkipSignature) ...[
+            AppTextField(
+              type: AppTextFieldType.text,
+              controller: _nameController,
+              hint: 'Recipient Name',
+            ),
+            const SizedBox(height: AppSizes.kDefaultPadding),
+          ],
           AppTextField(
             type: AppTextFieldType.text,
             controller: _notesController,
