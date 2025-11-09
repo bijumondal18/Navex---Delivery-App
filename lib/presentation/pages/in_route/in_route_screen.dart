@@ -764,6 +764,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Warehouse',

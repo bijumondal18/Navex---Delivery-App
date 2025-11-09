@@ -106,6 +106,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 const SizedBox(height: AppSizes.kDefaultPadding),
                 _buildStatsCard(context),
                 _buildAcceptButton(context),
+                const SizedBox(height: AppSizes.kDefaultPadding),
               ],
             ),
           ),
