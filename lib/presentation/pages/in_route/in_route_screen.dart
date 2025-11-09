@@ -15,9 +15,20 @@ import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../../core/utils/trip_status_utils.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../../core/navigation/app_router.dart';
+import '../../../core/navigation/screens.dart';
 import '../../bloc/route_bloc.dart';
 import '../../../data/models/waypoints.dart';
 import '../../../data/models/route.dart';
+import 'delivery_outcome_screen.dart';
+
+const _deliveryOptions = [
+  ('recipient', Icons.person_outline, 'Deliver to recipient'),
+  ('third_party', Icons.group_outlined, 'Deliver to third party'),
+  ('mailbox', Icons.markunread_mailbox_outlined, 'Left in mailbox'),
+  ('safe_place', Icons.home_outlined, 'Left in safe place'),
+  ('other', Icons.more_horiz, 'Other'),
+];
 
 class InRouteScreen extends StatefulWidget {
   final String routeId;
@@ -703,13 +714,6 @@ class _InRouteScreenState extends State<InRouteScreen> {
       ),
       builder: (context) {
         final textTheme = Theme.of(context).textTheme;
-        const entries = [
-          ('recipient', Icons.person_outline, 'Deliver to recipient'),
-          ('third_party', Icons.group_outlined, 'Deliver to third party'),
-          ('mailbox', Icons.markunread_mailbox_outlined, 'Left in mailbox'),
-          ('safe_place', Icons.home_outlined, 'Left in safe place'),
-          ('other', Icons.more_horiz, 'Other'),
-        ];
 
         return Padding(
           padding: const EdgeInsets.symmetric(
@@ -736,7 +740,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                 style: textTheme.titleLarge,
               ),
               const SizedBox(height: AppSizes.kDefaultPadding),
-              ...entries.map((entry) {
+              ..._deliveryOptions.map((entry) {
                 final (value, icon, label) = entry;
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -747,15 +751,19 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       title: Text(label, style: textTheme.bodyLarge),
                       onTap: () => Navigator.pop(context, value),
                     ),
-                    if (value != entries.last.$1)
+                    if (value != _deliveryOptions.last.$1)
                       Divider(
                         height: 0,
-                        color: Theme.of(context).dividerColor.withOpacity(0.6),
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.6),
                       ),
                   ],
                 );
               }),
-              SafeArea(child: const SizedBox(height: AppSizes.kDefaultPadding) ) ,
+              const SafeArea(
+                child: SizedBox(height: AppSizes.kDefaultPadding),
+              ),
             ],
           ),
         );
@@ -766,7 +774,23 @@ class _InRouteScreenState extends State<InRouteScreen> {
       return;
     }
 
+    final selected = _deliveryOptions.firstWhere(
+      (entry) => entry.$1 == option,
+      orElse: () => _deliveryOptions.last,
+    );
+
+    if (!mounted) return;
+
+    await appRouter.push(
+      Screens.deliveryOutcome,
+      extra: DeliveryOutcomeArgs(
+        optionKey: selected.$1,
+        title: selected.$3,
+      ),
+    );
+
     // TODO: Implement deliver waypoint API call with selected option
+    if (!mounted) return;
     SnackBarHelper.showSuccess('Delivery completed', context: context);
   }
 
