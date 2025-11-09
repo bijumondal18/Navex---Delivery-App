@@ -13,6 +13,8 @@ import '../service/notifications/push_notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // GoogleMapsFlutterAndroid().useAndroidViewSurface = false;
+
   // Register background handler early
   // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 

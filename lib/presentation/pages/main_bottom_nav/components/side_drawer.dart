@@ -14,8 +14,13 @@ import '../../../bloc/auth_bloc.dart';
 
 class SideDrawer extends StatefulWidget {
   final Function(int) onItemTap;
+  final int selectedIndex;
 
-  const SideDrawer({super.key, required this.onItemTap});
+  const SideDrawer({
+    super.key,
+    required this.onItemTap,
+    required this.selectedIndex,
+  });
 
   @override
   State<SideDrawer> createState() => _SideDrawerState();
@@ -127,78 +132,60 @@ class _SideDrawerState extends State<SideDrawer> {
               ),
             ),
             const SizedBox(height: AppSizes.kDefaultPadding),
-            ListTile(
-              onTap: () => widget.onItemTap(0),
-              leading: SvgPicture.asset(
+            _buildMenuTile(
+              index: 0,
+              label: 'Home',
+              iconBuilder: (isSelected) => SvgPicture.asset(
                 AppImages.home,
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.surfaceContainer.withAlpha(200),
+                  _menuIconColor(isSelected),
                   BlendMode.srcIn,
                 ),
               ),
-              title: Text('Home', style: Theme.of(context).textTheme.bodyLarge),
             ),
-            ListTile(
-              onTap: () => widget.onItemTap(1),
-              leading: Image.asset(
+            _buildMenuTile(
+              index: 1,
+              label: 'Available Routes',
+              iconBuilder: (isSelected) => Image.asset(
                 AppImages.pin,
                 width: 24,
                 height: 24,
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainer.withAlpha(200),
-              ),
-              title: Text(
-                'Available Routes',
-                style: Theme.of(context).textTheme.bodyLarge,
+                color: _menuIconColor(isSelected),
               ),
             ),
-            ListTile(
-              onTap: () => widget.onItemTap(2),
-              leading: Image.asset(
+            _buildMenuTile(
+              index: 2,
+              label: 'My Accepted Routes',
+              iconBuilder: (isSelected) => Image.asset(
                 AppImages.pin,
                 width: 24,
                 height: 24,
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainer.withAlpha(200),
-              ),
-              title: Text(
-                'My Accepted Routes',
-                style: Theme.of(context).textTheme.bodyLarge,
+                color: _menuIconColor(isSelected),
               ),
             ),
-            ListTile(
-              onTap: () => widget.onItemTap(3),
-              leading: Image.asset(
+            _buildMenuTile(
+              index: 3,
+              label: 'Route History',
+              iconBuilder: (isSelected) => Image.asset(
                 AppImages.pin,
                 width: 24,
                 height: 24,
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainer.withAlpha(200),
-              ),
-              title: Text(
-                'Route History',
-                style: Theme.of(context).textTheme.bodyLarge,
+                color: _menuIconColor(isSelected),
               ),
             ),
-            ListTile(
-              onTap: () => widget.onItemTap(4),
-              leading: SvgPicture.asset(
+            _buildMenuTile(
+              index: 4,
+              label: 'Notifications',
+              iconBuilder: (isSelected) => SvgPicture.asset(
                 AppImages.notifications,
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.surfaceContainer.withAlpha(200),
+                  _menuIconColor(isSelected),
                   BlendMode.srcIn,
                 ),
-              ),
-              title: Text(
-                'Notifications',
-                style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
             // ListTile(
@@ -213,37 +200,90 @@ class _SideDrawerState extends State<SideDrawer> {
             //     style: Theme.of(context).textTheme.bodyLarge,
             //   ),
             // ),
-            ListTile(
-              onTap: () {
-                appRouter.pop();
-                Future.delayed(const Duration(milliseconds: 200), () {
-                  if (context.mounted) {
-                    showLogoutDialog(context, () async {
-                      await AppPreference.clearPreference();
-                      appRouter.go(Screens.login);
-                    });
-                  }
-                });
-              },
-              leading: SvgPicture.asset(
-                AppImages.logout,
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  AppColors.errorDark.withAlpha(200),
-                  BlendMode.srcIn,
-                ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding / 2,
               ),
-              title: Text(
-                'Logout',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge!.copyWith(color: AppColors.errorDark),
+              child: ListTile(
+                onTap: () {
+                  appRouter.pop();
+                  Future.delayed(const Duration(milliseconds: 200), () {
+                    if (context.mounted) {
+                      showLogoutDialog(context, () async {
+                        await AppPreference.clearPreference();
+                        appRouter.go(Screens.login);
+                      });
+                    }
+                  });
+                },
+                leading: SvgPicture.asset(
+                  AppImages.logout,
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.errorDark.withAlpha(200),
+                    BlendMode.srcIn,
+                  ),
+                ),
+                title: Text(
+                  'Logout',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(color: AppColors.errorDark),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
+                ),
+                visualDensity: VisualDensity.compact,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildMenuTile({
+    required int index,
+    required String label,
+    required Widget Function(bool isSelected) iconBuilder,
+  }) {
+    final bool isSelected = widget.selectedIndex == index;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.kDefaultPadding / 2,
+      ),
+      child: ListTile(
+        onTap: () => widget.onItemTap(index),
+        leading: iconBuilder(isSelected),
+        title: Text(
+          label,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: isSelected
+                ? colorScheme.onPrimary
+                : colorScheme.onSurface.withOpacity(0.85),
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+        selected: isSelected,
+        selectedTileColor: colorScheme.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+  }
+
+  Color _menuIconColor(bool isSelected) {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (isSelected) {
+      return colorScheme.onPrimary;
+    }
+    return colorScheme.onSurface.withOpacity(0.7);
   }
 }

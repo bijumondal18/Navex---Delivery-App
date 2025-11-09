@@ -27,6 +27,7 @@ class MainBottomNavScreen extends StatefulWidget {
 class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   bool _isOnline = false;
   bool _hasRequestedProfile = false;
+  int _selectedDrawerIndex = 0;
 
   @override
   void initState() {
@@ -40,6 +41,10 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   }
 
   void _onDrawerItemTap(int index) async {
+    if (!mounted) return;
+    setState(() {
+      _selectedDrawerIndex = index;
+    });
     // 1) Close the drawer
     Navigator.of(context, rootNavigator: true).pop();
 
@@ -121,7 +126,10 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
              * Notification Icon click to open Notifications Screen
              * */
             IconButton(
-              onPressed: () => appRouter.go(Screens.notifications),
+              onPressed: () {
+                setState(() => _selectedDrawerIndex = 4);
+                appRouter.go(Screens.notifications);
+              },
               icon: Icon(Icons.notifications_none_rounded, size: 24),
             ),
 
@@ -158,7 +166,10 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
             ),
           ],
         ),
-        drawer: SideDrawer(onItemTap: _onDrawerItemTap),
+        drawer: SideDrawer(
+          onItemTap: _onDrawerItemTap,
+          selectedIndex: _selectedDrawerIndex,
+        ),
         body: widget.child,
       ),
     );

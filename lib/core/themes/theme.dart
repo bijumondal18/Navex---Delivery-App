@@ -7,15 +7,24 @@ import 'app_sizes.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primaryLight,
+      brightness: Brightness.light,
+    );
+
+    final textTheme = GoogleFonts.latoTextTheme().apply(
+      bodyColor: AppColors.black,
+      displayColor: AppColors.black,
+    );
+
     return ThemeData(
       useMaterial3: true,
+      colorScheme: colorScheme,
+      brightness: Brightness.light,
+      primaryColor: colorScheme.primary,
+      scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
       dividerColor: AppColors.dividerLight,
-      primarySwatch: AppColors.generateMaterialColor(AppColors.primaryLight),
-      brightness: Brightness.dark,
       cardColor: AppColors.white,
-      primaryColor: AppColors.primaryLight,
-      hintColor: AppColors.hintLight,
-      disabledColor: AppColors.hintLight,
       canvasColor: AppColors.canvasLight,
       shadowColor: AppColors.shadowLight,
       bottomSheetTheme: const BottomSheetThemeData(
@@ -31,50 +40,47 @@ class AppTheme {
         thickness: 0.5,
         color: AppColors.black.withAlpha(100),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         elevation: AppSizes.elevationSmall,
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       drawerTheme: const DrawerThemeData(backgroundColor: AppColors.white),
       switchTheme: SwitchThemeData(
         trackColor: MaterialStateProperty.resolveWith<Color?>((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.greenLight; // ON state track color
+            return AppColors.greenLight;
           }
-          return AppColors.dividerLight; // OFF state track color
+          return AppColors.dividerLight;
         }),
         thumbColor: MaterialStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppColors.white; // ON state thumb color
-          }
-          return AppColors.white; // OFF state thumb color
+          return AppColors.white;
         }),
         trackOutlineWidth: MaterialStateProperty.all(0.0),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         iconTheme: IconThemeData(
           size: AppSizes.appBarIconSize,
-          color: AppColors.white,
+          color: colorScheme.onPrimary,
         ),
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: colorScheme.primary,
         elevation: 0.0,
         scrolledUnderElevation: 0.0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: AppColors.white,
-          fontSize: AppSizes.titleMedium,
+        titleTextStyle: textTheme.titleMedium?.copyWith(
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.w600,
         ),
-        foregroundColor: AppColors.white,
+        foregroundColor: colorScheme.onPrimary,
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: colorScheme.primary,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.greenLight,
-        unselectedItemColor: AppColors.white.withAlpha(200),
+        selectedItemColor: colorScheme.secondaryContainer,
+        unselectedItemColor: colorScheme.onPrimary.withOpacity(0.6),
         selectedLabelStyle: GoogleFonts.lato(
           fontSize: AppSizes.bodySmall,
           fontWeight: FontWeight.w600,
@@ -84,125 +90,48 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.black,
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.primary,
         circularTrackColor: AppColors.scaffoldBackgroundLight,
       ),
-      scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       tabBarTheme: TabBarThemeData(
         indicatorSize: TabBarIndicatorSize.tab,
-        // indicator: FilledUnderlineIndicator(
-        //   fillColor: AppColors.primaryLight.withAlpha(10), // background
-        //   underlineColor: AppColors.primaryLight, // underline
-        //   underlineHeight: 1.5,
-        //   borderRadius: BorderRadius.circular(0),
-        // ),
         dividerHeight: 0.0,
         indicatorAnimation: TabIndicatorAnimation.elastic,
         dividerColor: Colors.transparent,
-        indicatorColor: AppColors.primaryLight,
-        labelStyle: TextStyle(
-          fontSize: AppSizes.bodyMedium,
+        indicatorColor: colorScheme.primary,
+        labelStyle: textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,
-          color: AppColors.primaryLight,
+          color: colorScheme.primary,
         ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: AppSizes.bodyMedium,
+        unselectedLabelStyle: textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
           color: AppColors.hintLight,
         ),
       ),
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displayLarge,
-        ),
-        displayMedium: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displayMedium,
-        ),
-        displaySmall: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displaySmall,
-        ),
-        headlineLarge: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.headlineLarge,
-        ),
-        headlineMedium: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.headlineMedium,
-        ),
-        headlineSmall: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w600,
-          fontSize: AppSizes.headlineSmall,
-        ),
-        titleLarge: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w600,
-          fontSize: AppSizes.titleLarge,
-        ),
-        titleMedium: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: AppSizes.titleMedium,
-        ),
-        titleSmall: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w400,
-          fontSize: AppSizes.titleSmall,
-        ),
-        bodyLarge: GoogleFonts.lato(
-          color: AppColors.black,
-          fontSize: AppSizes.bodyLarge,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyMedium: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w400,
-          fontSize: AppSizes.bodyMedium,
-        ),
-        bodySmall: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w300,
-          fontSize: AppSizes.bodySmall,
-        ),
-        labelLarge: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w400,
-          fontSize: AppSizes.labelLarge,
-        ),
-        labelMedium: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w400,
-          fontSize: AppSizes.labelMedium,
-        ),
-        labelSmall: GoogleFonts.lato(
-          color: AppColors.black,
-          fontWeight: FontWeight.w300,
-          fontSize: AppSizes.labelSmall,
-        ),
-      ),
+      textTheme: textTheme,
     );
   }
 
   static ThemeData get darkTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primaryDark,
+      brightness: Brightness.dark,
+    );
+
+    final textTheme = GoogleFonts.latoTextTheme().apply(
+      bodyColor: AppColors.white,
+      displayColor: AppColors.white,
+    );
+
     return ThemeData(
       useMaterial3: true,
-      primarySwatch: AppColors.generateMaterialColor(AppColors.primaryDark),
+      colorScheme: colorScheme,
+      brightness: Brightness.dark,
+      primaryColor: colorScheme.primary,
       dividerColor: AppColors.dividerDark,
-      brightness: Brightness.light,
       cardColor: AppColors.cardDark,
-      primaryColor: AppColors.primaryDark,
-      hintColor: AppColors.hintDark,
-      disabledColor: AppColors.hintDark,
       canvasColor: AppColors.canvasDark,
       shadowColor: AppColors.shadowDark,
       bottomSheetTheme: const BottomSheetThemeData(
@@ -214,42 +143,39 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         elevation: AppSizes.elevationSmall,
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       appBarTheme: AppBarTheme(
         iconTheme: IconThemeData(
           size: AppSizes.appBarIconSize,
-          color: AppColors.white,
+          color: colorScheme.onPrimary,
         ),
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: colorScheme.primary,
         elevation: 0.0,
         scrolledUnderElevation: 0.0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: AppColors.white,
-          fontSize: AppSizes.titleMedium,
+        titleTextStyle: textTheme.titleMedium?.copyWith(
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.w600,
         ),
-        foregroundColor: AppColors.white,
+        foregroundColor: colorScheme.onPrimary,
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.primaryDark,
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.primary,
         circularTrackColor: AppColors.scaffoldBackgroundDark,
       ),
       switchTheme: SwitchThemeData(
         trackColor: MaterialStateProperty.resolveWith<Color?>((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.greenDark; // ON state track color
+            return AppColors.greenDark;
           }
-          return AppColors.hintDark; // OFF state track color
+          return AppColors.hintDark;
         }),
         thumbColor: MaterialStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(MaterialState.selected)) {
-            return AppColors.white; // ON state thumb color
-          }
-          return AppColors.white; // OFF state thumb color
+          return AppColors.white;
         }),
         trackOutlineWidth: MaterialStateProperty.all(0.0),
       ),
@@ -262,25 +188,18 @@ class AppTheme {
       visualDensity: VisualDensity.adaptivePlatformDensity,
       tabBarTheme: TabBarThemeData(
         indicatorSize: TabBarIndicatorSize.tab,
-        // indicator: FilledUnderlineIndicator(
-        //   fillColor: AppColors.primaryDark.withAlpha(20), // background
-        //   underlineColor: AppColors.primaryDark, // underline
-        //   underlineHeight: 1.5,
-        //   borderRadius: BorderRadius.circular(0),
-        // ),
         dividerHeight: 0.0,
         indicatorAnimation: TabIndicatorAnimation.elastic,
         dividerColor: Colors.transparent,
-        indicatorColor: AppColors.primaryDark.withAlpha(100),
-        labelStyle: TextStyle(
-          fontSize: AppSizes.bodyMedium,
+        indicatorColor: colorScheme.primary.withOpacity(0.6),
+        labelStyle: textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: AppSizes.bodyMedium,
+        unselectedLabelStyle: textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
+          color: AppColors.hintDark,
         ),
-        labelColor: AppColors.primaryDark,
+        labelColor: colorScheme.primary,
         unselectedLabelColor: AppColors.grey,
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -289,7 +208,7 @@ class AppTheme {
         showUnselectedLabels: false,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.white,
+        selectedItemColor: colorScheme.onSurface,
         unselectedItemColor: AppColors.hintDark,
         selectedLabelStyle: GoogleFonts.lato(
           fontSize: AppSizes.bodySmall,
@@ -300,84 +219,10 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
       ),
-      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.shadowDark),
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.lato(
-          color: AppColors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displayLarge,
-        ),
-        displayMedium: GoogleFonts.lato(
-          color: AppColors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displayMedium,
-        ),
-        displaySmall: GoogleFonts.lato(
-          color: AppColors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: AppSizes.displaySmall,
-        ),
-        headlineLarge: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.headlineLarge,
-          fontWeight: FontWeight.w800,
-        ),
-        headlineMedium: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.headlineMedium,
-          fontWeight: FontWeight.w700,
-        ),
-        headlineSmall: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.headlineSmall,
-          fontWeight: FontWeight.w600,
-        ),
-        titleLarge: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.titleLarge,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.titleMedium,
-          fontWeight: FontWeight.w500,
-        ),
-        titleSmall: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.titleSmall,
-          fontWeight: FontWeight.w400,
-        ),
-        bodyLarge: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.bodyLarge,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyMedium: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.bodyMedium,
-          fontWeight: FontWeight.w400,
-        ),
-        bodySmall: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.bodySmall,
-          fontWeight: FontWeight.w300,
-        ),
-        labelLarge: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.labelLarge,
-          fontWeight: FontWeight.w400,
-        ),
-        labelMedium: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.labelMedium,
-          fontWeight: FontWeight.w400,
-        ),
-        labelSmall: GoogleFonts.lato(
-          color: AppColors.white,
-          fontSize: AppSizes.labelSmall,
-          fontWeight: FontWeight.w300,
-        ),
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: AppColors.shadowDark,
       ),
+      textTheme: textTheme,
     );
   }
 }
