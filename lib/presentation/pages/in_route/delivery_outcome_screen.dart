@@ -7,6 +7,7 @@ import '../../../core/themes/app_sizes.dart';
 import '../../widgets/app_dropdown_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/primary_button.dart';
+import 'signature_pad_screen.dart';
 
 class DeliveryOutcomeArgs {
   final String optionKey;
@@ -53,6 +54,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
 
   bool get _shouldSkipSignature =>
       widget.optionKey == 'mailbox' || widget.optionKey == 'safe_place';
+
   bool get _isFailureFlow => widget.optionKey == 'failed';
 
   @override
@@ -132,8 +134,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                 ListTile(
                   leading: Icon(
                     Icons.camera_alt_outlined,
-                    color:
-                        Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Take a photo',
@@ -144,8 +145,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                 ListTile(
                   leading: Icon(
                     Icons.photo_library_outlined,
-                    color:
-                        Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     'Choose from gallery',
@@ -181,35 +181,54 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
             children: [
               if (!_shouldSkipSignature && !_isFailureFlow)
                 Expanded(
-                  child: Card(
-                    elevation: AppSizes.elevationMedium,
-                    shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                    color: Theme.of(context).cardColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppSizes.cardCornerRadius,
-                      ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(
+                      AppSizes.cardCornerRadius,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                      child: Row(
-                        spacing: AppSizes.kDefaultPadding / 2,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.edit),
-                          Text(
-                            'Add Signature',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ],
+                    onTap: () async {
+                      final signature = await Navigator.of(context).push<File?>(
+                        MaterialPageRoute(
+                          builder: (_) => const SignaturePadScreen(),
+                        ),
+                      );
+                      if (signature != null && mounted) {
+                        setState(() {
+                          _photos.removeWhere((file) => file.path.contains('signature_'));
+                          _photos.add(signature);
+                        });
+                      }
+                    },
+                    child: Card(
+                      elevation: AppSizes.elevationMedium,
+                      shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+                      color: Theme.of(context).cardColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
+                        child: Row(
+                          spacing: AppSizes.kDefaultPadding / 2,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.edit),
+                            Text(
+                              'Add Signature',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               Expanded(
                 child: InkWell(
-                  borderRadius:
-                      BorderRadius.circular(AppSizes.cardCornerRadius),
+                  borderRadius: BorderRadius.circular(
+                    AppSizes.cardCornerRadius,
+                  ),
                   onTap: _showImagePickerBottomSheet,
                   child: Card(
                     elevation: AppSizes.elevationMedium,
@@ -253,8 +272,9 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                   return Stack(
                     children: [
                       ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(AppSizes.cardCornerRadius),
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardCornerRadius,
+                        ),
                         child: Image.file(
                           file,
                           width: 90,
@@ -273,7 +293,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.black.withValues(alpha: 0.6),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -321,7 +341,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
 
           Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.kDefaultPadding*2,
+              vertical: AppSizes.kDefaultPadding * 2,
             ),
             child: PrimaryButton(
               label: 'Submit',
