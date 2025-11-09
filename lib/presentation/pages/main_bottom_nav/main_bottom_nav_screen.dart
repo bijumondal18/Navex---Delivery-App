@@ -26,6 +26,18 @@ class MainBottomNavScreen extends StatefulWidget {
 
 class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   bool _isOnline = false;
+  bool _hasRequestedProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasRequestedProfile && mounted) {
+        context.read<AuthBloc>().add(FetchUserProfileEvent());
+        _hasRequestedProfile = true;
+      }
+    });
+  }
 
   void _onDrawerItemTap(int index) async {
     // 1) Close the drawer
@@ -80,7 +92,6 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthBloc>(context).add(FetchUserProfileEvent());
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
