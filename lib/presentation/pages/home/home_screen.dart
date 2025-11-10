@@ -2,13 +2,18 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:navex/core/navigation/app_router.dart';
+import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/core/utils/app_preference.dart';
 import 'package:navex/core/utils/date_time_utils.dart';
 import 'package:navex/data/models/route.dart';
+import 'package:navex/presentation/widgets/app_cached_image.dart';
+import 'package:navex/presentation/widgets/custom_switch.dart';
 import 'package:navex/presentation/widgets/route_card.dart';
 import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
+import '../../bloc/auth_bloc.dart';
 import '../../bloc/route_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,12 +25,118 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _userName;
+  bool _isOnline = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
     _fetchUpcomingRoutes();
+  }
+
+  Widget _buildTopBar(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: _buildAvailabilityCard(context)),
+        const SizedBox(width: AppSizes.kDefaultPadding),
+        _ActionIconButton(
+          icon: Icons.notifications_none_rounded,
+          onTap: () => appRouter.go(Screens.notifications),
+        ),
+        const SizedBox(width: AppSizes.kDefaultPadding / 1.2),
+        _ProfileAvatar(),
+      ],
+    );
+  }
+
+  Widget _buildAvailabilityCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    final statusText = _isOnline ? 'You are online' : 'You are offline';
+    final statusSubtext = _isOnline
+        ? 'Customers can assign you new routes.'
+        : 'Toggle on when you’re ready to take assignments.';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.kDefaultPadding * 1.2,
+            vertical: AppSizes.kDefaultPadding,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+            color: theme.colorScheme.surface.withOpacity(
+              isDark ? 0.55 : 0.9,
+            ),
+            border: Border.all(
+              color: theme.primaryColor.withOpacity(0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.primaryColor.withOpacity(0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: (_isOnline
+                          ? theme.primaryColor
+                          : theme.colorScheme.outline)
+                      .withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  _isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+                  color: _isOnline
+                      ? theme.primaryColor
+                      : theme.colorScheme.outline,
+                ),
+              ),
+              const SizedBox(width: AppSizes.kDefaultPadding),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      statusText,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      statusSubtext,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color:
+                            theme.textTheme.bodySmall?.color?.withOpacity(0.65),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSizes.kDefaultPadding / 2),
+              CustomSwitch(
+                value: _isOnline,
+                onChanged: (value) {
+                  setState(() {
+                    _isOnline = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadUserName() async {
@@ -139,6 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _buildTopBar(context),
+                      const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
                       _buildHeroCard(
                         context,
                         greeting: '$greeting, $displayName',
@@ -400,6 +513,89 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ActionIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ActionIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.2),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Material(
+          color: theme.colorScheme.surface.withOpacity(
+            isDark ? 0.45 : 0.85,
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Icon(icon, color: theme.primaryColor),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        String? imageUrl;
+        if (state is FetchUserProfileStateLoaded) {
+          imageUrl = state.profileResponse.user?.profileImage;
+        }
+        return GestureDetector(
+          onTap: () => appRouter.go(Screens.profile),
+          child: ClipRRect(
+            borderRadius:
+                BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+                  color: Theme.of(context).colorScheme.surface.withOpacity(
+                        Theme.of(context).brightness == Brightness.dark
+                            ? 0.45
+                            : 0.85,
+                      ),
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor.withOpacity(0.12),
+                  ),
+                ),
+                child: AppCachedImage(
+                  url: imageUrl ?? '',
+                  width: 44,
+                  height: 44,
+                  fit: BoxFit.cover,
+                  circular: true,
+                  borderWidth: 0,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

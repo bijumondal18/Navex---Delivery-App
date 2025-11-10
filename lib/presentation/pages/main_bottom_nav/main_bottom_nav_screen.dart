@@ -8,10 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/resources/app_images.dart';
-import 'package:navex/core/themes/app_colors.dart';
-import 'package:navex/core/themes/app_sizes.dart';
-import 'package:navex/presentation/widgets/app_cached_image.dart';
-import 'package:navex/presentation/widgets/custom_switch.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../bloc/auth_bloc.dart';
@@ -32,7 +28,6 @@ class MainBottomNavScreen extends StatefulWidget {
 }
 
 class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
-  bool _isOnline = false;
   bool _hasRequestedProfile = false;
   int _selectedIndex = 0;
 
@@ -142,84 +137,6 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         extendBody: true,
-        appBar: AppBar(
-          centerTitle: false,
-          title: Text(
-            'Navex',
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: AppColors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            /**
-             * Online/Offline switch to go user online or offline
-             * */
-            CustomSwitch(
-              value: _isOnline,
-              onChanged: (value) {
-                setState(() {
-                  _isOnline = value;
-                });
-              },
-            ),
-
-            /**
-             * Notification Icon click to open Notifications Screen
-             * */
-            IconButton(
-              onPressed: () {
-                appRouter.go(Screens.notifications);
-              },
-              icon: Icon(Icons.notifications_none_rounded, size: 24),
-            ),
-            IconButton(
-              onPressed: () => appRouter.go(Screens.settings),
-              icon: Icon(Icons.settings_outlined, size: 22),
-            ),
-
-            /**
-             * Profile Avatar click to open Profile Screen
-             * */
-            GestureDetector(
-              onTap: () {
-                final profileIndex = _navItems.indexWhere(
-                  (item) => item.route == Screens.profile,
-                );
-                if (profileIndex != -1) {
-                  _onNavItemTap(profileIndex);
-                } else {
-                  appRouter.go(Screens.profile);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(right: AppSizes.kDefaultPadding),
-                child: BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    if (state is FetchUserProfileStateLoaded) {
-                      return AppCachedImage(
-                        url: state.profileResponse.user?.profileImage ?? '',
-                        width: 34,
-                        height: 34,
-                        fit: BoxFit.cover,
-                        circular: true,
-                        borderWidth: 1.5,
-                      );
-                    }
-                    return AppCachedImage(
-                      url: '',
-                      width: 34,
-                      height: 34,
-                      fit: BoxFit.cover,
-                      circular: true,
-                      borderWidth: 1.5,
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
         body: Stack(
           children: [
             Positioned.fill(
