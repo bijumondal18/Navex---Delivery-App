@@ -113,10 +113,13 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
                           )
                         : 'Not scheduled';
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _HeroHeader(
+                    if (isLoading) {
+                      return const Center(child: ThemedActivityIndicator());
+                    }
+
+                    final slivers = <Widget>[
+                      SliverToBoxAdapter(
+                        child: _HeroHeader(
                           title: 'Available routes',
                           subtitle:
                               'Select a route to review details and accept the delivery.',
@@ -125,94 +128,118 @@ class _AvailableRoutesScreenState extends State<AvailableRoutesScreen> {
                           ),
                           onDateTap: _openCalendar,
                         ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        Row(
+                      ),
+                      SliverToBoxAdapter(
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: _StatTile(
-                                icon: Icons.route_outlined,
-                                label: 'Total routes',
-                                value: '$totalRoutes',
-                                accentColor: Theme.of(context).primaryColor,
-                              ),
+                            const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _StatTile(
+                                    icon: Icons.route_outlined,
+                                    label: 'Total routes',
+                                    value: '$totalRoutes',
+                                    accentColor:
+                                        Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(
+                                    width: AppSizes.kDefaultPadding / 1.2),
+                                Expanded(
+                                  child: _StatTile(
+                                    icon: Icons.alt_route_rounded,
+                                    label: 'Stops today',
+                                    value: '$totalStops',
+                                    accentColor: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(
-                                width: AppSizes.kDefaultPadding / 1.2),
-                            Expanded(
-                              child: _StatTile(
-                                icon: Icons.alt_route_rounded,
-                                label: 'Stops today',
-                                value: '$totalStops',
-                                accentColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                              ),
+                                height: AppSizes.kDefaultPadding / 1.2),
+                            _StatTile(
+                              icon: Icons.schedule_rounded,
+                              label: 'Next departure',
+                              value: nextDeparture,
+                              accentColor:
+                                  Theme.of(context).colorScheme.secondary,
+                              isFullWidth: true,
                             ),
+                            const SizedBox(height: AppSizes.kDefaultPadding),
                           ],
                         ),
-                        const SizedBox(height: AppSizes.kDefaultPadding / 1.2),
-                        _StatTile(
-                          icon: Icons.schedule_rounded,
-                          label: 'Next departure',
-                          value: nextDeparture,
-                          accentColor:
-                              Theme.of(context).colorScheme.secondary,
-                          isFullWidth: true,
-                        ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
-                        Expanded(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 280),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            child: isLoading
-                                ? const Center(
-                                    child: ThemedActivityIndicator(),
-                                  )
-                                : isFailed
-                                    ? _ErrorState(
-                                        message: failureMessage ??
-                                            'Something went wrong',
-                                        onRetry: _refresh,
-                                      )
-                                    : routes.isEmpty
-                                        ? const _EmptyState(
-                                            message:
-                                                'No routes are currently available. Check back soon or adjust your date filter.',
-                                          )
-                                        : RefreshIndicator(
-                                            onRefresh: _refresh,
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            child: ListView.separated(
-                                              physics:
-                                                  const BouncingScrollPhysics(
-                                                parent:
-                                                    AlwaysScrollableScrollPhysics(),
-                                              ),
-                                              padding: const EdgeInsets.only(
-                                                left: 2,
-                                                right: 2,
-                                                bottom: AppSizes
-                                                        .kDefaultPadding *
-                                                    5,
-                                              ),
-                                              itemCount: routes.length,
-                                              separatorBuilder: (_, __) =>
-                                                  const SizedBox(
-                                                height: AppSizes
-                                                        .kDefaultPadding /
-                                                    1.5,
-                                              ),
-                                              itemBuilder: (_, index) =>
-                                                  RouteCard(
-                                                route: routes[index],
-                                              ),
-                                            ),
-                                          ),
+                      ),
+                    ];
+
+                    if (isLoading) {
+                      slivers.add(
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppSizes.kDefaultPadding * 2,
+                            ),
+                            child: Center(child: ThemedActivityIndicator()),
                           ),
                         ),
-                      ],
+                      );
+                    } else if (isFailed) {
+                      slivers.add(
+                        SliverToBoxAdapter(
+                          child: _ErrorState(
+                            message:
+                                failureMessage ?? 'Something went wrong',
+                            onRetry: _refresh,
+                          ),
+                        ),
+                      );
+                    } else if (routes.isEmpty) {
+                      slivers.add(
+                        const SliverToBoxAdapter(
+                          child: _EmptyState(
+                            message:
+                                'No routes are currently available. Check back soon or adjust your date filter.',
+                          ),
+                        ),
+                      );
+                    } else {
+                      slivers.add(
+                        SliverPadding(
+                          padding: EdgeInsets.only(
+                            bottom: AppSizes.kDefaultPadding * 2.5 +
+                                MediaQuery.of(context).padding.bottom,
+                          ),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final route = routes[index];
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: index == routes.length - 1
+                                        ? 0
+                                        : AppSizes.kDefaultPadding * 1.2,
+                                  ),
+                                  child: RouteCard(route: route),
+                                );
+                              },
+                              childCount: routes.length,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: _refresh,
+                      color: Theme.of(context).primaryColor,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        slivers: slivers,
+                      ),
                     );
                   },
                 ),

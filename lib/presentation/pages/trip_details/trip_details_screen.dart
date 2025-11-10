@@ -130,54 +130,106 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   return RefreshIndicator(
                     onRefresh: _refresh,
                     color: Theme.of(context).primaryColor,
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-                      padding: EdgeInsets.fromLTRB(
-                        AppSizes.kDefaultPadding,
-                        AppSizes.kDefaultPadding * 1.3,
-                        AppSizes.kDefaultPadding,
-                        AppSizes.kDefaultPadding * 2 +
-                            MediaQuery.of(context).padding.bottom,
-                      ),
+                    child: Stack(
                       children: [
-                        _TripSummaryPanel(route: routeData),
-                        if (failureMessage != null && routeData != null) ...[
-                          const SizedBox(height: AppSizes.kDefaultPadding),
-                          _InlineNotice(message: failureMessage),
-                        ],
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _PickupStopsPanel(route: routeData),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _MapPanel(
-                          map: GoogleMap(
-                            initialCameraPosition: const CameraPosition(
-                              target: _start,
-                              zoom: 14,
+                        CustomScrollView(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: const SizedBox(
+                                height: AppSizes.kDefaultPadding * 2.5,
+                              ),
                             ),
-                            onMapCreated: (controller) {
-                              if (!_controller.isCompleted) {
-                                _controller.complete(controller);
-                              }
-                            },
-                            markers: _markers,
-                            myLocationEnabled: false,
-                            zoomControlsEnabled: false,
-                            myLocationButtonEnabled: false,
-                          ),
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSizes.kDefaultPadding,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _TripSummaryPanel(route: routeData),
+                                    if (failureMessage != null &&
+                                        routeData != null) ...[
+                                      const SizedBox(
+                                        height: AppSizes.kDefaultPadding,
+                                      ),
+                                      _InlineNotice(message: failureMessage),
+                                    ],
+                                    const SizedBox(
+                                      height: AppSizes.kDefaultPadding * 1.4,
+                                    ),
+                                    _PickupStopsPanel(route: routeData),
+                                    const SizedBox(
+                                      height: AppSizes.kDefaultPadding * 1.4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSizes.kDefaultPadding,
+                                ),
+                                child: _MapPanel(
+                                  map: GoogleMap(
+                                    initialCameraPosition: const CameraPosition(
+                                      target: _start,
+                                      zoom: 14,
+                                    ),
+                                    onMapCreated: (controller) {
+                                      if (!_controller.isCompleted) {
+                                        _controller.complete(controller);
+                                      }
+                                    },
+                                    markers: _markers,
+                                    myLocationEnabled: false,
+                                    zoomControlsEnabled: false,
+                                    myLocationButtonEnabled: false,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSizes.kDefaultPadding,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(
+                                      height: AppSizes.kDefaultPadding * 1.4,
+                                    ),
+                                    _TripMetricsPanel(route: routeData),
+                                    if (_routeStatus == 2) ...[
+                                      const SizedBox(
+                                        height: AppSizes.kDefaultPadding * 1.4,
+                                      ),
+                                      _AcceptAction(
+                                        routeId: widget.routeId,
+                                        onRefresh: _refresh,
+                                      ),
+                                    ],
+                                    SizedBox(
+                                      height:
+                                          AppSizes.kDefaultPadding * 2.5 +
+                                          MediaQuery.of(context).padding.bottom,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _TripMetricsPanel(route: routeData),
-                        if (_routeStatus == 2) ...[
-                          const SizedBox(
-                            height: AppSizes.kDefaultPadding * 1.4,
-                          ),
-                          _AcceptAction(
-                            routeId: widget.routeId,
-                            onRefresh: _refresh,
-                          ),
-                        ],
+                        const Positioned(
+                          top: AppSizes.kDefaultPadding * 0.6,
+                          left: AppSizes.kDefaultPadding,
+                          child: _FloatingBackButton(),
+                        ),
                       ],
                     ),
                   );
@@ -890,6 +942,32 @@ class _InlineNotice extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FloatingBackButton extends StatelessWidget {
+  const _FloatingBackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Material(
+          color: Theme.of(context).colorScheme.surface.withOpacity(
+            Theme.of(context).brightness == Brightness.dark ? 0.55 : 0.88,
+          ),
+          child: InkWell(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: const SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            ),
+          ),
+        ),
       ),
     );
   }

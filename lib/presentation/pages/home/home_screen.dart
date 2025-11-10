@@ -247,96 +247,127 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       : 'Not scheduled';
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTopBar(context),
-                      const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
-                      _buildHeroCard(
-                        context,
-                        greeting: '$greeting, $displayName',
-                        subtitle:
-                            'Here’s what your delivery day looks like today.',
-                        date: DateTimeUtils.getFormattedCurrentDate(),
-                      ),
-                      const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
-                      Row(
+                  if (isLoading) {
+                    return const Center(child: ThemedActivityIndicator());
+                  }
+
+                  final slivers = <Widget>[
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _StatTile(
-                              icon: Icons.route_outlined,
-                              title: 'Upcoming routes',
-                              value: '$totalRoutes',
-                              accentColor: theme.primaryColor,
-                            ),
+                          _buildTopBar(context),
+                          const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+                          _buildHeroCard(
+                            context,
+                            greeting: '$greeting, $displayName',
+                            subtitle:
+                                'Here’s what your delivery day looks like today.',
+                            date: DateTimeUtils.getFormattedCurrentDate(),
                           ),
-                          const SizedBox(width: AppSizes.kDefaultPadding / 1.2),
-                          Expanded(
-                            child: _StatTile(
-                              icon: Icons.schedule_rounded,
-                              title: 'Next departure',
-                              value: nextDeparture,
-                              accentColor:
-                                  theme.colorScheme.secondary.withOpacity(0.9),
-                            ),
+                          const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _StatTile(
+                                  icon: Icons.route_outlined,
+                                  title: 'Upcoming routes',
+                                  value: '$totalRoutes',
+                                  accentColor: theme.primaryColor,
+                                ),
+                              ),
+                              const SizedBox(
+                                  width: AppSizes.kDefaultPadding / 1.2),
+                              Expanded(
+                                child: _StatTile(
+                                  icon: Icons.schedule_rounded,
+                                  title: 'Next departure',
+                                  value: nextDeparture,
+                                  accentColor: theme
+                                      .colorScheme.secondary
+                                      .withOpacity(0.9),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSizes.kDefaultPadding / 1.2),
+                          _StatTile(
+                            icon: Icons.pin_drop_outlined,
+                            title: 'Total stops today',
+                            value: '$totalStops',
+                            accentColor: theme.colorScheme.tertiary,
+                            isFullWidth: true,
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSizes.kDefaultPadding / 1.2),
-                      _StatTile(
-                        icon: Icons.pin_drop_outlined,
-                        title: 'Total stops today',
-                        value: '$totalStops',
-                        accentColor: theme.colorScheme.tertiary,
-                        isFullWidth: true,
-                      ),
-                      const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 280),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          child: isLoading
-                              ? const Center(
-                                  child: ThemedActivityIndicator(),
-                                )
-                              : isFailed
-                                  ? _buildErrorState(
-                                      context,
-                                      failedMessage ?? 'Something went wrong',
-                                    )
-                                  : routes.isEmpty
-                                      ? _buildEmptyState(context)
-                                      : RefreshIndicator(
-                                          onRefresh: _refreshRoutes,
-                                          color: theme.primaryColor,
-                                          child: ListView.separated(
-                                            physics:
-                                                const BouncingScrollPhysics(
-                                              parent:
-                                                  AlwaysScrollableScrollPhysics(),
-                                            ),
-                                            padding: const EdgeInsets.only(
-                                              left: 2,
-                                              right: 2,
-                                              bottom:
-                                                  AppSizes.kDefaultPadding * 5,
-                                            ),
-                                            itemCount: routes.length,
-                                            separatorBuilder: (_, __) =>
-                                                const SizedBox(
-                                              height:
-                                                  AppSizes.kDefaultPadding / 1.5,
-                                            ),
-                                            itemBuilder: (context, index) =>
-                                                RouteCard(
-                                              route: routes[index],
-                                            ),
-                                          ),
-                                        ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: AppSizes.kDefaultPadding * 1.5),
+                    ),
+                  ];
+
+                  if (isLoading) {
+                    slivers.add(
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: AppSizes.kDefaultPadding * 2,
+                          ),
+                          child: Center(child: ThemedActivityIndicator()),
                         ),
                       ),
-                    ],
+                    );
+                  } else if (isFailed) {
+                    slivers.add(
+                      SliverToBoxAdapter(
+                        child: _buildErrorState(
+                          context,
+                          failedMessage ?? 'Something went wrong',
+                        ),
+                      ),
+                    );
+                  } else if (routes.isEmpty) {
+                    slivers.add(
+                      SliverToBoxAdapter(
+                        child: _buildEmptyState(context),
+                      ),
+                    );
+                  } else {
+                    slivers.add(
+                      SliverPadding(
+                        padding: EdgeInsets.only(
+                          bottom: AppSizes.kDefaultPadding * 2.5 +
+                              MediaQuery.of(context).padding.bottom,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final route = routes[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index == routes.length - 1
+                                      ? 0
+                                      : AppSizes.kDefaultPadding * 1.2,
+                                ),
+                                child: RouteCard(route: route),
+                              );
+                            },
+                            childCount: routes.length,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _refreshRoutes,
+                    color: theme.primaryColor,
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ),
+                      slivers: slivers,
+                    ),
                   );
                 },
               ),

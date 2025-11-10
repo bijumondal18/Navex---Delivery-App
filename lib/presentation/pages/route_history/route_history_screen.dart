@@ -115,103 +115,100 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
                           )
                         : '—';
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _HistoryHeader(
-                          dateLabel: DateTimeUtils.getFormattedSelectedDate(
-                            _selectedDate,
-                          ),
-                          onDateTap: _openCalendar,
-                        ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _HistoryStatTile(
-                                icon: Icons.check_circle_outline,
-                                label: 'Completed',
-                                value: '$completedCount',
-                                accentColor: Theme.of(context).primaryColor,
+                    if (isLoading) {
+                      return const Center(child: ThemedActivityIndicator());
+                    }
+
+                    Widget listSection;
+                    if (isFailed) {
+                      listSection = _HistoryErrorState(
+                        message: failureMessage ?? 'Something went wrong',
+                        onRetry: _refresh,
+                      );
+                    } else if (routes.isEmpty) {
+                      listSection = const _HistoryEmptyState(
+                        message:
+                            'No trips were completed on this day. Try choosing another date.',
+                      );
+                    } else {
+                      listSection = Column(
+                        children: [
+                          const SizedBox(height: AppSizes.kDefaultPadding),
+                          ...List.generate(routes.length, (index) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index == routes.length - 1
+                                    ? 0
+                                    : AppSizes.kDefaultPadding * 1.2,
                               ),
+                              child: RouteCard(route: routes[index]),
+                            );
+                          }),
+                        ],
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: _refresh,
+                      color: Theme.of(context).primaryColor,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _HistoryHeader(
+                              dateLabel: DateTimeUtils.getFormattedSelectedDate(
+                                _selectedDate,
+                              ),
+                              onDateTap: _openCalendar,
                             ),
                             const SizedBox(
-                                width: AppSizes.kDefaultPadding / 1.2),
-                            Expanded(
-                              child: _HistoryStatTile(
-                                icon: Icons.pin_drop_outlined,
-                                label: 'Stops',
-                                value: '$totalStops',
-                                accentColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                              ),
+                                height: AppSizes.kDefaultPadding * 1.4),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _HistoryStatTile(
+                                    icon: Icons.check_circle_outline,
+                                    label: 'Completed',
+                                    value: '$completedCount',
+                                    accentColor:
+                                        Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(
+                                    width: AppSizes.kDefaultPadding / 1.2),
+                                Expanded(
+                                  child: _HistoryStatTile(
+                                    icon: Icons.pin_drop_outlined,
+                                    label: 'Stops',
+                                    value: '$totalStops',
+                                    accentColor: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                                height: AppSizes.kDefaultPadding / 1.2),
+                            _HistoryStatTile(
+                              icon: Icons.schedule_rounded,
+                              label: 'Last activity',
+                              value: lastCompleted,
+                              accentColor:
+                                  Theme.of(context).colorScheme.secondary,
+                              isFullWidth: true,
+                            ),
+                            listSection,
+                            SizedBox(
+                              height: AppSizes.kDefaultPadding * 2.5 +
+                                  MediaQuery.of(context).padding.bottom,
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSizes.kDefaultPadding / 1.2),
-                        _HistoryStatTile(
-                          icon: Icons.schedule_rounded,
-                          label: 'Last activity',
-                          value: lastCompleted,
-                          accentColor:
-                              Theme.of(context).colorScheme.secondary,
-                          isFullWidth: true,
-                        ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
-                        Expanded(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 280),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            child: isLoading
-                                ? const Center(
-                                    child: ThemedActivityIndicator(),
-                                  )
-                                : isFailed
-                                    ? _HistoryErrorState(
-                                        message:
-                                            failureMessage ?? 'Something went wrong',
-                                        onRetry: _refresh,
-                                      )
-                                    : routes.isEmpty
-                                        ? const _HistoryEmptyState(
-                                            message:
-                                                'No trips were completed on this day. Try choosing another date.',
-                                          )
-                                        : RefreshIndicator(
-                                            onRefresh: _refresh,
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            child: ListView.separated(
-                                              physics:
-                                                  const BouncingScrollPhysics(
-                                                parent:
-                                                    AlwaysScrollableScrollPhysics(),
-                                              ),
-                                              padding: const EdgeInsets.only(
-                                                left: 2,
-                                                right: 2,
-                                                bottom: AppSizes
-                                                        .kDefaultPadding *
-                                                    5,
-                                              ),
-                                              itemCount: routes.length,
-                                              separatorBuilder: (_, __) =>
-                                                  const SizedBox(
-                                                height: AppSizes
-                                                        .kDefaultPadding /
-                                                    1.5,
-                                              ),
-                                              itemBuilder: (_, index) =>
-                                                  RouteCard(
-                                                route: routes[index],
-                                              ),
-                                            ),
-                                          ),
-                          ),
-                        ),
-                      ],
+                      ),
                     );
                   },
                 ),

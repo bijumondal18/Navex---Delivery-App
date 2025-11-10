@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
 import 'package:navex/data/models/user.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
@@ -97,7 +98,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: false,
-              title: const Text('Profile'),
+              title: Text(
+                'Profile',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: AppColors.white),
+              ),
             ),
             body: Stack(
               children: [
@@ -132,13 +138,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                             _buildProfileOverview(context),
                             const SizedBox(
-                                height: AppSizes.kDefaultPadding * 1.5),
+                              height: AppSizes.kDefaultPadding * 1.5,
+                            ),
                             _buildMetaSection(context),
                             const SizedBox(
-                                height: AppSizes.kDefaultPadding * 1.5),
+                              height: AppSizes.kDefaultPadding * 1.5,
+                            ),
                             _buildActionSection(context),
                             const SizedBox(
-                                height: AppSizes.kDefaultPadding * 1.2),
+                              height: AppSizes.kDefaultPadding * 1.2,
+                            ),
                             _buildDangerZone(context),
                           ],
                         ),
@@ -201,13 +210,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileOverview(BuildContext context) {
     final theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
-    final String displayName =
-        (_cachedName?.trim().isNotEmpty ?? false) ? _cachedName!.trim() : 'Driver';
-    final String email =
-        (_cachedEmail?.trim().isNotEmpty ?? false) ? _cachedEmail!.trim() : 'No email';
+    final String displayName = (_cachedName?.trim().isNotEmpty ?? false)
+        ? _cachedName!.trim()
+        : 'Driver';
+    final String email = (_cachedEmail?.trim().isNotEmpty ?? false)
+        ? _cachedEmail!.trim()
+        : 'No email';
     final String role =
         _cachedUser?.role?.toString().replaceAll('_', ' ').toUpperCase() ??
-            'DRIVER';
+        'DRIVER';
     final bool isEmailVerified =
         (_cachedUser?.emailVerifiedAt?.toString().isNotEmpty ?? false);
 
@@ -221,7 +232,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             vertical: AppSizes.kDefaultPadding * 1.6,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.6),
+            borderRadius: BorderRadius.circular(
+              AppSizes.cardCornerRadius * 1.6,
+            ),
             color: theme.colorScheme.surface.withOpacity(isDark ? 0.55 : 0.9),
             border: Border.all(color: theme.primaryColor.withOpacity(0.14)),
             boxShadow: [
@@ -242,7 +255,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     bottom: 4,
                     right: 4,
                     child: GestureDetector(
-                      onTap: () => _showImagePickerBottomSheet(context: context),
+                      onTap: () =>
+                          _showImagePickerBottomSheet(context: context),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -359,10 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: BoxShape.circle,
               ),
               child: const Center(
-                child: ThemedActivityIndicator(
-                  radius: 16,
-                  color: Colors.white,
-                ),
+                child: ThemedActivityIndicator(radius: 16, color: Colors.white),
               ),
             ),
           ),
@@ -429,8 +440,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: metaItems
                 .map(
                   (item) => Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppSizes.kDefaultPadding),
+                    padding: const EdgeInsets.only(
+                      bottom: AppSizes.kDefaultPadding,
+                    ),
                     child: _ProfileMetaTile(data: item),
                   ),
                 )
@@ -475,8 +487,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _ProfileActionTile(action: action),
                   if (action != actions.last)
                     Divider(
-                      color:
-                          Theme.of(context).dividerColor.withOpacity(0.6),
+                      color: Theme.of(context).dividerColor.withOpacity(0.6),
                     ),
                 ],
               ),
@@ -564,12 +575,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       bottom: AppSizes.kDefaultPadding * 1.2,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .outline
-                          .withOpacity(0.35),
-                      borderRadius:
-                          BorderRadius.circular(AppSizes.cardCornerRadius),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withOpacity(0.35),
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
                     ),
                   ),
                 ),
@@ -644,14 +655,13 @@ class _GlassPanel extends StatelessWidget {
             vertical: AppSizes.kDefaultPadding * 1.2,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
-            color: (tintColor ??
-                    theme.colorScheme.surface.withOpacity(
-                      isDark ? 0.5 : 0.92,
-                    )),
-            border: Border.all(
-              color: theme.primaryColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(
+              AppSizes.cardCornerRadius * 1.4,
             ),
+            color:
+                (tintColor ??
+                theme.colorScheme.surface.withOpacity(isDark ? 0.5 : 0.92)),
+            border: Border.all(color: theme.primaryColor.withOpacity(0.12)),
             boxShadow: [
               BoxShadow(
                 color: theme.primaryColor.withOpacity(0.12),
@@ -695,10 +705,10 @@ class _PillChip extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                  letterSpacing: 0.4,
-                ),
+              fontWeight: FontWeight.w600,
+              color: color,
+              letterSpacing: 0.4,
+            ),
           ),
         ],
       ),

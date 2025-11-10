@@ -237,33 +237,42 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     return const SizedBox.shrink();
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: _refresh,
-                    color: theme.primaryColor,
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-                      padding: EdgeInsets.fromLTRB(
-                        AppSizes.kDefaultPadding,
-                        AppSizes.kDefaultPadding * 1.3,
-                        AppSizes.kDefaultPadding,
-                        AppSizes.kDefaultPadding * 2 +
-                            MediaQuery.of(context).padding.bottom,
-                      ),
-                      children: [
-                        _RouteOverviewPanel(
-                          route: routeData,
-                          hasLoadedVehicle:
-                              _hasLoadedVehicle || _isFlagTrue(routeData.isLoaded),
-                          hasCheckedIn: _hasCheckedIn,
+                  final List<Widget> slivers = [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.kDefaultPadding,
                         ),
-                        if (failureMessage != null) ...[
-                          const SizedBox(height: AppSizes.kDefaultPadding),
-                          _InlineNotice(message: failureMessage),
-                        ],
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _MapSection(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              height: AppSizes.kDefaultPadding * 2.5,
+                            ),
+                            _RouteOverviewPanel(
+                              route: routeData,
+                              hasLoadedVehicle:
+                                  _hasLoadedVehicle ||
+                                      _isFlagTrue(routeData.isLoaded),
+                              hasCheckedIn: _hasCheckedIn,
+                            ),
+                            if (failureMessage != null) ...[
+                              const SizedBox(height: AppSizes.kDefaultPadding),
+                              _InlineNotice(message: failureMessage),
+                            ],
+                            const SizedBox(
+                              height: AppSizes.kDefaultPadding * 1.4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.kDefaultPadding,
+                        ),
+                        child: _MapSection(
                           map: GoogleMap(
                             key: const ValueKey('in_route_map'),
                             initialCameraPosition: const CameraPosition(
@@ -282,12 +291,58 @@ class _InRouteScreenState extends State<InRouteScreen> {
                             mapType: MapType.normal,
                           ),
                         ),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _RouteMetricsPanel(route: routeData),
-                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
-                        _buildTimelinePanel(context, routeData),
-                      ],
+                      ),
                     ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.kDefaultPadding,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              height: AppSizes.kDefaultPadding * 1.4,
+                            ),
+                            _RouteMetricsPanel(route: routeData),
+                            const SizedBox(
+                              height: AppSizes.kDefaultPadding * 1.4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.only(
+                        left: AppSizes.kDefaultPadding,
+                        right: AppSizes.kDefaultPadding,
+                        bottom: AppSizes.kDefaultPadding * 2.5 +
+                            MediaQuery.of(context).padding.bottom,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildTimelinePanel(context, routeData),
+                      ),
+                    ),
+                  ];
+
+                  return Stack(
+                    children: [
+                      RefreshIndicator(
+                        onRefresh: _refresh,
+                        color: theme.primaryColor,
+                        child: CustomScrollView(
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          slivers: slivers,
+                        ),
+                      ),
+                      const Positioned(
+                        top: AppSizes.kDefaultPadding,
+                        left: AppSizes.kDefaultPadding,
+                        child: _FloatingBackButton(),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -1445,6 +1500,32 @@ class _InlineNotice extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FloatingBackButton extends StatelessWidget {
+  const _FloatingBackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Material(
+          color: Theme.of(context).colorScheme.surface.withOpacity(
+                Theme.of(context).brightness == Brightness.dark ? 0.55 : 0.88,
+              ),
+          child: InkWell(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: const SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            ),
+          ),
+        ),
       ),
     );
   }
