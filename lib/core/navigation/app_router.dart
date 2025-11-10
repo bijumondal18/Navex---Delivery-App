@@ -56,12 +56,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: Screens.profile,
-      name: 'profile',
-      pageBuilder: (context, state) =>
-          _buildAnimatedPage(state, ProfileScreen()),
-    ),
-    GoRoute(
       path: Screens.editProfile,
       name: 'edit_profile',
       pageBuilder: (context, state) =>
@@ -83,7 +77,10 @@ final GoRouter appRouter = GoRouter(
     ),
     ShellRoute(
       navigatorKey: _shellKey,
-      builder: (context, state, child) => MainBottomNavScreen(child: child),
+      builder: (context, state, child) => MainBottomNavScreen(
+        child: child,
+        state: state,
+      ),
       routes: [
         GoRoute(
           path: Screens.main,
@@ -130,6 +127,12 @@ final GoRouter appRouter = GoRouter(
           name: 'route_history',
           pageBuilder: (_, state) =>
               _buildAnimatedPage(state, RouteHistoryScreen()),
+        ),
+        GoRoute(
+          path: Screens.profile,
+          name: 'profile',
+          pageBuilder: (_, state) =>
+              _buildAnimatedPage(state, const ProfileScreen()),
         ),
         GoRoute(
           path: Screens.settings,

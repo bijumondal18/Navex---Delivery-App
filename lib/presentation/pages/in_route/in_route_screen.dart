@@ -1,16 +1,15 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:navex/presentation/widgets/primary_button.dart';
+import 'package:navex/presentation/widgets/themed_activity_indicator.dart';
 
-import '../../../core/resources/app_images.dart';
-import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_time_utils.dart';
 import '../../../core/utils/trip_status_utils.dart';
@@ -111,454 +110,339 @@ class _InRouteScreenState extends State<InRouteScreen> {
     ).add(FetchRouteDetailsEvent(routeId: widget.routeId));
   }
 
+  Future<void> _refresh() async {
+    if (!mounted) return;
+    context
+        .read<RouteBloc>()
+        .add(FetchRouteDetailsEvent(routeId: widget.routeId));
+    await Future.delayed(const Duration(milliseconds: 320));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            height: MediaQuery.sizeOf(context).height * 0.2,
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'In Route',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleLarge!.copyWith(color: AppColors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: 60,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            child: Column(
-              children: [
-                // Google Map Widget
-                SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 0.3,
-                  child: MultiBlocListener(
-                    listeners: [
-                      BlocListener<RouteBloc, RouteState>(
-                        listenWhen: (prev, curr) =>
-                            curr is FetchRouteDetailsStateLoaded,
-                        listener: (context, state) {
-                          if (state is FetchRouteDetailsStateLoaded) {
-                            final double lat = double.parse(
-                              state.routeData.pickupLat,
-                            );
-                            final double lng = double.parse(
-                              state.routeData.pickupLong,
-                            );
-                            _showPickupOnMap(lat: lat, lng: lng);
-                            if (mounted) {
-                              setState(() {
-                                _currentRouteData = state.routeData;
-                                final bool loaded =
-                                    _isFlagTrue(state.routeData.isLoaded);
-                                final int? status =
-                                    _parseToInt(state.routeData.status);
-                                final bool statusCheckedIn =
-                                    TripStatusHelper.isAlreadyCheckedIn(
-                                  status,
-                                );
-                                _hasLoadedVehicle = loaded;
-                                _hasCheckedIn = statusCheckedIn ||
-                                    loaded ||
-                                    _hasCheckedIn;
-                                _isCheckInInProgress = false;
-                                _isLoadVehicleInProgress = false;
-                              });
-                            }
-                          }
-                        },
-                      ),
-                      BlocListener<RouteBloc, RouteState>(
-                        listenWhen: (prev, curr) =>
-                            curr is CheckInStateLoading ||
-                            curr is CheckInStateLoaded ||
-                            curr is CheckInStateFailed,
-                        listener: (context, state) {
-                          if (!mounted) return;
-                          if (state is CheckInStateLoading) {
-                            setState(() => _isCheckInInProgress = true);
-                          } else if (state is CheckInStateLoaded) {
-                            setState(() {
-                              _isCheckInInProgress = false;
-                              _hasCheckedIn = true;
-                            });
-                            SnackBarHelper.showSuccess(
-                              state.response.message ??
-                                  'Checked in successfully',
-                              context: context,
-                            );
-                          } else if (state is CheckInStateFailed) {
-                            setState(() => _isCheckInInProgress = false);
-                            SnackBarHelper.showError(
-                              state.error,
-                              context: context,
-                            );
-                          }
-                        },
-                      ),
-                      BlocListener<RouteBloc, RouteState>(
-                        listenWhen: (prev, curr) =>
-                            curr is LoadVehicleStateLoading ||
-                            curr is LoadVehicleStateLoaded ||
-                            curr is LoadVehicleStateFailed,
-                        listener: (context, state) {
-                          if (!mounted) return;
-                          if (state is LoadVehicleStateLoading) {
-                            setState(() => _isLoadVehicleInProgress = true);
-                          } else if (state is LoadVehicleStateLoaded) {
-                            setState(() {
-                              _isLoadVehicleInProgress = false;
-                              _hasLoadedVehicle = true;
-                              _hasCheckedIn = true;
-                            });
-                            SnackBarHelper.showSuccess(
-                              state.response.message ??
-                                  'Vehicle loaded successfully',
-                              context: context,
-                            );
-                          } else if (state is LoadVehicleStateFailed) {
-                            setState(() {
-                              _isLoadVehicleInProgress = false;
-                            });
-                            SnackBarHelper.showError(
-                              state.error,
-                              context: context,
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                    child: Card(
-                      elevation: AppSizes.elevationMedium,
-                      margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                      shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                      color: Theme.of(context).cardColor,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.cardCornerRadius,
-                        ),
-                        child: GoogleMap(
-                          key: const ValueKey('in_route_map'),
-                          initialCameraPosition: const CameraPosition(
-                            target: _start,
-                            zoom: 14,
-                          ),
-                          onMapCreated: (c) {
-                            if (!_controller.isCompleted) {
-                              _controller.complete(c);
-                            }
-                          },
-                          markers: _markers,
-                          myLocationEnabled: false,
-                          zoomControlsEnabled: false,
-                          myLocationButtonEnabled: false,
-                          mapType: MapType.normal,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+    final theme = Theme.of(context);
 
-                // Distance and Time card Widget
-                Card(
-                  elevation: AppSizes.elevationMedium,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.kDefaultPadding,
-                  ),
-                  shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                  color: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.cardCornerRadius,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                    child: Column(
-                      spacing: AppSizes.kDefaultPadding,
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<RouteBloc, RouteState>(
+          listenWhen: (previous, current) =>
+              current is FetchRouteDetailsStateLoaded,
+          listener: (context, state) {
+            if (!mounted) return;
+            final data = (state as FetchRouteDetailsStateLoaded).routeData;
+            final lat = double.tryParse('${data.pickupLat ?? ''}');
+            final lng = double.tryParse('${data.pickupLong ?? ''}');
+            if (lat != null && lng != null) {
+              _showPickupOnMap(lat: lat, lng: lng);
+            }
+            setState(() {
+              _currentRouteData = data;
+              final bool loaded = _isFlagTrue(data.isLoaded);
+              final int? status = _parseToInt(data.status);
+              final bool statusCheckedIn =
+                  TripStatusHelper.isAlreadyCheckedIn(status);
+              _hasLoadedVehicle = loaded;
+              _hasCheckedIn = statusCheckedIn || loaded || _hasCheckedIn;
+              _isCheckInInProgress = false;
+              _isLoadVehicleInProgress = false;
+            });
+          },
+        ),
+        BlocListener<RouteBloc, RouteState>(
+          listenWhen: (previous, current) =>
+              current is CheckInStateLoading ||
+              current is CheckInStateLoaded ||
+              current is CheckInStateFailed,
+          listener: (context, state) {
+            if (!mounted) return;
+            if (state is CheckInStateLoading) {
+              setState(() => _isCheckInInProgress = true);
+            } else if (state is CheckInStateLoaded) {
+              setState(() {
+                _isCheckInInProgress = false;
+                _hasCheckedIn = true;
+              });
+              SnackBarHelper.showSuccess(
+                state.response.message ?? 'Checked in successfully',
+                context: context,
+              );
+            } else if (state is CheckInStateFailed) {
+              setState(() => _isCheckInInProgress = false);
+              SnackBarHelper.showError(state.error, context: context);
+            }
+          },
+        ),
+        BlocListener<RouteBloc, RouteState>(
+          listenWhen: (previous, current) =>
+              current is LoadVehicleStateLoading ||
+              current is LoadVehicleStateLoaded ||
+              current is LoadVehicleStateFailed,
+          listener: (context, state) {
+            if (!mounted) return;
+            if (state is LoadVehicleStateLoading) {
+              setState(() => _isLoadVehicleInProgress = true);
+            } else if (state is LoadVehicleStateLoaded) {
+              setState(() {
+                _isLoadVehicleInProgress = false;
+                _hasLoadedVehicle = true;
+                _hasCheckedIn = true;
+              });
+              SnackBarHelper.showSuccess(
+                state.response.message ?? 'Vehicle loaded successfully',
+                context: context,
+              );
+            } else if (state is LoadVehicleStateFailed) {
+              setState(() => _isLoadVehicleInProgress = false);
+              SnackBarHelper.showError(state.error, context: context);
+            }
+          },
+        ),
+      ],
+      child: Container(
+        decoration: _buildBackgroundGradient(context),
+        child: Stack(
+          children: [
+            _buildBackgroundShapes(context),
+            SafeArea(
+              child: BlocBuilder<RouteBloc, RouteState>(
+                builder: (context, state) {
+                  final bool isLoading =
+                      state is FetchRouteDetailsStateLoading &&
+                          _currentRouteData == null;
+                  final bool isFailed =
+                      state is FetchRouteDetailsStateFailed &&
+                          _currentRouteData == null;
+                  final String? failureMessage =
+                      state is FetchRouteDetailsStateFailed
+                          ? state.error
+                          : null;
+                  final RouteData? routeData =
+                      state is FetchRouteDetailsStateLoaded
+                          ? state.routeData
+                          : _currentRouteData;
+
+                  if (isLoading) {
+                    return Center(child: ThemedActivityIndicator());
+                  }
+
+                  if (isFailed) {
+                    return _InRouteError(
+                      message:
+                          failureMessage ?? 'Unable to load route progress.',
+                      onRetry: _refresh,
+                    );
+                  }
+
+                  if (routeData == null) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _refresh,
+                    color: theme.primaryColor,
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ),
+                      padding: EdgeInsets.fromLTRB(
+                        AppSizes.kDefaultPadding,
+                        AppSizes.kDefaultPadding * 1.3,
+                        AppSizes.kDefaultPadding,
+                        AppSizes.kDefaultPadding * 2 +
+                            MediaQuery.of(context).padding.bottom,
+                      ),
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: AppSizes.kDefaultPadding / 3,
-                              children: [
-                                SvgPicture.asset(
-                                  AppImages.pinRed,
-                                  width: 20,
-                                  height: 20,
-                                ),
-                                BlocBuilder<RouteBloc, RouteState>(
-                                  builder: (context, state) {
-                                    final routeData =
-                                        state is FetchRouteDetailsStateLoaded
-                                            ? state.routeData
-                                            : _currentRouteData;
-                                    if (routeData != null) {
-                                      final distance =
-                                          routeData.totalDistance ?? '0';
-                                      return Text(
-                                        '$distance mi',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    }
-                                    if (state is FetchRouteDetailsStateFailed) {
-                                      return Text(
-                                        state.error,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    }
-                                    return Text(
-                                      '0 mi',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge!
-                                          .copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    );
-                                  },
-                                ),
-                                Text(
-                                  'Distance',
-                                  style: Theme.of(context).textTheme.titleSmall!
-                                      .copyWith(
-                                        color: Theme.of(context).hintColor,
-                                      ),
-                                ),
-                              ],
-                            ),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: AppSizes.kDefaultPadding / 3,
-                              children: [
-                                SvgPicture.asset(
-                                  AppImages.clockGreen,
-                                  width: 20,
-                                  height: 20,
-                                ),
-                                BlocBuilder<RouteBloc, RouteState>(
-                                  builder: (context, state) {
-                                    final routeData =
-                                        state is FetchRouteDetailsStateLoaded
-                                            ? state.routeData
-                                            : _currentRouteData;
-                                    if (routeData != null) {
-                                      final totalTime = routeData.totalTime ?? "0";
-                                      return Text(
-                                        DateTimeUtils
-                                            .convertMinutesToHoursMinutes(
-                                          totalTime,
-                                        ),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    }
-                                    if (state is FetchRouteDetailsStateFailed) {
-                                      return Text(
-                                        state.error,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge!
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      );
-                                    }
-                                    return Text(
-                                      '0 min',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge!
-                                          .copyWith(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    );
-                                  },
-                                ),
-                                Text(
-                                  'Time',
-                                  style: Theme.of(context).textTheme.titleSmall!
-                                      .copyWith(
-                                        color: Theme.of(context).hintColor,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        _RouteOverviewPanel(
+                          route: routeData,
+                          hasLoadedVehicle:
+                              _hasLoadedVehicle || _isFlagTrue(routeData.isLoaded),
+                          hasCheckedIn: _hasCheckedIn,
                         ),
+                        if (failureMessage != null) ...[
+                          const SizedBox(height: AppSizes.kDefaultPadding),
+                          _InlineNotice(message: failureMessage),
+                        ],
+                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
+                        _MapSection(
+                          map: GoogleMap(
+                            key: const ValueKey('in_route_map'),
+                            initialCameraPosition: const CameraPosition(
+                              target: _start,
+                              zoom: 14,
+                            ),
+                            onMapCreated: (controller) {
+                              if (!_controller.isCompleted) {
+                                _controller.complete(controller);
+                              }
+                            },
+                            markers: _markers,
+                            myLocationEnabled: false,
+                            zoomControlsEnabled: false,
+                            myLocationButtonEnabled: false,
+                            mapType: MapType.normal,
+                          ),
+                        ),
+                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
+                        _RouteMetricsPanel(route: routeData),
+                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
+                        _buildTimelinePanel(context, routeData),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                BlocBuilder<RouteBloc, RouteState>(
-                  builder: (context, state) {
-                    final routeData = state is FetchRouteDetailsStateLoaded
-                        ? state.routeData
-                        : _currentRouteData;
-                    if (routeData == null) {
-                      return const SizedBox.shrink();
-                    }
+  Widget _buildTimelinePanel(BuildContext context, RouteData routeData) {
+    final theme = Theme.of(context);
+    final waypoints = routeData.waypoints ?? [];
+    final bool shouldReturn =
+        _parseToInt(routeData.driverShouldReturn) == 1;
+    final bool isVehicleLoaded =
+        _hasLoadedVehicle || _isFlagTrue(routeData.isLoaded);
+    final bool isCheckInCompleted = _hasCheckedIn || isVehicleLoaded;
+    final int? tripStatus = _parseToInt(routeData.status);
+    final bool canEnableCheckIn =
+        TripStatusHelper.canEnableCheckIn(tripStatus);
+    final int? currentWaypointId = _parseToInt(routeData.currentWaypoint);
+    final bool isInRouteAndLoaded = tripStatus == 4 && isVehicleLoaded;
+    final bool shouldHideWarehouseButtons = isInRouteAndLoaded;
 
-                    final waypoints = routeData.waypoints ?? [];
-                    final shouldReturn =
-                        _parseToInt(routeData.driverShouldReturn) == 1;
-                    final isVehicleLoaded =
-                        _hasLoadedVehicle || _isFlagTrue(routeData.isLoaded);
-                    final isCheckInCompleted =
-                        _hasCheckedIn || isVehicleLoaded;
-                    final int? tripStatus = _parseToInt(routeData.status);
-                    final canEnableCheckIn =
-                        TripStatusHelper.canEnableCheckIn(tripStatus);
-                    final int? currentWaypointId =
-                        _parseToInt(routeData.currentWaypoint);
-                    final bool isInRouteAndLoaded =
-                        tripStatus == 4 && isVehicleLoaded;
-                    final bool shouldHideWarehouseButtons =
-                        isInRouteAndLoaded;
-                    final pickupLat =
-                        double.tryParse(routeData.pickupLat) ?? 0.0;
-                    final pickupLng =
-                        double.tryParse(routeData.pickupLong) ?? 0.0;
+    final double? pickupLat =
+        double.tryParse('${routeData.pickupLat ?? ''}');
+    final double? pickupLng =
+        double.tryParse('${routeData.pickupLong ?? ''}');
 
-                    return Card(
-                      elevation: AppSizes.elevationMedium,
-                      margin: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                      shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-                      color: Theme.of(context).cardColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.cardCornerRadius,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.sizeOf(context).height * 0.3,
-                          ),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: [
-                              // Warehouse (Pickup) - First Item
-                              _buildWarehouseItem(
-                                context,
-                                routeData: routeData,
-                                isFirst: true,
-                                isLast: waypoints.isEmpty && !shouldReturn,
-                                isVehicleLoaded: isVehicleLoaded,
-                                showCheckInButton: true,
-                                showActionButtons: !shouldHideWarehouseButtons,
-                                canEnableCheckIn: canEnableCheckIn,
-                                isCheckInCompleted: isCheckInCompleted,
-                                isCheckInLoading: _isCheckInInProgress,
-                                isLoading: _isLoadVehicleInProgress,
-                                onNavigate: () =>
-                                    _navigateToLocation(pickupLat, pickupLng),
-                                onCheckIn: _checkIn,
-                                onLoadVehicle: _loadVehicle,
-                              ),
-                              const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
-                              // Waypoints
-                              ...List.generate(waypoints.length, (index) {
-                                final waypoint = waypoints[index];
-                                final isLast = index == waypoints.length - 1 && !shouldReturn;
-                                final previousCompleted = index == 0
-                                    ? isVehicleLoaded
-                                    : _isWaypointCompleted(
-                                        waypoints[index - 1],
-                                      );
-                                final bool isCurrentWaypoint =
-                                    currentWaypointId != null &&
-                                        currentWaypointId == waypoint.id;
-                                final bool isWaypointEnabled =
-                                    isInRouteAndLoaded
-                                        ? isCurrentWaypoint
-                                        : previousCompleted;
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: index == waypoints.length - 1
-                                        ? 0
-                                        : AppSizes.kDefaultPadding * 1.5,
-                                  ),
-                                  child: _buildWaypointItem(
-                                    context,
-                                    waypoint: waypoint,
-                                    index: index + 1,
-                                    isLast: isLast,
-                                    isEnabled: isWaypointEnabled,
-                                  ),
-                                );
-                              }),
-                              // Return to Warehouse (if driverShouldReturn == 1)
-                              if (shouldReturn && waypoints.isNotEmpty)
-                                const SizedBox(height: AppSizes.kDefaultPadding),
-                              if (shouldReturn)
-                                _buildWarehouseItem(
-                                  context,
-                                  routeData: routeData,
-                                  isFirst: false,
-                                  isLast: true,
-                                  isVehicleLoaded: true,
-                                  showCheckInButton: false,
-                                  showActionButtons: false,
-                                  canEnableCheckIn: false,
-                                  isCheckInCompleted: true,
-                                  isCheckInLoading: false,
-                                  isLoading: false,
-                                  onNavigate: () =>
-                                      _navigateToLocation(pickupLat, pickupLng),
-                                  onCheckIn: () {},
-                                  onLoadVehicle: () {},
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+    void navigateToPickup() {
+      if (pickupLat == null || pickupLng == null) {
+        SnackBarHelper.showError(
+          'Pickup location unavailable',
+          context: context,
+        );
+        return;
+      }
+      _navigateToLocation(pickupLat, pickupLng);
+    }
+
+    return _GlassPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Delivery workflow',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: AppSizes.kDefaultPadding),
+          _buildWarehouseItem(
+            context,
+            routeData: routeData,
+            isFirst: true,
+            isLast: waypoints.isEmpty && !shouldReturn,
+            isVehicleLoaded: isVehicleLoaded,
+            showCheckInButton: true,
+            showActionButtons: !shouldHideWarehouseButtons,
+            canEnableCheckIn: canEnableCheckIn,
+            isCheckInCompleted: isCheckInCompleted,
+            isCheckInLoading: _isCheckInInProgress,
+            isLoading: _isLoadVehicleInProgress,
+            onNavigate: navigateToPickup,
+            onCheckIn: _checkIn,
+            onLoadVehicle: _loadVehicle,
+          ),
+          if (waypoints.isNotEmpty)
+            const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+          for (var i = 0; i < waypoints.length; i++) ...[
+            _buildWaypointItem(
+              context,
+              waypoint: waypoints[i],
+              index: i + 1,
+              isLast: i == waypoints.length - 1 && !shouldReturn,
+              isEnabled: isInRouteAndLoaded
+                  ? (currentWaypointId != null &&
+                      _parseToInt(waypoints[i].id) == currentWaypointId)
+                  : (i == 0
+                      ? isVehicleLoaded
+                      : _isWaypointCompleted(waypoints[i - 1])),
+            ),
+            if (i != waypoints.length - 1)
+              const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+          ],
+          if (shouldReturn) ...[
+            if (waypoints.isNotEmpty)
+              const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+            _buildWarehouseItem(
+              context,
+              routeData: routeData,
+              isFirst: false,
+              isLast: true,
+              isVehicleLoaded: true,
+              showCheckInButton: false,
+              showActionButtons: false,
+              canEnableCheckIn: false,
+              isCheckInCompleted: true,
+              isCheckInLoading: false,
+              isLoading: false,
+              onNavigate: navigateToPickup,
+              onCheckIn: () {},
+              onLoadVehicle: () {},
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  BoxDecoration _buildBackgroundGradient(BuildContext context) {
+    final theme = Theme.of(context);
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          theme.primaryColor.withOpacity(0.95),
+          theme.primaryColor.withOpacity(0.85),
+          theme.scaffoldBackgroundColor,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackgroundShapes(BuildContext context) {
+    final theme = Theme.of(context);
+    return Stack(
+      children: [
+        Positioned(
+          top: -120,
+          left: -80,
+          child: Container(
+            width: 220,
+            height: 220,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.onPrimary.withOpacity(0.06),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -140,
+          right: -60,
+          child: Container(
+            width: 240,
+            height: 240,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.primary.withOpacity(0.08),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -821,7 +705,8 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required VoidCallback onCheckIn,
     required VoidCallback onLoadVehicle,
   }) {
-    final Color lineColor = Colors.grey.shade400;
+    final theme = Theme.of(context);
+    final Color lineColor = theme.dividerColor.withOpacity(0.35);
     final isLoaded = isVehicleLoaded;
 
     return Row(
@@ -841,11 +726,15 @@ class _InRouteScreenState extends State<InRouteScreen> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(color: lineColor),
               ),
-              child: const Icon(Icons.warehouse_outlined, size: 16, color: Colors.blueGrey),
+              child: Icon(
+                Icons.warehouse_outlined,
+                size: 16,
+                color: theme.primaryColor,
+              ),
             ),
             if (!isLast)
               DottedLine(
@@ -869,25 +758,25 @@ class _InRouteScreenState extends State<InRouteScreen> {
               children: [
                 Text(
                   'Warehouse',
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_pin,
-                      color: Colors.redAccent,
+                      color: theme.primaryColor,
                       size: 18,
                     ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         '${routeData.pickupAddress}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color:
+                              theme.textTheme.bodyMedium?.color?.withOpacity(0.9),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -952,9 +841,14 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required bool isLast,
     required bool isEnabled,
   }) {
-    final Color lineColor = Colors.grey.shade400;
+    final theme = Theme.of(context);
+    final Color lineColor = theme.dividerColor.withOpacity(0.35);
     final isCompleted = _isWaypointCompleted(waypoint);
     final customerName = waypoint.customer?.name ?? 'Customer';
+    final double? waypointLat =
+        double.tryParse('${waypoint.addressLat ?? ''}');
+    final double? waypointLng =
+        double.tryParse('${waypoint.addressLong ?? ''}');
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -972,7 +866,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: isCompleted ? Colors.green : Colors.white,
+                color: isCompleted
+                    ? theme.colorScheme.secondary
+                    : theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(color: lineColor),
               ),
@@ -981,7 +877,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
                   '$index',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isCompleted ? Colors.white : Colors.blueGrey,
+                    color: isCompleted
+                        ? theme.colorScheme.onSecondary
+                        : theme.primaryColor,
                   ),
                 ),
               ),
@@ -1008,9 +906,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Drop Off',
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -1018,9 +916,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 2.0),
-                      child: const Icon(
+                      child: Icon(
                         Icons.location_pin,
-                        color: Colors.redAccent,
+                        color: theme.primaryColor,
                         size: 18,
                       ),
                     ),
@@ -1029,9 +927,8 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       child: Text(
                         '${waypoint.address}',
                         maxLines: 2,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.textTheme.bodyMedium?.color,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1042,9 +939,9 @@ class _InRouteScreenState extends State<InRouteScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Customer: $customerName',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.textTheme.bodySmall?.color?.withOpacity(0.65),
                     ),
                   ),
                 ],
@@ -1053,18 +950,17 @@ class _InRouteScreenState extends State<InRouteScreen> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.note_alt_outlined,
-                        color: Colors.grey,
+                        color: theme.hintColor,
                         size: 18,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           'Note: ${waypoint.driverNote}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.textTheme.bodyMedium?.color,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1079,10 +975,17 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       Expanded(
                         child: PrimaryButton(
                           onPressed: isEnabled
-                              ? () => _navigateToLocation(
-                                    double.parse('${waypoint.addressLat}'),
-                                    double.parse('${waypoint.addressLong}'),
-                                  )
+                              ? () {
+                                  if (waypointLat == null ||
+                                      waypointLng == null) {
+                                    SnackBarHelper.showError(
+                                      'Destination unavailable',
+                                      context: context,
+                                    );
+                                    return;
+                                  }
+                                  _navigateToLocation(waypointLat, waypointLng);
+                                }
                               : null,
                           label: 'Navigate',
                           size: ButtonSize.sm,
@@ -1112,6 +1015,437 @@ class _InRouteScreenState extends State<InRouteScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _RouteOverviewPanel extends StatelessWidget {
+  final RouteData route;
+  final bool hasLoadedVehicle;
+  final bool hasCheckedIn;
+
+  const _RouteOverviewPanel({
+    required this.route,
+    required this.hasLoadedVehicle,
+    required this.hasCheckedIn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final routeName = (route.routeName?.toString().trim().isNotEmpty ?? false)
+        ? route.routeName.toString()
+        : 'Route';
+    final scheduledDate = route.startDate?.toString();
+    final scheduledTime = route.startTime?.toString();
+    final formattedDate = scheduledDate != null
+        ? DateTimeUtils.formatToDayMonthYear(scheduledDate)
+        : 'Date TBC';
+    final formattedTime = scheduledTime != null
+        ? DateTimeUtils.convertToAmPm(scheduledTime)
+        : 'Time TBC';
+    final status = _RouteStatus.fromValue(route.status, theme);
+    final stops = route.waypoints?.length ?? 0;
+
+    return _GlassPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      routeName,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Scheduled for $formattedDate at $formattedTime',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color:
+                            theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _StatusChip(status: status),
+            ],
+          ),
+          const SizedBox(height: AppSizes.kDefaultPadding * 1.1),
+          Wrap(
+            spacing: AppSizes.kDefaultPadding / 1.4,
+            runSpacing: AppSizes.kDefaultPadding / 1.4,
+            children: [
+              _InfoBadge(
+                icon: Icons.alt_route_outlined,
+                label: 'Stops',
+                value: '$stops',
+              ),
+              _InfoBadge(
+                icon: Icons.inventory_2_outlined,
+                label: 'Vehicle loaded',
+                value: hasLoadedVehicle ? 'Yes' : 'Pending',
+              ),
+              _InfoBadge(
+                icon: Icons.verified_user_outlined,
+                label: 'Checked in',
+                value: hasCheckedIn ? 'Completed' : 'Awaiting',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MapSection extends StatelessWidget {
+  final Widget map;
+
+  const _MapSection({required this.map});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GlassPanel(
+      padding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.2),
+        child: SizedBox(
+          height: 240,
+          child: map,
+        ),
+      ),
+    );
+  }
+}
+
+class _RouteMetricsPanel extends StatelessWidget {
+  final RouteData route;
+
+  const _RouteMetricsPanel({required this.route});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final distance = route.totalDistance?.toString() ?? '0';
+    final duration = route.totalTime?.toString() ?? '0';
+    final shouldReturn =
+        (route.driverShouldReturn?.toString() ?? '') == '1';
+
+    return _GlassPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Trip metrics',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSizes.kDefaultPadding),
+          Row(
+            children: [
+              Expanded(
+                child: _InfoBadge(
+                  icon: Icons.route_outlined,
+                  label: 'Distance',
+                  value: '$distance mi',
+                ),
+              ),
+              const SizedBox(width: AppSizes.kDefaultPadding / 1.2),
+              Expanded(
+                child: _InfoBadge(
+                  icon: Icons.timer_rounded,
+                  label: 'Duration',
+                  value:
+                      DateTimeUtils.convertMinutesToHoursMinutes(duration),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.kDefaultPadding),
+          _InfoBadge(
+            icon: Icons.u_turn_left_outlined,
+            label: 'Return to pickup',
+            value: shouldReturn ? 'Yes' : 'No',
+            isFullWidth: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassPanel extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  const _GlassPanel({
+    required this.child,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          width: double.infinity,
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding * 1.3,
+                vertical: AppSizes.kDefaultPadding * 1.2,
+              ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
+            color: theme.colorScheme.surface.withOpacity(
+              isDark ? 0.55 : 0.92,
+            ),
+            border: Border.all(
+              color: theme.primaryColor.withOpacity(0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.primaryColor.withOpacity(0.12),
+                blurRadius: 32,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isFullWidth;
+
+  const _InfoBadge({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isFullWidth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: isFullWidth ? double.infinity : null,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.kDefaultPadding * 0.9,
+        vertical: AppSizes.kDefaultPadding * 0.7,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
+        color: theme.colorScheme.surfaceVariant.withOpacity(
+          theme.brightness == Brightness.dark ? 0.35 : 0.45,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: theme.primaryColor),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  letterSpacing: 0.6,
+                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                ),
+              ),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final _RouteStatus status;
+
+  const _StatusChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: status.color.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: status.color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: status.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            status.label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: status.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RouteStatus {
+  final String label;
+  final Color color;
+
+  const _RouteStatus({
+    required this.label,
+    required this.color,
+  });
+
+  factory _RouteStatus.fromValue(dynamic value, ThemeData theme) {
+    final int? statusCode = value is int
+        ? value
+        : int.tryParse(value?.toString() ?? '');
+
+    switch (statusCode) {
+      case 4:
+        return _RouteStatus(
+          label: 'Completed',
+          color: theme.colorScheme.secondary,
+        );
+      case 3:
+        return _RouteStatus(
+          label: 'In progress',
+          color: theme.colorScheme.tertiary,
+        );
+      case 2:
+        return _RouteStatus(
+          label: 'Scheduled',
+          color: theme.primaryColor,
+        );
+      case 1:
+        return _RouteStatus(
+          label: 'Pending',
+          color: theme.primaryColor,
+        );
+      default:
+        return _RouteStatus(
+          label: 'Draft',
+          color: theme.colorScheme.outline,
+        );
+    }
+  }
+}
+
+class _InRouteError extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+
+  const _InRouteError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.kDefaultPadding * 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: theme.colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Unable to load route progress',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineNotice extends StatelessWidget {
+  final String message;
+
+  const _InlineNotice({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return _GlassPanel(
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: theme.colorScheme.secondary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

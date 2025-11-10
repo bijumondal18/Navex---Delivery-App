@@ -1,10 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utils/date_picker_utils.dart';
 import '../../../core/utils/date_time_utils.dart';
+import '../../../data/models/route.dart';
 import '../../../data/repositories/route_repository.dart';
 import '../../bloc/route_bloc.dart';
 import '../../widgets/route_card.dart';
@@ -58,116 +60,490 @@ class _RouteHistoryScreenState extends State<RouteHistoryScreen> {
     }
   }
 
+  Future<void> _refresh() async {
+    _bloc.add(
+      FetchRouteHistoryEvent(
+        date: DateTimeUtils.getFormattedPickedDate(_selectedDate),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 320));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _bloc,
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height,
+      child: Container(
+        decoration: _buildBackgroundGradient(context),
         child: Stack(
-          clipBehavior: Clip.none,
           children: [
-            Container(
-              height: MediaQuery.sizeOf(context).height * 0.2,
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            _buildBackgroundShapes(context),
+            SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Route History',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge!.copyWith(color: AppColors.white),
-                    ),
-                    GestureDetector(
-                      onTap: () => _openCalendar(),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSizes.kDefaultPadding,
-                          vertical: AppSizes.kDefaultPadding / 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.scaffoldBackgroundDark.withAlpha(
-                            100,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            AppSizes.cardCornerRadius * 5,
-                          ),
-                        ),
-                        child: Text(
-                          DateTimeUtils.getFormattedSelectedDate(
+                padding: EdgeInsets.fromLTRB(
+                  AppSizes.kDefaultPadding,
+                  AppSizes.kDefaultPadding * 1.3,
+                  AppSizes.kDefaultPadding,
+                  AppSizes.kDefaultPadding,
+                ),
+                child: BlocBuilder<RouteBloc, RouteState>(
+                  builder: (context, state) {
+                    final bool isLoading =
+                        state is FetchRouteHistoryStateLoading;
+                    final bool isFailed =
+                        state is FetchRouteHistoryStateFailed;
+                    String? failureMessage;
+                    if (state is FetchRouteHistoryStateFailed) {
+                      failureMessage = state.error;
+                    }
+                    final List<RouteData> routes =
+                        state is FetchRouteHistoryStateLoaded
+                            ? state.routes
+                            : <RouteData>[];
+
+                    final int completedCount = routes
+                        .where((route) => (route.status?.toString() == '4'))
+                        .length;
+                    final int totalStops = routes.fold<int>(
+                      0,
+                      (sum, route) => sum + (route.waypoints?.length ?? 0),
+                    );
+                    final String lastCompleted = routes.isNotEmpty &&
+                            routes.first.updatedAt != null
+                        ? DateTimeUtils.formatChatTimestamp(
+                            routes.first.updatedAt.toString(),
+                          )
+                        : '—';
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _HistoryHeader(
+                          dateLabel: DateTimeUtils.getFormattedSelectedDate(
                             _selectedDate,
                           ),
-                          style: Theme.of(context).textTheme.bodyLarge!
-                              .copyWith(color: AppColors.white),
+                          onDateTap: _openCalendar,
+                        ),
+                        const SizedBox(height: AppSizes.kDefaultPadding * 1.4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _HistoryStatTile(
+                                icon: Icons.check_circle_outline,
+                                label: 'Completed',
+                                value: '$completedCount',
+                                accentColor: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            const SizedBox(
+                                width: AppSizes.kDefaultPadding / 1.2),
+                            Expanded(
+                              child: _HistoryStatTile(
+                                icon: Icons.pin_drop_outlined,
+                                label: 'Stops',
+                                value: '$totalStops',
+                                accentColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSizes.kDefaultPadding / 1.2),
+                        _HistoryStatTile(
+                          icon: Icons.schedule_rounded,
+                          label: 'Last activity',
+                          value: lastCompleted,
+                          accentColor:
+                              Theme.of(context).colorScheme.secondary,
+                          isFullWidth: true,
+                        ),
+                        const SizedBox(height: AppSizes.kDefaultPadding * 1.5),
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 280),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            child: isLoading
+                                ? const Center(
+                                    child: ThemedActivityIndicator(),
+                                  )
+                                : isFailed
+                                    ? _HistoryErrorState(
+                                        message:
+                                            failureMessage ?? 'Something went wrong',
+                                        onRetry: _refresh,
+                                      )
+                                    : routes.isEmpty
+                                        ? const _HistoryEmptyState(
+                                            message:
+                                                'No trips were completed on this day. Try choosing another date.',
+                                          )
+                                        : RefreshIndicator(
+                                            onRefresh: _refresh,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            child: ListView.separated(
+                                              physics:
+                                                  const BouncingScrollPhysics(
+                                                parent:
+                                                    AlwaysScrollableScrollPhysics(),
+                                              ),
+                                              padding: const EdgeInsets.only(
+                                                left: 2,
+                                                right: 2,
+                                                bottom: AppSizes
+                                                        .kDefaultPadding *
+                                                    5,
+                                              ),
+                                              itemCount: routes.length,
+                                              separatorBuilder: (_, __) =>
+                                                  const SizedBox(
+                                                height: AppSizes
+                                                        .kDefaultPadding /
+                                                    1.5,
+                                              ),
+                                              itemBuilder: (_, index) =>
+                                                  RouteCard(
+                                                route: routes[index],
+                                              ),
+                                            ),
+                                          ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildBackgroundGradient(BuildContext context) {
+    final theme = Theme.of(context);
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          theme.primaryColor.withOpacity(0.95),
+          theme.primaryColor.withOpacity(0.85),
+          theme.scaffoldBackgroundColor,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackgroundShapes(BuildContext context) {
+    final theme = Theme.of(context);
+    return Stack(
+      children: [
+        Positioned(
+          top: -120,
+          left: -80,
+          child: Container(
+            width: 220,
+            height: 220,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.onPrimary.withOpacity(0.06),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -140,
+          right: -60,
+          child: Container(
+            width: 240,
+            height: 240,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: theme.colorScheme.primary.withOpacity(0.08),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HistoryHeader extends StatelessWidget {
+  final String dateLabel;
+  final VoidCallback onDateTap;
+
+  const _HistoryHeader({
+    required this.dateLabel,
+    required this.onDateTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.6),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.kDefaultPadding * 1.4,
+            vertical: AppSizes.kDefaultPadding * 1.5,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.6),
+            color: theme.colorScheme.surface.withOpacity(
+              isDark ? 0.55 : 0.9,
+            ),
+            border: Border.all(
+              color: theme.primaryColor.withOpacity(0.14),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.primaryColor.withOpacity(0.16),
+                blurRadius: 36,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Route history',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Review completed deliveries and track past performance.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                          0.7,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: AppSizes.kDefaultPadding),
+              _HistoryDateButton(
+                label: dateLabel,
+                onTap: onDateTap,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryStatTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color accentColor;
+  final bool isFullWidth;
+
+  const _HistoryStatTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.accentColor,
+    this.isFullWidth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      width: isFullWidth ? double.infinity : null,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.kDefaultPadding * 1.1,
+        vertical: AppSizes.kDefaultPadding,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.2),
+        color: theme.colorScheme.surface.withOpacity(isDark ? 0.55 : 0.9),
+        border: Border.all(
+          color: accentColor.withOpacity(0.18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withOpacity(0.12),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(16),
             ),
+            child: Icon(icon, color: accentColor, size: 22),
+          ),
+          const SizedBox(width: AppSizes.kDefaultPadding),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-            Positioned(
-              top: 70,
-              left: 0,
-              bottom: 0,
-              right: 0,
-              child: BlocBuilder<RouteBloc, RouteState>(
-                builder: (context, state) {
-                  if (state is FetchRouteHistoryStateLoading) {
-                    return const Center(
-                      child: ThemedActivityIndicator(),
-                    );
-                  }
+class _HistoryDateButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
 
-                  if (state is FetchRouteHistoryStateFailed) {
-                    return Center(
-                      child: Text(
-                        state.error,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    );
-                  }
+  const _HistoryDateButton({
+    required this.label,
+    required this.onTap,
+  });
 
-                  if (state is FetchRouteHistoryStateLoaded) {
-                    final routes = state.routes;
-                    if (routes.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No Route History',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      );
-                    }
-                    return ListView.separated(
-                      itemCount: routes.length,
-                      scrollDirection: Axis.vertical,
-                      padding: const EdgeInsets.only(
-                        left: AppSizes.kDefaultPadding,
-                        right: AppSizes.kDefaultPadding,
-                        top: AppSizes.kDefaultPadding,
-                        bottom: AppSizes.kDefaultPadding * 4,
-                      ),
-                      itemBuilder: (context, index) {
-                        return RouteCard(route: routes[index]);
-                      },
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const SizedBox(
-                        height: AppSizes.kDefaultPadding / 1.5,
-                      ),
-                    );
-                  }
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(Icons.calendar_today_rounded, size: 18, color: theme.primaryColor),
+      label: Text(
+        label,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: theme.primaryColor,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: theme.primaryColor.withOpacity(0.12),
+        foregroundColor: theme.primaryColor,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
+    );
+  }
+}
 
-                  return const SizedBox();
-                },
+class _HistoryEmptyState extends StatelessWidget {
+  final String message;
+
+  const _HistoryEmptyState({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history_toggle_off_rounded,
+              size: 42,
+              color: theme.primaryColor.withOpacity(0.75),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No history found',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.65),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _HistoryErrorState extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+
+  const _HistoryErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 42,
+            color: theme.colorScheme.error,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Unable to load history',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.65),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try again'),
+          ),
+        ],
       ),
     );
   }
