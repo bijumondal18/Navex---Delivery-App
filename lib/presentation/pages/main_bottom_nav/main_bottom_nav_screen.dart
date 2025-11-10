@@ -7,8 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
-import 'package:navex/core/resources/app_images.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../bloc/auth_bloc.dart';
 import '../../widgets/show_exit_confirm_dialog.dart';
@@ -67,32 +65,34 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
     _NavItemData(
       label: 'Home',
       route: Screens.main,
-      iconType: _NavIconType.svg,
-      assetPath: AppImages.home,
+      iconData: Icons.space_dashboard_rounded,
     ),
     _NavItemData(
-      label: 'Available Routes',
+      label: 'Available routes',
       route: Screens.availableRoutes,
-      iconType: _NavIconType.raster,
-      assetPath: AppImages.pin,
+      iconData: Icons.map_rounded,
     ),
     _NavItemData(
-      label: 'Route History',
+      label: 'Accepted routes',
+      route: Screens.acceptedRoutes,
+      iconData: Icons.task_alt_rounded,
+    ),
+    _NavItemData(
+      label: 'Route history',
       route: Screens.routeHistory,
-      iconType: _NavIconType.svg,
-      assetPath: AppImages.clockGreen,
+      iconData: Icons.history_rounded,
     ),
     _NavItemData(
       label: 'Profile',
       route: Screens.profile,
-      iconType: _NavIconType.icon,
-      iconData: Icons.person_outline,
+      iconData: Icons.person_rounded,
     ),
   ];
 
   int _indexFromLocation(String location) {
-    if (location.startsWith(Screens.profile)) return 3;
-    if (location.startsWith(Screens.routeHistory)) return 2;
+    if (location.startsWith(Screens.profile)) return 4;
+    if (location.startsWith(Screens.routeHistory)) return 3;
+    if (location.startsWith(Screens.acceptedRoutes)) return 2;
     if (location.startsWith(Screens.availableRoutes)) return 1;
     return 0;
   }
@@ -136,23 +136,8 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        extendBody: true,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: _navBarHeight + 32),
-                child: widget.child,
-              ),
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16 + MediaQuery.of(context).padding.bottom,
-              child: _buildBottomNavBar(context),
-            ),
-          ],
-        ),
+        body: widget.child,
+        bottomNavigationBar: _buildBottomNavBar(context),
       ),
     );
   }
@@ -161,36 +146,43 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          height: _navBarHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32),
-            color: theme.colorScheme.surface.withOpacity(isDark ? 0.55 : 0.9),
-            border: Border.all(
-              color: theme.colorScheme.primary.withOpacity(0.12),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.15),
-                blurRadius: 28,
-                offset: const Offset(0, 16),
+    return SafeArea(
+      top: false,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            height: _navBarHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(
-              _navItems.length,
-              (index) => Expanded(
-                child: _NavItem(
-                  data: _navItems[index],
-                  isSelected: index == _selectedIndex,
-                  onTap: () => _onNavItemTap(index),
+              color: theme.colorScheme.surface.withOpacity(isDark ? 0.55 : 0.9),
+              border: Border(
+                top: BorderSide(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  blurRadius: 18,
+                  offset: const Offset(0, -6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                _navItems.length,
+                (index) => Expanded(
+                  child: _NavItem(
+                    data: _navItems[index],
+                    isSelected: index == _selectedIndex,
+                    onTap: () => _onNavItemTap(index),
+                  ),
                 ),
               ),
             ),
@@ -217,6 +209,7 @@ class _NavItem extends StatelessWidget {
     final theme = Theme.of(context);
     final Color activeColor = theme.primaryColor;
     final Color inactiveColor = theme.colorScheme.onSurface.withOpacity(0.55);
+    final bool isDark = theme.brightness == Brightness.dark;
 
     return Material(
       color: Colors.transparent,
@@ -229,72 +222,69 @@ class _NavItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? activeColor.withOpacity(0.16)
-                : Colors.transparent,
+                ? activeColor.withOpacity(0.12)
+                : theme.colorScheme.surface.withOpacity(isDark ? 0.08 : 0.05),
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isSelected
+                  ? activeColor.withOpacity(0.22)
+                  : Colors.transparent,
+            ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildIcon(isSelected ? activeColor : inactiveColor),
-              // const SizedBox(height: 6),
-              // AnimatedDefaultTextStyle(
-              //   duration: const Duration(milliseconds: 200),
-              //   curve: Curves.easeOut,
-              //   style: theme.textTheme.bodySmall!.copyWith(
-              //     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              //     color: isSelected ? activeColor : inactiveColor,
-              //     letterSpacing: 0.2,
-              //   ),
-              //   child: Text(data.label),
-              // ),
-            ],
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [activeColor, theme.colorScheme.secondary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSelected
+                  ? null
+                  : theme.colorScheme.surface.withOpacity(isDark ? 0.38 : 0.75),
+              border: Border.all(
+                color: isSelected
+                    ? Colors.transparent
+                    : theme.primaryColor.withOpacity(0.08),
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: activeColor.withOpacity(0.28),
+                        blurRadius: 24,
+                        offset: const Offset(0, 12),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: Icon(
+                data.iconData,
+                size: 22,
+                color: isSelected ? Colors.white : inactiveColor,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
-
-  Widget _buildIcon(Color color) {
-    switch (data.iconType) {
-      case _NavIconType.svg:
-        return SvgPicture.asset(
-          data.assetPath!,
-          width: 24,
-          height: 24,
-          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-        );
-      case _NavIconType.raster:
-        return Image.asset(
-          data.assetPath!,
-          width: 24,
-          height: 24,
-          color: color,
-        );
-      case _NavIconType.icon:
-        return Icon(data.iconData, size: 24, color: color);
-    }
-  }
 }
-
-enum _NavIconType { svg, raster, icon }
 
 class _NavItemData {
   final String label;
   final String route;
-  final _NavIconType iconType;
-  final String? assetPath;
-  final IconData? iconData;
+  final IconData iconData;
 
   const _NavItemData({
     required this.label,
     required this.route,
-    required this.iconType,
-    this.assetPath,
-    this.iconData,
-  }) : assert(
-         (iconType == _NavIconType.icon && iconData != null) ||
-             (iconType != _NavIconType.icon && assetPath != null),
-         'Provide an iconData for icon type or an assetPath for asset-based types.',
-       );
+    required this.iconData,
+  });
 }
