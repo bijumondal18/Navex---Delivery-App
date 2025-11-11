@@ -11,7 +11,10 @@ class NotificationRouter {
       case 'trip':
         final id = data['tripId']?.toString();
         if (id != null) {
-          router.push('${Screens.tripDetails}/$id'); // e.g. /trip/abc123
+          router.pushNamed(
+            Screens.tripDetails,
+            pathParameters: {'id': id},
+          );
         } else {
           router.go(Screens.main);
         }

@@ -156,15 +156,8 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
             height: _navBarHeight,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
-              ),
               color: theme.colorScheme.surface.withOpacity(isDark ? 0.55 : 0.9),
-              border: Border(
-                top: BorderSide(
-                  color: theme.colorScheme.primary.withOpacity(0.12),
-                ),
-              ),
+
               boxShadow: [
                 BoxShadow(
                   color: theme.colorScheme.primary.withOpacity(0.1),

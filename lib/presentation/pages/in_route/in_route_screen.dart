@@ -645,65 +645,23 @@ class _InRouteScreenState extends State<InRouteScreen> {
   Future<void> _deliverWaypoint(Waypoints waypoint) async {
     final option = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSizes.cardCornerRadius),
-        ),
-      ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor:
+          Theme.of(context).colorScheme.scrim.withOpacity(0.45),
       builder: (context) {
-        final textTheme = Theme.of(context).textTheme;
-
         return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.kDefaultPadding,
-            vertical: AppSizes.kDefaultPadding / 1.5,
+          padding: EdgeInsets.fromLTRB(
+            AppSizes.kDefaultPadding,
+            0,
+            AppSizes.kDefaultPadding,
+            MediaQuery.of(context).viewInsets.bottom +
+                AppSizes.kDefaultPadding,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSizes.kDefaultPadding),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              Text(
-                'Select delivery outcome',
-                style: textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSizes.kDefaultPadding),
-              ..._deliveryOptions.map((entry) {
-                final (value, icon, label) = entry;
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(icon, color: Theme.of(context).primaryColor),
-                      title: Text(label, style: textTheme.bodyLarge),
-                      onTap: () => Navigator.pop(context, value),
-                    ),
-                    if (value != _deliveryOptions.last.$1)
-                      Divider(
-                        height: 0,
-                        color: Theme.of(context)
-                            .dividerColor
-                            .withValues(alpha: 0.6),
-                      ),
-                  ],
-                );
-              }),
-              const SafeArea(
-                child: SizedBox(height: AppSizes.kDefaultPadding),
-              ),
-            ],
+          child: _DeliveryOutcomeSheet(
+            options: _deliveryOptions,
+            onSelect: (value) => Navigator.of(context).pop(value),
           ),
         );
       },
@@ -1500,6 +1458,225 @@ class _InlineNotice extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DeliveryOutcomeSheet extends StatelessWidget {
+  final List<(String, IconData, String)> options;
+  final ValueChanged<String> onSelect;
+
+  const _DeliveryOutcomeSheet({
+    required this.options,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.6),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizes.kDefaultPadding * 1.1,
+            vertical: AppSizes.kDefaultPadding * 1.2,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.6),
+            gradient: LinearGradient(
+              colors: [
+                theme.colorScheme.surface.withOpacity(isDark ? 0.78 : 0.95),
+                theme.colorScheme.surfaceVariant.withOpacity(isDark ? 0.65 : 0.88),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: theme.primaryColor.withOpacity(0.14),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.primaryColor.withOpacity(0.12),
+                blurRadius: 30,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  margin: EdgeInsets.only(bottom: AppSizes.kDefaultPadding),
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              Text(
+                'Select delivery outcome',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Capture how this stop was completed.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.72),
+                ),
+              ),
+              const SizedBox(height: AppSizes.kDefaultPadding * 1.2),
+              ...options.map(
+                (entry) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: entry != options.last
+                        ? AppSizes.kDefaultPadding * 0.9
+                        : 0,
+                  ),
+                  child: _DeliveryOutcomeOptionTile(
+                    icon: entry.$2,
+                    label: entry.$3,
+                    onTap: () => onSelect(entry.$1),
+                  ),
+                ),
+              ),
+              const SafeArea(
+                top: false,
+                child: SizedBox(height: AppSizes.kDefaultPadding * 0.6),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeliveryOutcomeOptionTile extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _DeliveryOutcomeOptionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  State<_DeliveryOutcomeOptionTile> createState() =>
+      _DeliveryOutcomeOptionTileState();
+}
+
+class _DeliveryOutcomeOptionTileState extends State<_DeliveryOutcomeOptionTile> {
+  bool _isPressed = false;
+
+  void _setPressed(bool value) {
+    if (_isPressed == value) return;
+    setState(() => _isPressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    return Listener(
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius:
+              BorderRadius.circular(AppSizes.cardCornerRadius * 1.3),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSizes.kDefaultPadding * 0.9,
+              vertical: AppSizes.kDefaultPadding * 0.85,
+            ),
+            decoration: BoxDecoration(
+              borderRadius:
+                  BorderRadius.circular(AppSizes.cardCornerRadius * 1.3),
+              color: _isPressed
+                  ? theme.primaryColor.withOpacity(0.16)
+                  : theme.colorScheme.surface.withOpacity(
+                      isDark ? 0.55 : 0.88,
+                    ),
+              border: Border.all(
+                color: theme.primaryColor.withOpacity(0.12),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.primaryColor.withOpacity(
+                    _isPressed ? 0.28 : 0.12,
+                  ),
+                  blurRadius: _isPressed ? 26 : 20,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.primaryColor,
+                        theme.colorScheme.secondary,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.primaryColor.withOpacity(0.24),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    widget.icon,
+                    color: theme.colorScheme.onPrimary,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.kDefaultPadding),
+                Expanded(
+                  child: Text(
+                    widget.label,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: theme.colorScheme.onSurface.withOpacity(0.55),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

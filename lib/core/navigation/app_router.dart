@@ -87,28 +87,6 @@ final GoRouter appRouter = GoRouter(
           name: 'main',
           pageBuilder: (_, state) =>
               _buildAnimatedPage(state, const HomeScreen()),
-          routes: [
-            GoRoute(
-              path: 'trip/:id/details',
-              name: Screens.tripDetails,
-              pageBuilder: (_, state) => _buildAnimatedPage(
-                state,
-                TripDetailsScreen(
-                  routeId: '${state.pathParameters['id']}',
-                ),
-              ),
-            ),
-            GoRoute(
-              path: 'trip/:id/in_route',
-              name: Screens.inRoute,
-              pageBuilder: (_, state) => _buildAnimatedPage(
-                state,
-                InRouteScreen(
-                  routeId: '${state.pathParameters['id']}',
-                ),
-              ),
-            ),
-          ],
         ),
         GoRoute(
           path: Screens.availableRoutes,
@@ -147,6 +125,26 @@ final GoRouter appRouter = GoRouter(
               _buildAnimatedPage(state, NotificationsScreen()),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/trip/:id/details',
+      name: Screens.tripDetails,
+      pageBuilder: (_, state) => _buildAnimatedPage(
+        state,
+        TripDetailsScreen(
+          routeId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/trip/:id/in_route',
+      name: Screens.inRoute,
+      pageBuilder: (_, state) => _buildAnimatedPage(
+        state,
+        InRouteScreen(
+          routeId: state.pathParameters['id'] ?? '',
+        ),
+      ),
     ),
 
     // GoRoute(

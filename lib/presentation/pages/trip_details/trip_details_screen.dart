@@ -28,6 +28,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   static const LatLng _start = LatLng(28.6139, 77.2090); // New Delhi
   final Set<Marker> _markers = {};
+  static const double _appBarHeight = 72.0;
 
   Future<void> _showPickupOnMap({
     required double lat,
@@ -94,151 +95,169 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           },
         ),
       ],
-      child: Container(
-        decoration: _buildBackgroundGradient(context),
-        child: Stack(
-          children: [
-            _buildBackgroundShapes(context),
-            SafeArea(
-              child: BlocBuilder<RouteBloc, RouteState>(
-                builder: (context, state) {
-                  final bool isLoading =
-                      state is FetchRouteDetailsStateLoading &&
-                      _cachedRoute == null;
-                  final bool isFailed =
-                      state is FetchRouteDetailsStateFailed &&
-                      _cachedRoute == null;
-                  final String? failureMessage =
-                      state is FetchRouteDetailsStateFailed
-                      ? state.error
-                      : null;
-                  final routeData = state is FetchRouteDetailsStateLoaded
-                      ? state.routeData
-                      : _cachedRoute;
-
-                  if (isLoading) {
-                    return const Center(child: ThemedActivityIndicator());
-                  }
-
-                  if (isFailed) {
-                    return _TripDetailsError(
-                      message: failureMessage ?? 'Unable to load trip details.',
-                      onRetry: _refresh,
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: _refresh,
-                    color: Theme.of(context).primaryColor,
-                    child: Stack(
-                      children: [
-                        CustomScrollView(
-                          physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics(),
-                          ),
-                          slivers: [
-                            SliverToBoxAdapter(
-                              child: const SizedBox(
-                                height: AppSizes.kDefaultPadding * 2.5,
-                              ),
-                            ),
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSizes.kDefaultPadding,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _TripSummaryPanel(route: routeData),
-                                    if (failureMessage != null &&
-                                        routeData != null) ...[
-                                      const SizedBox(
-                                        height: AppSizes.kDefaultPadding,
-                                      ),
-                                      _InlineNotice(message: failureMessage),
-                                    ],
-                                    const SizedBox(
-                                      height: AppSizes.kDefaultPadding * 1.4,
-                                    ),
-                                    _PickupStopsPanel(route: routeData),
-                                    const SizedBox(
-                                      height: AppSizes.kDefaultPadding * 1.4,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSizes.kDefaultPadding,
-                                ),
-                                child: _MapPanel(
-                                  map: GoogleMap(
-                                    initialCameraPosition: const CameraPosition(
-                                      target: _start,
-                                      zoom: 14,
-                                    ),
-                                    onMapCreated: (controller) {
-                                      if (!_controller.isCompleted) {
-                                        _controller.complete(controller);
-                                      }
-                                    },
-                                    markers: _markers,
-                                    myLocationEnabled: false,
-                                    zoomControlsEnabled: false,
-                                    myLocationButtonEnabled: false,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSizes.kDefaultPadding,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(
-                                      height: AppSizes.kDefaultPadding * 1.4,
-                                    ),
-                                    _TripMetricsPanel(route: routeData),
-                                    if (_routeStatus == 2) ...[
-                                      const SizedBox(
-                                        height: AppSizes.kDefaultPadding * 1.4,
-                                      ),
-                                      _AcceptAction(
-                                        routeId: widget.routeId,
-                                        onRefresh: _refresh,
-                                      ),
-                                    ],
-                                    SizedBox(
-                                      height:
-                                          AppSizes.kDefaultPadding * 2.5 +
-                                          MediaQuery.of(context).padding.bottom,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Positioned(
-                          top: AppSizes.kDefaultPadding * 0.6,
-                          left: AppSizes.kDefaultPadding,
-                          child: _FloatingBackButton(),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(_appBarHeight),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSizes.kDefaultPadding,
+                AppSizes.kDefaultPadding * 0.8,
+                AppSizes.kDefaultPadding,
+                AppSizes.kDefaultPadding * 0.4,
+              ),
+              child: _GlassAppBar(
+                title: 'Route details',
+                onBack: () => Navigator.of(context).maybePop(),
               ),
             ),
-          ],
+          ),
+        ),
+        body: Container(
+          decoration: _buildBackgroundGradient(context),
+          child: Stack(
+            children: [
+              _buildBackgroundShapes(context),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top +
+                        _appBarHeight +
+                        AppSizes.kDefaultPadding * 0.4,
+                  ),
+                  child: _buildScrollableContent(context),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildScrollableContent(BuildContext context) {
+    return BlocBuilder<RouteBloc, RouteState>(
+      builder: (context, state) {
+        final bool isLoading =
+            state is FetchRouteDetailsStateLoading && _cachedRoute == null;
+        final bool isFailed =
+            state is FetchRouteDetailsStateFailed && _cachedRoute == null;
+        final String? failureMessage =
+            state is FetchRouteDetailsStateFailed ? state.error : null;
+        final RouteData? routeData = state is FetchRouteDetailsStateLoaded
+            ? state.routeData
+            : _cachedRoute;
+
+        if (isLoading) {
+          return const Center(child: ThemedActivityIndicator());
+        }
+
+        if (isFailed) {
+          return _TripDetailsError(
+            message: failureMessage ?? 'Unable to load trip details.',
+            onRetry: _refresh,
+          );
+        }
+
+        if (routeData == null) {
+          return const SizedBox.shrink();
+        }
+
+        final slivers = <Widget>[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TripSummaryPanel(route: routeData),
+                  if (failureMessage != null) ...[
+                    const SizedBox(height: AppSizes.kDefaultPadding),
+                    _InlineNotice(message: failureMessage),
+                  ],
+                  const SizedBox(
+                    height: AppSizes.kDefaultPadding * 1.4,
+                  ),
+                  _PickupStopsPanel(route: routeData),
+                  const SizedBox(
+                    height: AppSizes.kDefaultPadding * 1.4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding,
+              ),
+              child: _MapPanel(
+                map: GoogleMap(
+                  initialCameraPosition: const CameraPosition(
+                    target: _start,
+                    zoom: 14,
+                  ),
+                  onMapCreated: (controller) {
+                    if (!_controller.isCompleted) {
+                      _controller.complete(controller);
+                    }
+                  },
+                  markers: _markers,
+                  myLocationEnabled: false,
+                  zoomControlsEnabled: false,
+                  myLocationButtonEnabled: false,
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: AppSizes.kDefaultPadding * 1.4,
+                  ),
+                  _TripMetricsPanel(route: routeData),
+                  if (_routeStatus == 2) ...[
+                    const SizedBox(
+                      height: AppSizes.kDefaultPadding * 1.4,
+                    ),
+                    _AcceptAction(
+                      routeId: widget.routeId,
+                      onRefresh: _refresh,
+                    ),
+                  ],
+                  SizedBox(
+                    height: AppSizes.kDefaultPadding * 2.5 +
+                        MediaQuery.of(context).padding.bottom,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ];
+
+        return RefreshIndicator(
+          onRefresh: _refresh,
+          color: Theme.of(context).primaryColor,
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: slivers,
+          ),
+        );
+      },
     );
   }
 
@@ -947,25 +966,68 @@ class _InlineNotice extends StatelessWidget {
   }
 }
 
-class _FloatingBackButton extends StatelessWidget {
-  const _FloatingBackButton();
+class _GlassAppBar extends StatelessWidget {
+  final String title;
+  final VoidCallback onBack;
+
+  const _GlassAppBar({
+    required this.title,
+    required this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius * 1.4),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Material(
-          color: Theme.of(context).colorScheme.surface.withOpacity(
-            Theme.of(context).brightness == Brightness.dark ? 0.55 : 0.88,
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizes.kDefaultPadding * 0.9,
+            vertical: AppSizes.kDefaultPadding * 0.75,
           ),
-          child: InkWell(
-            onTap: () => Navigator.of(context).maybePop(),
-            child: const SizedBox(
-              width: 40,
-              height: 40,
-              child: Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              AppSizes.cardCornerRadius * 1.4,
             ),
+            color: theme.colorScheme.surface.withOpacity(
+              isDark ? 0.55 : 0.9,
+            ),
+            border: Border.all(
+              color: theme.primaryColor.withOpacity(0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.primaryColor.withOpacity(0.14),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: theme.primaryColor,
+                  size: 20,
+                ),
+                onPressed: onBack,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

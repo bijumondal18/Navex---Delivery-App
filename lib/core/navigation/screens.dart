@@ -12,7 +12,7 @@ class Screens {
   static const String routeHistory = '/route/history';
   static const String notifications = '/notifications';
   static const String settings = '/settings';
-  static const String tripDetails = '/trip_details';
-  static const String inRoute = '/in_route';
+  static const String tripDetails = 'trip_details';
+  static const String inRoute = 'in_route';
   static const String deliveryOutcome = '/delivery_outcome';
 }
