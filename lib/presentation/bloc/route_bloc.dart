@@ -210,6 +210,7 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
           deliveryImages: event.deliveryImages,
           signature: event.signature,
           notes: event.notes,
+          reason: event.reason,
           recipientName: event.recipientName,
           deliverTo: event.deliverTo,
         );

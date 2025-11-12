@@ -96,6 +96,7 @@ class MarkDeliveryEvent extends RouteEvent {
   final List<File> deliveryImages;
   final File? signature;
   final String? notes;
+  final String? reason;
   final String? recipientName;
   final int? deliverTo;
 
@@ -110,6 +111,7 @@ class MarkDeliveryEvent extends RouteEvent {
     required this.deliveryImages,
     this.signature,
     this.notes,
+    this.reason,
     this.recipientName,
     this.deliverTo,
   });
@@ -126,6 +128,7 @@ class MarkDeliveryEvent extends RouteEvent {
     deliveryImages,
     signature?.path ?? '',
     notes ?? '',
+    reason ?? '',
     recipientName ?? '',
     deliverTo ?? 0,
   ];

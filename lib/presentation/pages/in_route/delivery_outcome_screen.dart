@@ -172,12 +172,13 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
         }
       }
 
-      // Get notes (include failure reason if failed)
+      // Get notes (separate from failure reason)
       String notes = _notesController.text.trim();
+
+      // Get failure reason (only for failed deliveries)
+      String? failureReason;
       if (_isFailureFlow && _selectedFailureReason != null) {
-        notes = notes.isEmpty
-            ? _selectedFailureReason!
-            : '${_selectedFailureReason!}\n$notes';
+        failureReason = _selectedFailureReason;
       }
 
       // Dispatch the event
@@ -194,6 +195,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                 deliveryImages: deliveryImages,
                 signature: signature,
                 notes: notes.isEmpty ? null : notes,
+                reason: failureReason,
                 recipientName: _nameController.text.trim().isEmpty
                     ? null
                     : _nameController.text.trim(),

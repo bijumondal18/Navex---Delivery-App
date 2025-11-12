@@ -71,7 +71,20 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
   bool _isWaypointCompleted(Waypoints waypoint) {
     final status = _parseToInt(waypoint.status);
-    return status != null && status != 0;
+    // Status 1 = Successfully delivered, Status 2 = Failed
+    return status != null && status == 1;
+  }
+
+  bool _isWaypointFailed(Waypoints waypoint) {
+    final status = _parseToInt(waypoint.status);
+    // Status 2 = Failed
+    return status != null && status == 2;
+  }
+
+  bool _isWaypointDelivered(Waypoints waypoint) {
+    final status = _parseToInt(waypoint.status);
+    // Status 1 = Successfully delivered
+    return status != null && status == 1;
   }
 
   Future<void> _showPickupOnMap({
@@ -499,22 +512,19 @@ class _InRouteScreenState extends State<InRouteScreen> {
                               ...List.generate(waypoints.length, (index) {
                                 final waypoint = waypoints[index];
                                 final isLast = index == waypoints.length - 1 && !shouldReturn;
-                                final previousCompleted = index == 0
-                                    ? isVehicleLoaded
-                                    : _isWaypointCompleted(
-                                        waypoints[index - 1],
-                                      );
+                                
+                                // Check if waypoint ID matches current waypoint ID (handle dynamic types)
+                                final waypointIdInt = _parseToInt(waypoint.id);
                                 final bool isCurrentWaypoint =
                                     currentWaypointId != null &&
-                                        currentWaypointId == waypoint.id;
-                                // Enable waypoint buttons after vehicle is loaded
-                                // If vehicle is loaded, enable first waypoint; otherwise check previous completion
-                                final bool isWaypointEnabled =
-                                    isVehicleLoaded
-                                        ? (index == 0 || previousCompleted)
-                                        : (isInRouteAndLoaded
-                                            ? isCurrentWaypoint
-                                            : previousCompleted);
+                                        waypointIdInt != null &&
+                                        currentWaypointId == waypointIdInt;
+                                
+                                // Check if this waypoint is failed (status=2)
+                                final isFailed = _isWaypointFailed(waypoint);
+                                
+                                // Enable buttons only if waypoint matches current_waypoint ID OR status == 2 (failed)
+                                final bool isWaypointEnabled = isCurrentWaypoint || isFailed;
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     bottom: index == waypoints.length - 1
@@ -979,8 +989,14 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required bool isEnabled,
   }) {
     final Color lineColor = Colors.grey.shade400;
-    final isCompleted = _isWaypointCompleted(waypoint);
+    final isCompleted = _isWaypointDelivered(waypoint);
+    final isFailed = _isWaypointFailed(waypoint);
     final customerName = waypoint.customer?.name ?? 'Customer';
+    
+    // Determine waypoint color: green for delivered, red for failed, white for pending
+    final Color waypointColor = isCompleted 
+        ? Colors.green 
+        : (isFailed ? Colors.red : Colors.white);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -998,7 +1014,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: isCompleted ? Colors.green : Colors.white,
+                color: waypointColor,
                 shape: BoxShape.circle,
                 border: Border.all(color: lineColor),
               ),
@@ -1007,7 +1023,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                   '$index',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isCompleted ? Colors.white : Colors.blueGrey,
+                    color: (isCompleted || isFailed) ? Colors.white : Colors.blueGrey,
                   ),
                 ),
               ),
@@ -1098,13 +1114,14 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     ],
                   ),
                 ],
-                if (!isCompleted && isEnabled) ...[
+                // Show buttons for enabled waypoints or failed waypoints (to allow retry)
+                if ((isEnabled || isFailed) && !isCompleted) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: PrimaryButton(
-                          onPressed: isEnabled
+                          onPressed: (isEnabled || isFailed)
                               ? () => _navigateToLocation(
                                     double.parse('${waypoint.addressLat}'),
                                     double.parse('${waypoint.addressLong}'),
@@ -1117,7 +1134,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: PrimaryButton(
-                          onPressed: isEnabled ? () => _deliverWaypoint(waypoint) : null,
+                          onPressed: (isEnabled || isFailed) ? () => _deliverWaypoint(waypoint) : null,
                           label: 'Deliver',
                           size: ButtonSize.sm,
                         ),
@@ -1125,7 +1142,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: PrimaryButton(
-                          onPressed: isEnabled ? () => _failWaypoint(waypoint) : null,
+                          onPressed: (isEnabled || isFailed) ? () => _failWaypoint(waypoint) : null,
                           label: 'Failed',
                           size: ButtonSize.sm,
                         ),

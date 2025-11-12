@@ -90,6 +90,7 @@ class RouteRepository {
     required List<File> deliveryImages,
     File? signature,
     String? notes,
+        String? reason,
     String? recipientName,
     int? deliverTo,
   }) async {
@@ -108,6 +109,9 @@ class RouteRepository {
       // Add optional fields
       if (notes != null && notes.isNotEmpty) {
         formData.fields.add(MapEntry('notes', notes));
+      }
+      if (reason != null && reason.isNotEmpty) {
+        formData.fields.add(MapEntry('reason', reason));
       }
       if (recipientName != null && recipientName.isNotEmpty) {
         formData.fields.add(MapEntry('recipient_name', recipientName));

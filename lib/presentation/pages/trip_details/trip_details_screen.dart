@@ -301,20 +301,24 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         color: Theme.of(context).cardColor,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
-          child: GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: _start,
-              zoom: 14,
+          child: SizedBox.expand(
+            child: GoogleMap(
+              key: const ValueKey('trip_details_map'),
+              initialCameraPosition: const CameraPosition(
+                target: _start,
+                zoom: 14,
+              ),
+              onMapCreated: (c) {
+                if (!_controller.isCompleted) {
+                  _controller.complete(c);
+                }
+              },
+              markers: _markers,
+              myLocationEnabled: false,
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              mapType: MapType.normal,
             ),
-            onMapCreated: (c) {
-              if (!_controller.isCompleted) {
-                _controller.complete(c);
-              }
-            },
-            markers: _markers,
-            myLocationEnabled: false,
-            zoomControlsEnabled: false,
-            myLocationButtonEnabled: false,
           ),
         ),
       ),
