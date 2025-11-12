@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:navex/data/models/accepted_route_response.dart';
 import 'package:navex/data/models/common_response.dart';
 import 'package:navex/data/models/route.dart';
 import 'package:navex/data/models/route_response.dart';
 import 'package:navex/data/repositories/route_repository.dart';
+import 'package:navex/service/location/background_location_service.dart';
 
 part 'route_event.dart';
 
@@ -100,6 +102,19 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         if (response['status'] == true) {
           final commonResponse = CommonResponse.fromJson(response);
           emit(LoadVehicleStateLoaded(response: commonResponse));
+          
+          // Start background location tracking after successful vehicle load
+          try {
+            final locationService = BackgroundLocationService();
+            await locationService.startTracking(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 10, // Update every 10 meters
+            );
+          } catch (e) {
+            // Log error but don't fail the load vehicle operation
+            print('Failed to start background location tracking: $e');
+          }
+          
           add(FetchRouteDetailsEvent(routeId: event.routeId));
         } else {
           emit(LoadVehicleStateFailed(
@@ -241,6 +256,15 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         if (response['status'] == true) {
           final commonResponse = CommonResponse.fromJson(response);
           emit(CompleteTripStateLoaded(response: commonResponse));
+          
+          // Stop background location tracking after successful trip completion
+          try {
+            final locationService = BackgroundLocationService();
+            await locationService.stopTracking();
+          } catch (e) {
+            // Log error but don't fail the complete trip operation
+            print('Failed to stop background location tracking: $e');
+          }
         } else {
           emit(CompleteTripStateFailed(
             error: response['message'] ?? 'Unable to complete trip',

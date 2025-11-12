@@ -744,22 +744,50 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
   Future<void> _loadVehicle() async {
     if (_isLoadVehicleInProgress) return;
-    setState(() => _isLoadVehicleInProgress = true);
-    try {
-      final position = await _determinePosition();
-      if (!mounted) return;
-      context.read<RouteBloc>().add(
-            LoadVehicleEvent(
-              routeId: widget.routeId,
-              currentLat: position.latitude,
-              currentLng: position.longitude,
-            ),
-          );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoadVehicleInProgress = false);
-      SnackBarHelper.showError(e.toString(), context: context);
+    
+    // Show waypoint selection bottom sheet first
+    final waypoints = _currentRouteData?.waypoints ?? [];
+    if (waypoints.isEmpty) {
+      SnackBarHelper.showError('No waypoints found for this route', context: context);
+      return;
     }
+    
+    final shouldProceed = await _showWaypointSelectionBottomSheet(waypoints);
+    if (shouldProceed == true && mounted) {
+      // User has checked all waypoints, proceed with load vehicle API
+      setState(() => _isLoadVehicleInProgress = true);
+      try {
+        final position = await _determinePosition();
+        if (!mounted) return;
+        context.read<RouteBloc>().add(
+              LoadVehicleEvent(
+                routeId: widget.routeId,
+                currentLat: position.latitude,
+                currentLng: position.longitude,
+              ),
+            );
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _isLoadVehicleInProgress = false);
+        SnackBarHelper.showError(e.toString(), context: context);
+      }
+    }
+  }
+
+  Future<bool?> _showWaypointSelectionBottomSheet(List<Waypoints> waypoints) async {
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.cardCornerRadius),
+        ),
+      ),
+      builder: (context) => _WaypointSelectionBottomSheet(
+        waypoints: waypoints,
+      ),
+    );
   }
 
   Future<void> _deliverWaypoint(Waypoints waypoint) async {
@@ -1391,6 +1419,273 @@ class _MapItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet widget for selecting waypoints before loading vehicle
+class _WaypointSelectionBottomSheet extends StatefulWidget {
+  final List<Waypoints> waypoints;
+
+  const _WaypointSelectionBottomSheet({
+    required this.waypoints,
+  });
+
+  @override
+  State<_WaypointSelectionBottomSheet> createState() =>
+      _WaypointSelectionBottomSheetState();
+}
+
+class _WaypointSelectionBottomSheetState
+    extends State<_WaypointSelectionBottomSheet> {
+  final Map<String, bool> _selectedWaypoints = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize all waypoints as unchecked
+    for (var waypoint in widget.waypoints) {
+      final id = waypoint.id?.toString() ?? '';
+      if (id.isNotEmpty) {
+        _selectedWaypoints[id] = false;
+      }
+    }
+  }
+
+  bool get _allWaypointsSelected {
+    return _selectedWaypoints.values.every((value) => value == true) &&
+        _selectedWaypoints.isNotEmpty;
+  }
+
+  void _toggleWaypoint(String waypointId) {
+    setState(() {
+      _selectedWaypoints[waypointId] = !(_selectedWaypoints[waypointId] ?? false);
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      final allSelected = _allWaypointsSelected;
+      for (var key in _selectedWaypoints.keys) {
+        _selectedWaypoints[key] = !allSelected;
+      }
+    });
+  }
+
+  void _onContinue() {
+    if (_allWaypointsSelected) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final waypoints = widget.waypoints;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(
+                top: AppSizes.kDefaultPadding / 2,
+                bottom: AppSizes.kDefaultPadding,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          // Title and Select All
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.kDefaultPadding,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Select Waypoints',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _selectAll,
+                  child: Text(
+                    _allWaypointsSelected ? 'Deselect All' : 'Select All',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Waypoints list
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.kDefaultPadding,
+                vertical: AppSizes.kDefaultPadding / 2,
+              ),
+              itemCount: waypoints.length,
+              itemBuilder: (context, index) {
+                final waypoint = waypoints[index];
+                final waypointId = waypoint.id?.toString() ?? '';
+                final isSelected = _selectedWaypoints[waypointId] ?? false;
+                final optimizeOrder = waypoint.optimizeOrder?.toString() ?? '';
+                final address = waypoint.address?.toString() ?? 'No address';
+                final customerName = waypoint.customer?.name?.toString() ?? '';
+
+                return InkWell(
+                  onTap: () => _toggleWaypoint(waypointId),
+                  borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                      bottom: AppSizes.kDefaultPadding / 2,
+                    ),
+                    padding: const EdgeInsets.all(AppSizes.kDefaultPadding / 1.5),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).primaryColor.withOpacity(0.1)
+                          : Theme.of(context).cardColor,
+                      border: Border.all(
+                        color: isSelected
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).dividerColor,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.cardCornerRadius,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Checkbox
+                        Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => _toggleWaypoint(waypointId),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(width: AppSizes.kDefaultPadding / 2),
+                        // Waypoint info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).primaryColor,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      optimizeOrder.isNotEmpty
+                                          ? 'Stop $optimizeOrder'
+                                          : 'Stop ${index + 1}',
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onPrimary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  if (customerName.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        customerName,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on_outlined,
+                                    size: 16,
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      address,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: Theme.of(context).hintColor,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Continue button
+          Container(
+            padding: EdgeInsets.only(
+              left: AppSizes.kDefaultPadding,
+              right: AppSizes.kDefaultPadding,
+              top: AppSizes.kDefaultPadding / 2,
+              bottom: AppSizes.kDefaultPadding +
+                  MediaQuery.of(context).padding.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: PrimaryButton(
+                onPressed: _allWaypointsSelected ? _onContinue : null,
+                label: 'Continue',
+                fullWidth: true,
+                size: ButtonSize.md,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

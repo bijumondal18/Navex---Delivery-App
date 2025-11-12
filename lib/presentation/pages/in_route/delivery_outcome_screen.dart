@@ -225,7 +225,11 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
       );
       if (pickedList.isNotEmpty) {
         setState(() {
-          _photos.addAll(pickedList.map((xfile) => File(xfile.path)));
+          // Find index after signature (if exists) to insert photos after signature
+          final signatureIndex = _photos.indexWhere((file) => file.path.contains('signature_'));
+          final insertIndex = signatureIndex >= 0 ? signatureIndex + 1 : _photos.length;
+          final newPhotos = pickedList.map((xfile) => File(xfile.path)).toList();
+          _photos.insertAll(insertIndex, newPhotos);
         });
       }
       if (!mounted) return;
@@ -239,7 +243,10 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
     );
     if (picked != null) {
       setState(() {
-        _photos.add(File(picked.path));
+        // Find index after signature (if exists) to insert photo after signature
+        final signatureIndex = _photos.indexWhere((file) => file.path.contains('signature_'));
+        final insertIndex = signatureIndex >= 0 ? signatureIndex + 1 : _photos.length;
+        _photos.insert(insertIndex, File(picked.path));
       });
     }
     if (!mounted) return;
@@ -341,7 +348,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                       if (signature != null && mounted) {
                         setState(() {
                           _photos.removeWhere((file) => file.path.contains('signature_'));
-                          _photos.add(signature);
+                          _photos.insert(0, signature); // Insert signature at first position
                         });
                       }
                     },

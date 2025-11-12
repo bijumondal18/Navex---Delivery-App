@@ -28,10 +28,11 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>FirebaseAppDelegateProxyEnabled</key><true/>
+    <key>FirebaseAppDelegateProxyEnabled</key><true/>
     <key>UIBackgroundModes</key>
     <array>
       <string>remote-notification</string>
+      <string>location</string>
     </array>
 
 	<key>UISupportedInterfaceOrientations</key>
@@ -63,6 +64,17 @@
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>We use your location to show your position on the map.</string>
 
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need your location to track your delivery route in the background.</string>
+
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>We need your location to track your delivery route in the background.</string>
+
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>remote-notification</string>
+      <string>location</string>
+    </array>
 
 </dict>
 </plist>
