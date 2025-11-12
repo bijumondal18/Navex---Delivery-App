@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../firestore/live_tracking_firestore_service.dart';
 
 class BackgroundLocationService {
   static final BackgroundLocationService _instance = BackgroundLocationService._internal();
@@ -13,6 +14,8 @@ class BackgroundLocationService {
   bool _isTracking = false;
   Position? _latestPosition;
   DateTime? _lastUpdateTime;
+  String? _currentRouteId;
+  String? _currentDriverId;
   static const String _isTrackingKey = 'background_location_tracking';
   static const bool _debugMode = true; // Set to false in production
 
@@ -53,6 +56,8 @@ class BackgroundLocationService {
     LocationAccuracy accuracy = LocationAccuracy.high,
     int distanceFilter = 10, // meters
     Duration? interval,
+    String? routeId,
+    String? driverId,
   }) async {
     if (_isTracking) {
       _debugLog('Tracking already started');
@@ -125,9 +130,45 @@ class BackgroundLocationService {
       );
 
       _isTracking = true;
+      _currentRouteId = routeId;
+      _currentDriverId = driverId;
       await _saveTrackingState(true);
       _debugLog('✅ Background location tracking STARTED successfully');
       _debugLog('Tracking status: ${getTrackingStatus()}');
+      
+      // Initialize Firestore live tracking if routeId and driverId are provided
+      if (routeId != null && driverId != null) {
+        try {
+          // Get current position for initial Firestore update
+          Position? currentPosition = _latestPosition;
+          if (currentPosition == null) {
+            // Try to get current position if not available
+            try {
+              currentPosition = await Geolocator.getCurrentPosition(
+                desiredAccuracy: accuracy,
+              );
+              _latestPosition = currentPosition;
+            } catch (e) {
+              _debugLog('⚠️ Could not get current position: $e');
+            }
+          }
+          
+          if (currentPosition != null) {
+            await LiveTrackingFirestoreService.startTracking(
+              routeId: routeId,
+              driverId: driverId,
+              initialLatitude: currentPosition.latitude,
+              initialLongitude: currentPosition.longitude,
+            );
+          } else {
+            // Initialize without position, will be updated on first location update
+            _debugLog('⚠️ Initializing Firestore tracking without position, will update on first location update');
+          }
+        } catch (e) {
+          _debugLog('⚠️ Failed to start Firestore live tracking: $e');
+        }
+      }
+      
       return true;
     } catch (e) {
       _isTracking = false;
@@ -138,16 +179,29 @@ class BackgroundLocationService {
   }
 
   /// Stop background location tracking
-  Future<void> stopTracking() async {
+  Future<void> stopTracking({String? routeId}) async {
     if (!_isTracking) {
       _debugLog('Tracking already stopped');
       return; // Already stopped
     }
 
     _debugLog('Stopping background location tracking...');
+    
+    // Stop Firestore live tracking if routeId is available
+    final routeIdToStop = routeId ?? _currentRouteId;
+    if (routeIdToStop != null) {
+      try {
+        await LiveTrackingFirestoreService.stopTracking(routeId: routeIdToStop);
+      } catch (e) {
+        _debugLog('⚠️ Failed to stop Firestore live tracking: $e');
+      }
+    }
+    
     await _positionStreamSubscription?.cancel();
     _positionStreamSubscription = null;
     _isTracking = false;
+    _currentRouteId = null;
+    _currentDriverId = null;
     await _saveTrackingState(false);
     _debugLog('✅ Background location tracking STOPPED');
   }
@@ -161,12 +215,26 @@ class BackgroundLocationService {
     _debugLog('   Timestamp: ${position.timestamp}');
     _debugLog('   Speed: ${position.speed}m/s, Heading: ${position.heading}°');
     
-    // You can add logic here to:
-    // - Save location to local storage
-    // - Send location to server
-    // - Update UI if needed
-    // For now, we'll just store the latest position
+    // Save location to local storage
     _saveLatestPosition(position);
+    
+    // Update Firestore live tracking if routeId and driverId are available
+    if (_currentRouteId != null && _currentDriverId != null) {
+      try {
+        LiveTrackingFirestoreService.updateLocation(
+          routeId: _currentRouteId!,
+          driverId: _currentDriverId!,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+          speed: position.speed,
+          heading: position.heading,
+          timestamp: position.timestamp,
+        );
+      } catch (e) {
+        _debugLog('⚠️ Failed to update Firestore live tracking: $e');
+      }
+    }
   }
 
   /// Handle location errors

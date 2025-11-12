@@ -7,8 +7,10 @@ import 'package:navex/data/models/accepted_route_response.dart';
 import 'package:navex/data/models/common_response.dart';
 import 'package:navex/data/models/route.dart';
 import 'package:navex/data/models/route_response.dart';
+import 'package:navex/core/utils/app_preference.dart';
 import 'package:navex/data/repositories/route_repository.dart';
 import 'package:navex/service/location/background_location_service.dart';
+import 'package:navex/service/firestore/route_firestore_service.dart';
 
 part 'route_event.dart';
 
@@ -82,6 +84,21 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
       try {
         final response = await routeRepository.acceptRoute(event.routeId);
         final routeData = AcceptedRouteResponse.fromJson(response);
+        
+        // Save route to Firestore after successful acceptance
+        if (routeData.status == true && routeData.route != null) {
+          try {
+            await RouteFirestoreService.createOrUpdateRoute(
+              routeId: event.routeId,
+              routeData: routeData.route!,
+            );
+            print('✅ Route saved to Firestore: route_id=${event.routeId}');
+          } catch (firestoreError) {
+            // Log error but don't fail the accept route operation
+            print('⚠️ Failed to save route to Firestore (non-critical): $firestoreError');
+          }
+        }
+        
         emit(AcceptRouteStateLoaded(acceptedRouteResponse: routeData));
       } catch (e) {
         emit(AcceptRouteStateFailed(error: e.toString()));
@@ -105,10 +122,16 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
           
           // Start background location tracking after successful vehicle load
           try {
+            // Get driver ID from preferences
+            final driverId = await AppPreference.getInt(AppPreference.userId);
+            final driverIdString = driverId?.toString() ?? '';
+            
             final locationService = BackgroundLocationService();
             await locationService.startTracking(
               accuracy: LocationAccuracy.high,
               distanceFilter: 10, // Update every 10 meters
+              routeId: event.routeId,
+              driverId: driverIdString,
             );
           } catch (e) {
             // Log error but don't fail the load vehicle operation
@@ -257,14 +280,14 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
           final commonResponse = CommonResponse.fromJson(response);
           emit(CompleteTripStateLoaded(response: commonResponse));
           
-          // Stop background location tracking after successful trip completion
-          try {
-            final locationService = BackgroundLocationService();
-            await locationService.stopTracking();
-          } catch (e) {
-            // Log error but don't fail the complete trip operation
-            print('Failed to stop background location tracking: $e');
-          }
+            // Stop background location tracking after successful trip completion
+            try {
+              final locationService = BackgroundLocationService();
+              await locationService.stopTracking(routeId: event.routeId);
+            } catch (e) {
+              // Log error but don't fail the complete trip operation
+              print('Failed to stop background location tracking: $e');
+            }
         } else {
           emit(CompleteTripStateFailed(
             error: response['message'] ?? 'Unable to complete trip',
