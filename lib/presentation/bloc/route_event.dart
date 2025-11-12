@@ -84,3 +84,49 @@ class CancelRouteEvent extends RouteEvent {
   @override
   List<Object> get props => [routeId];
 }
+
+class MarkDeliveryEvent extends RouteEvent {
+  final String deliveryRouteId;
+  final String deliveryWaypointId;
+  final double lat;
+  final double long;
+  final int deliveryType;
+  final String deliveryDate;
+  final String deliveryTime;
+  final List<File> deliveryImages;
+  final File? signature;
+  final String? notes;
+  final String? recipientName;
+  final int? deliverTo;
+
+  const MarkDeliveryEvent({
+    required this.deliveryRouteId,
+    required this.deliveryWaypointId,
+    required this.lat,
+    required this.long,
+    required this.deliveryType,
+    required this.deliveryDate,
+    required this.deliveryTime,
+    required this.deliveryImages,
+    this.signature,
+    this.notes,
+    this.recipientName,
+    this.deliverTo,
+  });
+
+  @override
+  List<Object> get props => [
+    deliveryRouteId,
+    deliveryWaypointId,
+    lat,
+    long,
+    deliveryType,
+    deliveryDate,
+    deliveryTime,
+    deliveryImages,
+    signature?.path ?? '',
+    notes ?? '',
+    recipientName ?? '',
+    deliverTo ?? 0,
+  ];
+}

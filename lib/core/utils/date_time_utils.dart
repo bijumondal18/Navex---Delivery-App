@@ -89,6 +89,11 @@ class DateTimeUtils {
     return "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
   }
 
+  static String getFormattedTime(DateTime dateTime) {
+    // Format: HH:mm (24-hour format) - matches API requirement H:i
+    return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+  }
+
   static String convertMinutesToHoursMinutes(String minutesStr) {
     final totalMinutes = int.tryParse(minutesStr) ?? 0; // Safely parse to int
     final hours = totalMinutes ~/ 60;

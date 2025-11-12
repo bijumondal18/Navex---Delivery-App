@@ -785,28 +785,50 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
     if (!mounted) return;
 
-    await appRouter.push(
+    final result = await appRouter.push(
       Screens.deliveryOutcome,
       extra: DeliveryOutcomeArgs(
         optionKey: selected.$1,
         title: selected.$3,
+        routeId: widget.routeId,
+        waypointId: waypoint.id.toString(),
+        lat: _currentRouteData?.pickupLat != null
+            ? double.tryParse('${_currentRouteData!.pickupLat}')
+            : null,
+        long: _currentRouteData?.pickupLong != null
+            ? double.tryParse('${_currentRouteData!.pickupLong}')
+            : null,
       ),
     );
 
-    // TODO: Implement deliver waypoint API call with selected option
-    if (!mounted) return;
-    // SnackBarHelper.showSuccess('Delivery completed', context: context);
+    // Refresh route details after successful delivery to update waypoint status
+    if (result == true && mounted) {
+      context.read<RouteBloc>().add(FetchRouteDetailsEvent(routeId: widget.routeId));
+    }
   }
 
   Future<void> _failWaypoint(Waypoints waypoint) async {
     if (!mounted) return;
-    await appRouter.push(
+    final result = await appRouter.push(
       Screens.deliveryOutcome,
       extra: DeliveryOutcomeArgs(
         optionKey: 'failed',
         title: 'Failed',
+        routeId: widget.routeId,
+        waypointId: waypoint.id.toString(),
+        lat: _currentRouteData?.pickupLat != null
+            ? double.tryParse('${_currentRouteData!.pickupLat}')
+            : null,
+        long: _currentRouteData?.pickupLong != null
+            ? double.tryParse('${_currentRouteData!.pickupLong}')
+            : null,
       ),
     );
+
+    // Refresh route details after marking waypoint as failed to update waypoint status
+    if (result == true && mounted) {
+      context.read<RouteBloc>().add(FetchRouteDetailsEvent(routeId: widget.routeId));
+    }
   }
 
   Widget _buildWarehouseItem(

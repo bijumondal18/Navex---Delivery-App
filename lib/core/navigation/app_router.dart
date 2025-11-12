@@ -77,6 +77,10 @@ final GoRouter appRouter = GoRouter(
           DeliveryOutcomeScreen(
             optionKey: args.optionKey,
             title: args.title,
+            routeId: args.routeId,
+            waypointId: args.waypointId,
+            lat: args.lat,
+            long: args.long,
           ),
         );
       },

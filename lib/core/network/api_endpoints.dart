@@ -22,6 +22,7 @@ class ApiEndpoints {
   static const String loadVehicleURL = '$baseUrl$appVersion/driver/vehicle-load';
   static const String routeCheckInURL = '$baseUrl$appVersion/driver/route-checkin';
   static const String fetchRouteHistoryURL = '$baseUrl$appVersion/driver/route-history';
+  static const String markDeliveryURL = '$baseUrl$appVersion/driver/mark-delivery';
 
 
   // ✅ ADDRESS API Endpoints

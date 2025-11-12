@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:navex/data/models/accepted_route_response.dart';
@@ -188,6 +190,39 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         }
       } catch (e) {
         emit(CancelRouteStateFailed(error: e.toString()));
+      }
+    });
+
+    /**
+     * Mark Delivery States Handling
+     * */
+    on<MarkDeliveryEvent>((event, emit) async {
+      emit(MarkDeliveryStateLoading());
+      try {
+        final response = await routeRepository.markDelivery(
+          deliveryRouteId: event.deliveryRouteId,
+          deliveryWaypointId: event.deliveryWaypointId,
+          lat: event.lat,
+          long: event.long,
+          deliveryType: event.deliveryType,
+          deliveryDate: event.deliveryDate,
+          deliveryTime: event.deliveryTime,
+          deliveryImages: event.deliveryImages,
+          signature: event.signature,
+          notes: event.notes,
+          recipientName: event.recipientName,
+          deliverTo: event.deliverTo,
+        );
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          emit(MarkDeliveryStateLoaded(response: commonResponse));
+        } else {
+          emit(MarkDeliveryStateFailed(
+            error: response['message'] ?? 'Unable to mark delivery',
+          ));
+        }
+      } catch (e) {
+        emit(MarkDeliveryStateFailed(error: e.toString()));
       }
     });
   }

@@ -1,9 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utils/date_time_utils.dart';
+import '../../../core/utils/snackbar_helper.dart';
+import '../../bloc/route_bloc.dart';
 import '../../widgets/app_dropdown_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/primary_button.dart';
@@ -12,18 +17,37 @@ import 'signature_pad_screen.dart';
 class DeliveryOutcomeArgs {
   final String optionKey;
   final String title;
+  final String routeId;
+  final String waypointId;
+  final double? lat;
+  final double? long;
 
-  const DeliveryOutcomeArgs({required this.optionKey, required this.title});
+  const DeliveryOutcomeArgs({
+    required this.optionKey,
+    required this.title,
+    required this.routeId,
+    required this.waypointId,
+    this.lat,
+    this.long,
+  });
 }
 
 class DeliveryOutcomeScreen extends StatefulWidget {
   final String optionKey;
   final String title;
+  final String routeId;
+  final String waypointId;
+  final double? lat;
+  final double? long;
 
   const DeliveryOutcomeScreen({
     super.key,
     required this.optionKey,
     required this.title,
+    required this.routeId,
+    required this.waypointId,
+    this.lat,
+    this.long,
   });
 
   @override
@@ -36,6 +60,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
   final ImagePicker _picker = ImagePicker();
   final List<File> _photos = [];
   String? _selectedFailureReason;
+  bool _isSubmitting = false;
   static const _failureReasons = [
     'Recipient unavailable/ No answer',
     'Recipient changed his/her address',
@@ -57,11 +82,131 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
 
   bool get _isFailureFlow => widget.optionKey == 'failed';
 
+  // Map optionKey to deliver_to value
+  int? get _deliverToValue {
+    switch (widget.optionKey) {
+      case 'third_party':
+        return 1;
+      case 'mailbox':
+        return 2;
+      case 'safe_place':
+        return 3;
+      case 'other':
+        return 4;
+      case 'recipient':
+        return null; // Recipient doesn't need deliver_to
+      default:
+        return null;
+    }
+  }
+
+  // Get delivery_type: 1=Success, 2=Failed
+  int get _deliveryType => _isFailureFlow ? 2 : 1;
+
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
     _notesController = TextEditingController();
+  }
+
+  Future<void> _handleSubmit() async {
+    // Validate failure reason if failed
+    if (_isFailureFlow && _selectedFailureReason == null) {
+      SnackBarHelper.showError('Please select a failure reason', context: context);
+      return;
+    }
+
+    // Validate images - at least one image (photo or signature) is required
+    if (_photos.isEmpty) {
+      SnackBarHelper.showError('Please add at least one photo or signature', context: context);
+      return;
+    }
+
+    // Validate recipient name - required when not in failure flow and not skipping signature
+    if (!_isFailureFlow && !_shouldSkipSignature) {
+      final recipientName = _nameController.text.trim();
+      if (recipientName.isEmpty) {
+        SnackBarHelper.showError('Please enter recipient name', context: context);
+        return;
+      }
+    }
+
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // Get current location if not provided
+      double lat = widget.lat ?? 0.0;
+      double long = widget.long ?? 0.0;
+
+      if (lat == 0.0 || long == 0.0) {
+        try {
+          final position = await Geolocator.getCurrentPosition();
+          lat = position.latitude;
+          long = position.longitude;
+        } catch (e) {
+          // If location unavailable, use default or show error
+          if (mounted) {
+            SnackBarHelper.showError('Unable to get current location', context: context);
+            setState(() => _isSubmitting = false);
+            return;
+          }
+        }
+      }
+
+      // Get current date and time
+      final now = DateTime.now();
+      final deliveryDate = DateTimeUtils.getFormattedPickedDate(now);
+      final deliveryTime = DateTimeUtils.getFormattedTime(now);
+
+      // Separate signature from other images
+      File? signature;
+      final deliveryImages = <File>[];
+      for (var photo in _photos) {
+        if (photo.path.contains('signature_')) {
+          signature = photo;
+        } else {
+          deliveryImages.add(photo);
+        }
+      }
+
+      // Get notes (include failure reason if failed)
+      String notes = _notesController.text.trim();
+      if (_isFailureFlow && _selectedFailureReason != null) {
+        notes = notes.isEmpty
+            ? _selectedFailureReason!
+            : '${_selectedFailureReason!}\n$notes';
+      }
+
+      // Dispatch the event
+      if (mounted) {
+        context.read<RouteBloc>().add(
+              MarkDeliveryEvent(
+                deliveryRouteId: widget.routeId,
+                deliveryWaypointId: widget.waypointId,
+                lat: lat,
+                long: long,
+                deliveryType: _deliveryType,
+                deliveryDate: deliveryDate,
+                deliveryTime: deliveryTime,
+                deliveryImages: deliveryImages,
+                signature: signature,
+                notes: notes.isEmpty ? null : notes,
+                recipientName: _nameController.text.trim().isEmpty
+                    ? null
+                    : _nameController.text.trim(),
+                deliverTo: _deliverToValue,
+              ),
+            );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        SnackBarHelper.showError('Error: ${e.toString()}', context: context);
+      }
+    }
   }
 
   @override
@@ -330,6 +475,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
               type: AppTextFieldType.text,
               controller: _nameController,
               hint: 'Recipient Name',
+              required: true,
             ),
             const SizedBox(height: AppSizes.kDefaultPadding),
           ],
@@ -343,11 +489,33 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
             padding: const EdgeInsets.symmetric(
               vertical: AppSizes.kDefaultPadding * 2,
             ),
-            child: PrimaryButton(
-              label: 'Submit',
-              fullWidth: true,
-              onPressed: () {},
-              size: ButtonSize.lg,
+            child: BlocListener<RouteBloc, RouteState>(
+              listenWhen: (prev, curr) =>
+                  curr is MarkDeliveryStateLoading ||
+                  curr is MarkDeliveryStateLoaded ||
+                  curr is MarkDeliveryStateFailed,
+              listener: (context, state) {
+                if (state is MarkDeliveryStateLoading) {
+                  setState(() => _isSubmitting = true);
+                } else if (state is MarkDeliveryStateLoaded) {
+                  setState(() => _isSubmitting = false);
+                  SnackBarHelper.showSuccess(
+                    state.response.message ?? 'Delivery marked successfully',
+                    context: context,
+                  );
+                  Navigator.of(context).pop(true); // Return success
+                } else if (state is MarkDeliveryStateFailed) {
+                  setState(() => _isSubmitting = false);
+                  SnackBarHelper.showError(state.error, context: context);
+                }
+              },
+              child: PrimaryButton(
+                label: 'Submit',
+                fullWidth: true,
+                onPressed: _isSubmitting ? null : _handleSubmit,
+                size: ButtonSize.lg,
+                isLoading: _isSubmitting,
+              ),
             ),
           ),
         ],
