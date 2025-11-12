@@ -294,30 +294,32 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           }
         }
       },
-      child: Card(
-        elevation: AppSizes.elevationMedium,
-        margin: const EdgeInsets.symmetric(horizontal: AppSizes.kDefaultPadding),
-        shadowColor: Theme.of(context).shadowColor.withAlpha(100),
-        color: Theme.of(context).cardColor,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
-          child: SizedBox.expand(
-            child: GoogleMap(
-              key: const ValueKey('trip_details_map'),
-              initialCameraPosition: const CameraPosition(
-                target: _start,
-                zoom: 14,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.kDefaultPadding),
+        child: Card(
+          // elevation: AppSizes.elevationMedium,
+          // shadowColor: Theme.of(context).shadowColor.withAlpha(100),
+          // color: Theme.of(context).cardColor,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSizes.cardCornerRadius),
+            child: SizedBox.expand(
+              child: GoogleMap(
+                key: const ValueKey('trip_details_map'),
+                initialCameraPosition: const CameraPosition(
+                  target: _start,
+                  zoom: 14,
+                ),
+                onMapCreated: (c) {
+                  if (!_controller.isCompleted) {
+                    _controller.complete(c);
+                  }
+                },
+                markers: _markers,
+                myLocationEnabled: false,
+                zoomControlsEnabled: false,
+                myLocationButtonEnabled: false,
+                mapType: MapType.normal,
               ),
-              onMapCreated: (c) {
-                if (!_controller.isCompleted) {
-                  _controller.complete(c);
-                }
-              },
-              markers: _markers,
-              myLocationEnabled: false,
-              zoomControlsEnabled: false,
-              myLocationButtonEnabled: false,
-              mapType: MapType.normal,
             ),
           ),
         ),

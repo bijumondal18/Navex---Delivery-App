@@ -133,3 +133,18 @@ class MarkDeliveryEvent extends RouteEvent {
     deliverTo ?? 0,
   ];
 }
+
+class CompleteTripEvent extends RouteEvent {
+  final String routeId;
+  final String completeDate;
+  final String completeTime;
+
+  const CompleteTripEvent({
+    required this.routeId,
+    required this.completeDate,
+    required this.completeTime,
+  });
+
+  @override
+  List<Object> get props => [routeId, completeDate, completeTime];
+}

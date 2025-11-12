@@ -226,6 +226,30 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(MarkDeliveryStateFailed(error: e.toString()));
       }
     });
+
+    /**
+     * Complete Trip States Handling
+     * */
+    on<CompleteTripEvent>((event, emit) async {
+      emit(CompleteTripStateLoading());
+      try {
+        final response = await routeRepository.completeTrip(
+          routeId: event.routeId,
+          completeDate: event.completeDate,
+          completeTime: event.completeTime,
+        );
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          emit(CompleteTripStateLoaded(response: commonResponse));
+        } else {
+          emit(CompleteTripStateFailed(
+            error: response['message'] ?? 'Unable to complete trip',
+          ));
+        }
+      } catch (e) {
+        emit(CompleteTripStateFailed(error: e.toString()));
+      }
+    });
   }
 
   List<RouteData> _mapToRouteList(dynamic data) {

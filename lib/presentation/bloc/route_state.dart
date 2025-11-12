@@ -189,3 +189,23 @@ final class MarkDeliveryStateFailed extends RouteState {
   @override
   List<Object> get props => [error];
 }
+
+final class CompleteTripStateLoading extends RouteState {}
+
+final class CompleteTripStateLoaded extends RouteState {
+  final CommonResponse response;
+
+  const CompleteTripStateLoaded({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class CompleteTripStateFailed extends RouteState {
+  final String error;
+
+  const CompleteTripStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart' hide RouteData;
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -46,6 +47,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
 
   bool _isLoadVehicleInProgress = false;
   bool _hasLoadedVehicle = false;
+  bool _isCompleteTripInProgress = false;
   bool _hasCheckedIn = false;
   bool _isCheckInInProgress = false;
   RouteData? _currentRouteData;
@@ -67,12 +69,6 @@ class _InRouteScreenState extends State<InRouteScreen> {
       return normalized == '1' || normalized == 'true';
     }
     return false;
-  }
-
-  bool _isWaypointCompleted(Waypoints waypoint) {
-    final status = _parseToInt(waypoint.status);
-    // Status 1 = Successfully delivered, Status 2 = Failed
-    return status != null && status == 1;
   }
 
   bool _isWaypointFailed(Waypoints waypoint) {
@@ -247,6 +243,41 @@ class _InRouteScreenState extends State<InRouteScreen> {
                           } else if (state is LoadVehicleStateFailed) {
                             setState(() {
                               _isLoadVehicleInProgress = false;
+                            });
+                            SnackBarHelper.showError(
+                              state.error,
+                              context: context,
+                            );
+                          }
+                        },
+                      ),
+                      BlocListener<RouteBloc, RouteState>(
+                        listenWhen: (prev, curr) =>
+                            curr is CompleteTripStateLoading ||
+                            curr is CompleteTripStateLoaded ||
+                            curr is CompleteTripStateFailed,
+                        listener: (context, state) {
+                          if (!mounted) return;
+                          if (state is CompleteTripStateLoading) {
+                            setState(() => _isCompleteTripInProgress = true);
+                          } else if (state is CompleteTripStateLoaded) {
+                            setState(() {
+                              _isCompleteTripInProgress = false;
+                            });
+                            SnackBarHelper.showSuccess(
+                              state.response.message ??
+                                  'Trip completed successfully',
+                              context: context,
+                            );
+                            // Navigate to home screen after successful trip completion
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (mounted) {
+                                context.go(Screens.main);
+                              }
+                            });
+                          } else if (state is CompleteTripStateFailed) {
+                            setState(() {
+                              _isCompleteTripInProgress = false;
                             });
                             SnackBarHelper.showError(
                               state.error,
@@ -543,24 +574,38 @@ class _InRouteScreenState extends State<InRouteScreen> {
                               // Return to Warehouse (if driverShouldReturn == 1)
                               if (shouldReturn && waypoints.isNotEmpty)
                                 const SizedBox(height: AppSizes.kDefaultPadding),
-                              if (shouldReturn)
-                                _buildWarehouseItem(
-                                  context,
-                                  routeData: routeData,
-                                  isFirst: false,
-                                  isLast: true,
-                                  isVehicleLoaded: true,
-                                  showCheckInButton: false,
-                                  showActionButtons: false,
-                                  canEnableCheckIn: false,
-                                  isCheckInCompleted: true,
-                                  isCheckInLoading: false,
-                                  isLoading: false,
-                                  onNavigate: () =>
-                                      _navigateToLocation(pickupLat, pickupLng),
-                                  onCheckIn: () {},
-                                  onLoadVehicle: () {},
+                              if (shouldReturn) ...[
+                                // Check if last waypoint is delivered (status=1) or failed (status=2)
+                                Builder(
+                                  builder: (context) {
+                                    final lastWaypoint = waypoints.isNotEmpty 
+                                        ? waypoints[waypoints.length - 1] 
+                                        : null;
+                                    final bool shouldShowWarehouseButtons = lastWaypoint != null &&
+                                        (_isWaypointDelivered(lastWaypoint) || 
+                                         _isWaypointFailed(lastWaypoint));
+                                    
+                                    return _buildWarehouseItem(
+                                      context,
+                                      routeData: routeData,
+                                      isFirst: false,
+                                      isLast: true,
+                                      isVehicleLoaded: true,
+                                      showCheckInButton: false,
+                                      showActionButtons: shouldShowWarehouseButtons,
+                                      canEnableCheckIn: false,
+                                      isCheckInCompleted: true,
+                                      isCheckInLoading: false,
+                                      isLoading: _isCompleteTripInProgress,
+                                      onNavigate: () =>
+                                          _navigateToLocation(pickupLat, pickupLng),
+                                      onCheckIn: () {},
+                                      onLoadVehicle: () {},
+                                      onCompleteTrip: () => _completeTrip(),
+                                    );
+                                  },
                                 ),
+                              ],
                             ],
                           ),
                         ),
@@ -841,6 +886,20 @@ class _InRouteScreenState extends State<InRouteScreen> {
     }
   }
 
+  void _completeTrip() {
+    if (_isCompleteTripInProgress) return;
+    final now = DateTime.now();
+    final completeDate = DateTimeUtils.getFormattedPickedDate(now);
+    final completeTime = DateTimeUtils.getFormattedTime(now);
+    context.read<RouteBloc>().add(
+          CompleteTripEvent(
+            routeId: widget.routeId,
+            completeDate: completeDate,
+            completeTime: completeTime,
+          ),
+        );
+  }
+
   Widget _buildWarehouseItem(
     BuildContext context, {
     required RouteData routeData,
@@ -856,6 +915,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
     required VoidCallback onNavigate,
     required VoidCallback onCheckIn,
     required VoidCallback onLoadVehicle,
+    VoidCallback? onCompleteTrip,
   }) {
     final Color lineColor = Colors.grey.shade400;
     final isLoaded = isVehicleLoaded;
@@ -930,7 +990,7 @@ class _InRouteScreenState extends State<InRouteScreen> {
                     ),
                   ],
                 ),
-                if (isFirst && showActionButtons) ...[
+                if (showActionButtons) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -941,35 +1001,47 @@ class _InRouteScreenState extends State<InRouteScreen> {
                           size: ButtonSize.sm,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      if (showCheckInButton) ...[
+                      if (isFirst) ...[
+                        const SizedBox(width: 8),
+                        if (showCheckInButton) ...[
+                          Expanded(
+                            child: PrimaryButton(
+                              onPressed: (!canEnableCheckIn ||
+                                      isCheckInCompleted ||
+                                      isCheckInLoading)
+                                  ? null
+                                  : onCheckIn,
+                              isLoading: isCheckInLoading,
+                              label: 'Check In',
+                              size: ButtonSize.sm,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         Expanded(
                           child: PrimaryButton(
-                            onPressed: (!canEnableCheckIn ||
-                                    isCheckInCompleted ||
-                                    isCheckInLoading)
+                            onPressed: (!isCheckInCompleted ||
+                                    isCheckInLoading ||
+                                    isLoading ||
+                                    isLoaded)
                                 ? null
-                                : onCheckIn,
-                            isLoading: isCheckInLoading,
-                            label: 'Check In',
+                                : onLoadVehicle,
+                            isLoading: isLoading,
+                            label: 'Load Vehicle',
                             size: ButtonSize.sm,
                           ),
                         ),
+                      ] else if (onCompleteTrip != null) ...[
                         const SizedBox(width: 8),
-                      ],
-                      Expanded(
-                        child: PrimaryButton(
-                          onPressed: (!isCheckInCompleted ||
-                                  isCheckInLoading ||
-                                  isLoading ||
-                                  isLoaded)
-                              ? null
-                              : onLoadVehicle,
-                          isLoading: isLoading,
-                          label: 'Load Vehicle',
-                          size: ButtonSize.sm,
+                        Expanded(
+                          child: PrimaryButton(
+                            onPressed: isLoading ? null : onCompleteTrip,
+                            isLoading: isLoading,
+                            label: 'Complete Trip',
+                            size: ButtonSize.sm,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],

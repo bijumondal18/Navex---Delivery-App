@@ -170,4 +170,20 @@ class RouteRepository {
       throw Exception('Failed to mark delivery: ${e.toString()}');
     }
   }
+
+  Future<dynamic> completeTrip({
+    required String routeId,
+    required String completeDate,
+    required String completeTime,
+  }) async {
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.completeTripURL,
+      data: {
+        'route_id': routeId,
+        'complete_date': completeDate,
+        'complete_time': completeTime,
+      },
+    );
+    return response.data;
+  }
 }
