@@ -129,6 +129,67 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
         emit(CheckInStateFailed(error: e.toString()));
       }
     });
+
+    /**
+     * Cancel Route States Handling
+     * */
+    on<CancelRouteEvent>((event, emit) async {
+      // Store the previous state before emitting loading state
+      final previousState = state;
+      FetchAcceptedRoutesStateLoaded? previousAcceptedRoutesState;
+      
+      if (previousState is FetchAcceptedRoutesStateLoaded) {
+        previousAcceptedRoutesState = previousState;
+      }
+      
+      emit(CancelRouteStateLoading());
+      try {
+        final response = await routeRepository.cancelRoute(event.routeId);
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          
+          // Update accepted routes state by removing the canceled route
+          if (previousAcceptedRoutesState != null) {
+            final currentRoutes = previousAcceptedRoutesState.routeResponse.route ?? [];
+            final canceledRouteId = event.routeId.toString();
+            final updatedRoutes = currentRoutes.where((route) {
+              // Compare route IDs as strings to handle different types
+              final routeIdStr = route.id?.toString() ?? '';
+              return routeIdStr != canceledRouteId;
+            }).toList();
+            
+            // Create updated route response
+            final updatedRouteResponse = RouteResponse(
+              currentPage: previousAcceptedRoutesState.routeResponse.currentPage,
+              route: updatedRoutes,
+              firstPageUrl: previousAcceptedRoutesState.routeResponse.firstPageUrl,
+              from: previousAcceptedRoutesState.routeResponse.from,
+              lastPage: previousAcceptedRoutesState.routeResponse.lastPage,
+              lastPageUrl: previousAcceptedRoutesState.routeResponse.lastPageUrl,
+              links: previousAcceptedRoutesState.routeResponse.links,
+              nextPageUrl: previousAcceptedRoutesState.routeResponse.nextPageUrl,
+              path: previousAcceptedRoutesState.routeResponse.path,
+              perPage: previousAcceptedRoutesState.routeResponse.perPage,
+              prevPageUrl: previousAcceptedRoutesState.routeResponse.prevPageUrl,
+              to: previousAcceptedRoutesState.routeResponse.to,
+              total: previousAcceptedRoutesState.routeResponse.total,
+            );
+            
+            // Emit updated state with removed route
+            emit(FetchAcceptedRoutesStateLoaded(routeResponse: updatedRouteResponse));
+          }
+          
+          // Emit cancel success state
+          emit(CancelRouteStateLoaded(response: commonResponse));
+        } else {
+          emit(CancelRouteStateFailed(
+            error: response['message'] ?? 'Unable to cancel route',
+          ));
+        }
+      } catch (e) {
+        emit(CancelRouteStateFailed(error: e.toString()));
+      }
+    });
   }
 
   List<RouteData> _mapToRouteList(dynamic data) {

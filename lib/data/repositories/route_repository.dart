@@ -42,6 +42,14 @@ class RouteRepository {
     return response.data;
   }
 
+  Future<dynamic> cancelRoute(String routeId) async {
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.cancelRouteURL,
+      data: {'route_id': routeId},
+    );
+    return response.data;
+  }
+
   Future<dynamic> loadVehicle({
     required String routeId,
     required double currentLat,

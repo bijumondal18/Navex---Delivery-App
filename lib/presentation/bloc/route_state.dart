@@ -149,3 +149,23 @@ final class CheckInStateFailed extends RouteState {
   @override
   List<Object> get props => [error];
 }
+
+final class CancelRouteStateLoading extends RouteState {}
+
+final class CancelRouteStateLoaded extends RouteState {
+  final CommonResponse response;
+
+  const CancelRouteStateLoaded({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class CancelRouteStateFailed extends RouteState {
+  final String error;
+
+  const CancelRouteStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

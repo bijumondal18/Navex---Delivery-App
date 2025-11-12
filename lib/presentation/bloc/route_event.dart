@@ -75,3 +75,12 @@ class CheckInEvent extends RouteEvent {
   @override
   List<Object> get props => [routeId];
 }
+
+class CancelRouteEvent extends RouteEvent {
+  final String routeId;
+
+  const CancelRouteEvent({required this.routeId});
+
+  @override
+  List<Object> get props => [routeId];
+}
