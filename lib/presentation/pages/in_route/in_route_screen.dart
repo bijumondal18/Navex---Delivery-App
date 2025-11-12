@@ -554,8 +554,13 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 // Check if this waypoint is failed (status=2)
                                 final isFailed = _isWaypointFailed(waypoint);
                                 
+                                // For the first waypoint (index 0), require vehicle to be loaded
+                                final bool isFirstWaypoint = index == 0;
+                                final bool canShowFirstWaypointButtons = !isFirstWaypoint || _hasLoadedVehicle;
+                                
                                 // Enable buttons only if waypoint matches current_waypoint ID OR status == 2 (failed)
-                                final bool isWaypointEnabled = isCurrentWaypoint || isFailed;
+                                // AND if it's the first waypoint, vehicle must be loaded
+                                final bool isWaypointEnabled = (isCurrentWaypoint || isFailed) && canShowFirstWaypointButtons;
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     bottom: index == waypoints.length - 1
