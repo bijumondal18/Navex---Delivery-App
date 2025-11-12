@@ -151,3 +151,27 @@ final class FetchStateListStateFailed extends AuthState {
   @override
   List<Object> get props => [error];
 }
+
+/**
+ * Update Online/Offline Status States
+ * */
+
+final class UpdateOnlineOfflineStatusStateLoading extends AuthState {}
+
+final class UpdateOnlineOfflineStatusStateLoaded extends AuthState {
+  final CommonResponse response;
+
+  const UpdateOnlineOfflineStatusStateLoaded({required this.response});
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class UpdateOnlineOfflineStatusStateFailed extends AuthState {
+  final String error;
+
+  const UpdateOnlineOfflineStatusStateFailed({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}

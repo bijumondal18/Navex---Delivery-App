@@ -88,3 +88,12 @@ class UpdateProfileEvent extends AuthEvent {
     profileImage?.path ?? '',
   ];
 }
+
+class UpdateOnlineOfflineStatusEvent extends AuthEvent {
+  final bool isOnline;
+
+  const UpdateOnlineOfflineStatusEvent({required this.isOnline});
+
+  @override
+  List<Object> get props => [isOnline];
+}

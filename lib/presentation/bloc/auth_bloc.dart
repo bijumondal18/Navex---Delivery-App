@@ -215,5 +215,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(FetchStateListStateFailed(error: e.toString()));
       }
     });
+
+    /**
+     * Update Online/Offline Status States Handling
+     * */
+    on<UpdateOnlineOfflineStatusEvent>((event, emit) async {
+      emit(UpdateOnlineOfflineStatusStateLoading());
+      try {
+        final response = await authRepository.updateOnlineOfflineStatus(event.isOnline);
+        if (response['status'] == true) {
+          final commonResponse = CommonResponse.fromJson(response);
+          emit(UpdateOnlineOfflineStatusStateLoaded(response: commonResponse));
+          // Refresh profile to get updated online status
+          add(FetchUserProfileEvent());
+        } else {
+          emit(UpdateOnlineOfflineStatusStateFailed(
+            error: response['message'] ?? 'Unable to update online status',
+          ));
+        }
+      } catch (e) {
+        emit(UpdateOnlineOfflineStatusStateFailed(error: e.toString()));
+      }
+    });
   }
 }

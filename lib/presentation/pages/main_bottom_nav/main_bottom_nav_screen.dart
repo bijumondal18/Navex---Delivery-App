@@ -8,6 +8,7 @@ import 'package:navex/core/navigation/app_router.dart';
 import 'package:navex/core/navigation/screens.dart';
 import 'package:navex/core/themes/app_colors.dart';
 import 'package:navex/core/themes/app_sizes.dart';
+import 'package:navex/core/utils/snackbar_helper.dart';
 import 'package:navex/presentation/pages/main_bottom_nav/components/side_drawer.dart';
 import 'package:navex/presentation/widgets/app_cached_image.dart';
 import 'package:navex/presentation/widgets/custom_switch.dart';
@@ -28,6 +29,32 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   bool _isOnline = false;
   bool _hasRequestedProfile = false;
   int _selectedDrawerIndex = 0;
+  bool _isUpdatingStatus = false;
+
+  bool _isFlagTrue(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is num) return value == 1;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == '1' || normalized == 'true';
+    }
+    return false;
+  }
+
+  void _handleOnlineStatusChange(bool value) {
+    if (_isUpdatingStatus) return;
+    
+    setState(() {
+      _isOnline = value;
+      _isUpdatingStatus = true;
+    });
+
+    // Send API request: true for online, false for offline
+    context.read<AuthBloc>().add(
+      UpdateOnlineOfflineStatusEvent(isOnline: value),
+    );
+  }
 
   @override
   void initState() {
@@ -99,28 +126,68 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          title: Text(
-            'Navex',
-            style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: AppColors.white,
-              fontWeight: FontWeight.w600,
-            ),
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            listenWhen: (prev, curr) =>
+                curr is FetchUserProfileStateLoaded,
+            listener: (context, state) {
+              if (state is FetchUserProfileStateLoaded) {
+                // Initialize online status from profile
+                final isOnlineValue = state.profileResponse.user?.driver?.isOnline;
+                if (mounted) {
+                  setState(() {
+                    _isOnline = _isFlagTrue(isOnlineValue);
+                  });
+                }
+              }
+            },
           ),
-          actions: [
-            /**
-             * Online/Offline switch to go user online or offline
-             * */
-            CustomSwitch(
-              value: _isOnline,
-              onChanged: (value) {
+          BlocListener<AuthBloc, AuthState>(
+            listenWhen: (prev, curr) =>
+                curr is UpdateOnlineOfflineStatusStateLoading ||
+                curr is UpdateOnlineOfflineStatusStateLoaded ||
+                curr is UpdateOnlineOfflineStatusStateFailed,
+            listener: (context, state) {
+              if (!mounted) return;
+              
+              if (state is UpdateOnlineOfflineStatusStateLoading) {
+                setState(() => _isUpdatingStatus = true);
+              } else if (state is UpdateOnlineOfflineStatusStateLoaded) {
+                setState(() => _isUpdatingStatus = false);
+                SnackBarHelper.showSuccess(
+                  state.response.message ?? 'Status updated successfully',
+                  context: context,
+                );
+              } else if (state is UpdateOnlineOfflineStatusStateFailed) {
                 setState(() {
-                  _isOnline = value;
+                  _isUpdatingStatus = false;
+                  // Revert to previous state on error
+                  _isOnline = !_isOnline;
                 });
-              },
+                SnackBarHelper.showError(state.error, context: context);
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            title: Text(
+              'Navex',
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                color: AppColors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+            actions: [
+              /**
+               * Online/Offline switch to go user online or offline
+               * */
+              CustomSwitch(
+                value: _isOnline,
+                onChanged: _isUpdatingStatus ? null : _handleOnlineStatusChange,
+              ),
 
             /**
              * Notification Icon click to open Notifications Screen
@@ -163,14 +230,14 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
                   },
                 ),
               ),
-            ),
-          ],
+          )],
+          ),
+          drawer: SideDrawer(
+            onItemTap: _onDrawerItemTap,
+            selectedIndex: _selectedDrawerIndex,
+          ),
+          body: widget.child,
         ),
-        drawer: SideDrawer(
-          onItemTap: _onDrawerItemTap,
-          selectedIndex: _selectedDrawerIndex,
-        ),
-        body: widget.child,
       ),
     );
   }

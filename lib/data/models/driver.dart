@@ -18,6 +18,7 @@ class Driver {
   dynamic locationLong;
   StateDetails? stateDetails;
   Pharmacy? pharmacy;
+  dynamic isOnline;
 
   Driver({
     this.id,
@@ -35,7 +36,8 @@ class Driver {
     this.locationLat,
     this.locationLong,
     this.stateDetails,
-    this.pharmacy
+    this.pharmacy,
+    this.isOnline
   });
 
   Driver.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,8 @@ class Driver {
     pharmacy = json['pharmacy'] != null
         ?  Pharmacy.fromJson(json['pharmacy'])
         : null;
+    isOnline = json['is_online'];
+
   }
 
   Map<String, dynamic> toJson() {
@@ -83,6 +87,8 @@ class Driver {
     if (pharmacy != null) {
       data['pharmacy'] = pharmacy!.toJson();
     }
+    data['is_online'] = isOnline;
+
     return data;
   }
 }

@@ -89,6 +89,17 @@ class AuthRepository {
     return response.data;
   }
 
+  Future<dynamic> updateOnlineOfflineStatus(bool isOnline) async {
+    // Send as string: "1" for online, "0" for offline
+    // Some APIs expect string values to avoid type truncation issues
+    final String isOnlineValue = isOnline ? '1' : '0';
+    final response = await _apiClient.postRequest(
+      ApiEndpoints.updateOnlineOfflineStatusURL,
+      data: {'is_online': isOnlineValue},
+    );
+    return response.data;
+  }
+
   // Future<dynamic> uploadProfilePhoto(File imageFile) async {
   //   final response = await _apiClient.postRequest(
   //     ApiEndpoints.updateUserProfileURL,

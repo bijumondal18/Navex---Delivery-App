@@ -3,14 +3,15 @@ import 'package:navex/core/themes/app_colors.dart';
 
 class CustomSwitch extends StatelessWidget {
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
-  const CustomSwitch({super.key, required this.value, required this.onChanged});
+  const CustomSwitch({super.key, required this.value, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onChanged != null;
     return GestureDetector(
-      onTap: () => onChanged(!value),
+      onTap: isEnabled ? () => onChanged!(!value) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 54,
@@ -21,6 +22,7 @@ class CustomSwitch extends StatelessWidget {
               ? AppColors.greenLight
               : Theme.of(context).hintColor.withAlpha(200),
           borderRadius: BorderRadius.circular(20), // 👈 custom radius here
+          // opacity: isEnabled ? 1.0 : 0.5,
         ),
         child: AnimatedAlign(
           duration: const Duration(milliseconds: 200),
