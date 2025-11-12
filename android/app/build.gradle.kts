@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -21,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.navex.navex"
+        applicationId = "com.navex.navexapp"
         minSdk = 24 //flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 1
@@ -44,6 +45,15 @@ flutter {
 dependencies {
     // ✅ Use correct Kotlin DSL syntax for dependencies
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+
+    // ✅ Firebase BOM (Bill of Materials) - ensures all Firebase dependencies use compatible versions
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    
+    // Firebase dependencies will automatically use versions from BOM
+    // Uncomment these if you need specific Firebase services:
+    // implementation("com.google.firebase:firebase-firestore")
+    // implementation("com.google.firebase:firebase-messaging")
+    // implementation("com.google.firebase:firebase-analytics")
 
     // ✅ Add this for desugaring support - (***required for flutter-local-notifications package)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Firebase configuration generated from google-services.json -->
+    <string name="google_app_id" translatable="false">1:906489789394:android:2c341548da1b5b6aee660b</string>
+    <string name="default_web_client_id" translatable="false">906489789394-hhmvdi9t6k865e40hevtk6bhjvqnjdl9.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://navex-8fe81-default-rtdb.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">906489789394</string>
+    <string name="google_api_key" translatable="false">AIzaSyCMeEiScFy4YFsgN3esIkF1_OBXO_ANGB4</string>
+    <string name="google_storage_bucket" translatable="false">navex-8fe81.firebasestorage.app</string>
+    <string name="project_id" translatable="false">navex-8fe81</string>
+</resources>
+

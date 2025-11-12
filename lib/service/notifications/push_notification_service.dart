@@ -18,10 +18,19 @@ class PushNotificationService {
 
   Future<void> init({required GoRouter router}) async {
     if (_initialized) return;
+    
+    // Check if Firebase is available
+    try {
+      // Try to get default Firebase app to check if initialized
+      Firebase.app();
+    } catch (e) {
+      // Firebase not initialized, skip notification setup
+      debugPrint('⚠️ Firebase not available, skipping push notification setup');
+      return;
+    }
+    
     _initialized = true;
     _router = router;
-
-    await Firebase.initializeApp();
 
     // iOS permissions
     await _messaging.requestPermission(

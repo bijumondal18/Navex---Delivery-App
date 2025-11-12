@@ -9,6 +9,7 @@ import 'package:navex/data/models/login_response.dart';
 import 'package:navex/data/models/profile_response.dart';
 import 'package:navex/data/models/state_details.dart';
 import 'package:navex/data/repositories/auth_repository.dart';
+import 'package:navex/service/firestore/user_firestore_service.dart';
 
 part 'auth_event.dart';
 
@@ -58,6 +59,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           await AppPreference.setBool(AppPreference.isLoggedIn, true);
+
+          // Save user data to Firestore
+          final userId = loginResponse.user?.id ?? 0;
+          print('🔐 Login successful. User ID: $userId');
+          
+          if (userId > 0) {
+            print('📤 Attempting to save user to Firestore...');
+            try {
+              await UserFirestoreService.createOrUpdateUser(
+                userId: userId,
+                loginResponse: loginResponse,
+              );
+              print('✅ Firestore save completed');
+            } catch (e) {
+              print('⚠️ Firestore save failed (non-critical): $e');
+              // Don't fail login if Firestore save fails
+            }
+          } else {
+            print('⚠️ Invalid user ID: $userId - Skipping Firestore save');
+          }
 
           emit(LoginStateLoaded(loginResponse: loginResponse));
         } else {

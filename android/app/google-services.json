@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "906489789394",
+    "project_id": "navex-8fe81",
+    "storage_bucket": "navex-8fe81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:906489789394:android:2c341548da1b5b6aee660b",
+        "android_client_info": {
+          "package_name": "com.navex.navexapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "906489789394-hhmvdi9t6k865e40hevtk6bhjvqnjdl9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMeEiScFy4YFsgN3esIkF1_OBXO_ANGB4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "906489789394-hhmvdi9t6k865e40hevtk6bhjvqnjdl9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
