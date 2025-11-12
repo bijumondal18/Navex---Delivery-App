@@ -7,7 +7,32 @@ class LiveTrackingFirestoreService {
 
   /// Create or update live tracking document in Firestore
   /// Uses route_id as the document ID
+  /// This method is optimized for background execution - non-blocking and resilient
   static Future<void> updateLocation({
+    required String routeId,
+    required String driverId,
+    required double latitude,
+    required double longitude,
+    double? accuracy,
+    double? speed,
+    double? heading,
+    DateTime? timestamp,
+  }) async {
+    // Use unawaited to make this non-blocking for background execution
+    _updateLocationInternal(
+      routeId: routeId,
+      driverId: driverId,
+      latitude: latitude,
+      longitude: longitude,
+      accuracy: accuracy,
+      speed: speed,
+      heading: heading,
+      timestamp: timestamp,
+    );
+  }
+
+  /// Internal method to update location (called asynchronously)
+  static Future<void> _updateLocationInternal({
     required String routeId,
     required String driverId,
     required double latitude,
@@ -19,9 +44,8 @@ class LiveTrackingFirestoreService {
   }) async {
     try {
       // Check if Firebase is initialized - try to get the default app
-      FirebaseApp? firebaseApp;
       try {
-        firebaseApp = Firebase.app();
+        Firebase.app();
       } catch (e) {
         // Firebase not initialized, try to initialize it
         try {
@@ -30,10 +54,7 @@ class LiveTrackingFirestoreService {
           
           if (apps.isEmpty) {
             // No apps exist, try to initialize
-            firebaseApp = await Firebase.initializeApp();
-          } else {
-            // Use the first available app
-            firebaseApp = apps.first;
+            await Firebase.initializeApp();
           }
         } catch (initError) {
           print('❌ Failed to initialize Firebase for live tracking: $initError');
@@ -41,7 +62,7 @@ class LiveTrackingFirestoreService {
         }
       }
       
-      // Prepare location data
+      // Prepare location data with timestamp as string for better background compatibility
       final locationData = <String, dynamic>{
         'route_id': routeId,
         'driver_id': driverId,
@@ -52,31 +73,42 @@ class LiveTrackingFirestoreService {
       };
 
       // Add optional fields if available
-      if (accuracy != null) {
+      if (accuracy != null && accuracy >= 0) {
         locationData['accuracy'] = accuracy;
       }
-      if (speed != null) {
+      if (speed != null && speed >= 0) {
         locationData['speed'] = speed;
       }
-      if (heading != null) {
+      if (heading != null && heading >= 0) {
         locationData['heading'] = heading;
       }
       if (timestamp != null) {
         locationData['location_timestamp'] = timestamp.toIso8601String();
+      } else {
+        locationData['location_timestamp'] = DateTime.now().toIso8601String();
       }
 
       // Use route_id as document ID and set/update the document
+      // Use set() with merge: true for better background performance
       final docRef = _firestore
           .collection(_collectionName)
           .doc(routeId.toString());
       
-      await docRef.set(locationData, SetOptions(merge: true)); // merge: true updates existing or creates new
+      // Use set() with merge: true - this is more efficient for background updates
+      // and doesn't require reading the document first
+      await docRef.set(locationData, SetOptions(merge: true));
       
-      print('✅ Live tracking updated in Firestore: route_id=$routeId, lat=$latitude, lng=$longitude');
-    } catch (e, stackTrace) {
+      // Only print in debug mode to reduce background logging
+      if (DateTime.now().millisecond % 10 == 0) { // Log every 10th update to reduce spam
+        print('✅ Live tracking updated: route=$routeId, lat=$latitude, lng=$longitude');
+      }
+    } catch (e) {
       // Log error but don't fail the location tracking
+      // Use more detailed logging for debugging background issues
       print('❌ Error updating live tracking in Firestore: $e');
-      print('❌ Stack trace: $stackTrace');
+      if (e.toString().contains('permission') || e.toString().contains('network')) {
+        print('⚠️ Network or permission issue - location update skipped');
+      }
     }
   }
 
@@ -89,16 +121,13 @@ class LiveTrackingFirestoreService {
   }) async {
     try {
       // Check if Firebase is initialized
-      FirebaseApp? firebaseApp;
       try {
-        firebaseApp = Firebase.app();
+        Firebase.app();
       } catch (e) {
         try {
           final apps = Firebase.apps;
           if (apps.isEmpty) {
-            firebaseApp = await Firebase.initializeApp();
-          } else {
-            firebaseApp = apps.first;
+            await Firebase.initializeApp();
           }
         } catch (initError) {
           print('❌ Failed to initialize Firebase for live tracking start: $initError');
@@ -136,16 +165,13 @@ class LiveTrackingFirestoreService {
   }) async {
     try {
       // Check if Firebase is initialized
-      FirebaseApp? firebaseApp;
       try {
-        firebaseApp = Firebase.app();
+        Firebase.app();
       } catch (e) {
         try {
           final apps = Firebase.apps;
           if (apps.isEmpty) {
-            firebaseApp = await Firebase.initializeApp();
-          } else {
-            firebaseApp = apps.first;
+            await Firebase.initializeApp();
           }
         } catch (initError) {
           print('❌ Failed to initialize Firebase for live tracking stop: $initError');

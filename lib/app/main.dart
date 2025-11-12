@@ -8,6 +8,7 @@ import '../service/OTA/ota_updater.dart';
 import '../service/location/background_location_service.dart';
 import '../service/notifications/fcm_background_handler.dart';
 import '../service/notifications/push_notification_service.dart';
+import 'package:workmanager/workmanager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,12 @@ void main() async {
     debugPrint('⚠️ App will continue without Firebase features');
     // Continue app initialization without Firebase
   }
+
+  // Initialize Workmanager for background location updates
+  await Workmanager().initialize(
+    BackgroundLocationService.backgroundLocationUpdateCallback,
+    isInDebugMode: false,
+  );
 
   // Load background location tracking state (in case app was restarted)
   final locationService = BackgroundLocationService();
