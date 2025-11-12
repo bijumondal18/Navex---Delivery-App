@@ -507,10 +507,14 @@ class _InRouteScreenState extends State<InRouteScreen> {
                                 final bool isCurrentWaypoint =
                                     currentWaypointId != null &&
                                         currentWaypointId == waypoint.id;
+                                // Enable waypoint buttons after vehicle is loaded
+                                // If vehicle is loaded, enable first waypoint; otherwise check previous completion
                                 final bool isWaypointEnabled =
-                                    isInRouteAndLoaded
-                                        ? isCurrentWaypoint
-                                        : previousCompleted;
+                                    isVehicleLoaded
+                                        ? (index == 0 || previousCompleted)
+                                        : (isInRouteAndLoaded
+                                            ? isCurrentWaypoint
+                                            : previousCompleted);
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     bottom: index == waypoints.length - 1
