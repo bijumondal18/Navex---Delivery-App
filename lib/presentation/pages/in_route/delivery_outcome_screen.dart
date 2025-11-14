@@ -368,9 +368,11 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(Icons.edit),
-                            Text(
-                              'Add Signature',
-                              style: Theme.of(context).textTheme.bodyLarge,
+                            Expanded(
+                              child: Text(
+                                'Add Signature',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
                             ),
                           ],
                         ),
@@ -400,9 +402,11 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.camera_alt),
-                          Text(
-                            'Add Photo',
-                            style: Theme.of(context).textTheme.bodyLarge,
+                          Expanded(
+                            child: Text(
+                              'Add Photo',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
                           ),
                         ],
                       ),
@@ -467,7 +471,7 @@ class _DeliveryOutcomeScreenState extends State<DeliveryOutcomeScreen> {
           ],
           if (_isFailureFlow) ...[
             AppDropdownButton<String>(
-              label: 'Failure Reason',
+              label: '',
               hint: 'Select failure reason',
               items: _failureReasons,
               selectedItem: _selectedFailureReason,

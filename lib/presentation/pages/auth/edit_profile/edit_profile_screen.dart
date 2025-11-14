@@ -82,7 +82,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 state.profileResponse.user?.driver?.address ?? '';
             _bioController.text = state.profileResponse.user?.driver?.bio ?? '';
             _zipController.text = state.profileResponse.user?.driver?.zip ?? '';
-            _cityController.text = state.profileResponse.user?.driver?.city ?? '';
+            _cityController.text =
+                state.profileResponse.user?.driver?.city ?? '';
 
             final stateDetails =
                 state.profileResponse.user?.driver?.stateDetails;
@@ -174,17 +175,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   );
                 }
                 if (state is UpdateProfileStateFailed) {
-                  SnackBarHelper.showError(
-                    state.error,
-                    context: context,
-                  );
+                  SnackBarHelper.showError(state.error, context: context);
                 }
               },
               builder: (context, state) {
                 if (state is UpdateProfileStateLoading) {
-                  return const Center(
-                            child: const ThemedActivityIndicator(),
-                  );
+                  return const Center(child: ThemedActivityIndicator());
                 }
                 return SafeArea(
                   child: PrimaryButton(
