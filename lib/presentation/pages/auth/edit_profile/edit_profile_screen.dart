@@ -186,24 +186,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             child: const ThemedActivityIndicator(),
                   );
                 }
-                return PrimaryButton(
-                  label: 'Update',
-                  fullWidth: true,
-                  onPressed: () {
-                    context.read<AuthBloc>().add(
-                      UpdateProfileEvent(
-                        name: _nameController.text.trim().toString(),
-                        email: _emailController.text.trim().toString(),
-                        phoneNumber: _phoneController.text.trim().toString(),
-                        bio: _bioController.text.trim().toString(),
-                        address: _addressController.text.trim().toString(),
-                        city: _cityController.text.trim().toString(),
-                        zipCode: _zipController.text.trim().toString(),
-                        stateId: selectedState?.id.toString(),
-                      ),
-                    );
-                  },
-                  size: ButtonSize.lg,
+                return SafeArea(
+                  child: PrimaryButton(
+                    label: 'Update',
+                    fullWidth: true,
+                    onPressed: () {
+                      context.read<AuthBloc>().add(
+                        UpdateProfileEvent(
+                          name: _nameController.text.trim().toString(),
+                          email: _emailController.text.trim().toString(),
+                          phoneNumber: _phoneController.text.trim().toString(),
+                          bio: _bioController.text.trim().toString(),
+                          address: _addressController.text.trim().toString(),
+                          city: _cityController.text.trim().toString(),
+                          zipCode: _zipController.text.trim().toString(),
+                          stateId: selectedState?.id.toString(),
+                        ),
+                      );
+                    },
+                    size: ButtonSize.lg,
+                  ),
                 );
               },
             ),

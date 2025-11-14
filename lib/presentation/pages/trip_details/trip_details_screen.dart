@@ -129,9 +129,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.kDefaultPadding),
-        child: ConstrainedBox(
+          child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight),
           child: BlocBuilder<RouteBloc, RouteState>(
+            buildWhen: (previous, current) =>
+                current is FetchRouteDetailsStateLoading ||
+                current is FetchRouteDetailsStateLoaded ||
+                current is FetchRouteDetailsStateFailed,
             builder: (context, state) {
               if (state is FetchRouteDetailsStateLoading) {
                 return const Center(
@@ -329,6 +333,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
 
   Widget _buildStatsCard(BuildContext context) {
     return BlocBuilder<RouteBloc, RouteState>(
+      buildWhen: (previous, current) =>
+          current is FetchRouteDetailsStateLoading ||
+          current is FetchRouteDetailsStateLoaded ||
+          current is FetchRouteDetailsStateFailed,
       builder: (context, state) {
         String distanceText = '0 mi';
         String timeText = '0 min';
@@ -393,6 +401,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               vertical: AppSizes.kDefaultPadding,
             ),
             child: BlocConsumer<RouteBloc, RouteState>(
+              buildWhen: (previous, current) =>
+                  current is AcceptRouteStateLoading ||
+                  current is AcceptRouteStateLoaded ||
+                  current is AcceptRouteStateFailed,
               listener: (context, state) {
                 if (state is AcceptRouteStateLoaded) {
                   SnackBarHelper.showSuccess(
