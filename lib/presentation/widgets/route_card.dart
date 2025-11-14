@@ -103,18 +103,28 @@ class _RouteCardState extends State<RouteCard> {
           curr is CancelRouteStateLoaded ||
           curr is CancelRouteStateFailed,
       listener: (context, state) {
+        final currentRouteId = route.id?.toString() ?? '';
+        
         if (state is CancelRouteStateLoading) {
-          setState(() => _isCancelling = true);
+          // Only show loading for this specific route
+          if (state.routeId == currentRouteId) {
+            setState(() => _isCancelling = true);
+          }
         } else if (state is CancelRouteStateLoaded) {
-          setState(() => _isCancelling = false);
-          SnackBarHelper.showSuccess(
-            state.response.message ?? 'Trip cancelled successfully',
-            context: context,
-          );
-          // Screen-level BlocListener will handle the refresh
+          // Only handle success for this specific route
+          if (state.routeId == currentRouteId) {
+            setState(() => _isCancelling = false);
+            SnackBarHelper.showSuccess(
+              state.response.message ?? 'Trip cancelled successfully',
+              context: context,
+            );
+          }
         } else if (state is CancelRouteStateFailed) {
-          setState(() => _isCancelling = false);
-          SnackBarHelper.showError(state.error, context: context);
+          // Only handle error for this specific route
+          if (state.routeId == currentRouteId) {
+            setState(() => _isCancelling = false);
+            SnackBarHelper.showError(state.error, context: context);
+          }
         }
       },
       child: GestureDetector(

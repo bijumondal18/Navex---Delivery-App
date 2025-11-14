@@ -64,10 +64,16 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
     return BlocProvider.value(
       value: _bloc,
       child: BlocListener<RouteBloc, RouteState>(
-        listenWhen: (prev, curr) => curr is CancelRouteStateLoaded,
+        listenWhen: (prev, curr) => 
+            curr is CancelRouteStateLoaded ||
+            curr is FetchAcceptedRoutesStateLoaded,
         listener: (context, state) {
-          // BLoC handles route removal locally, no need to refresh
-          // The canceled route is already removed from the list in the BLoC
+          // When a route is canceled, BLoC emits FetchAcceptedRoutesStateLoaded
+          // with the updated list (canceled route removed)
+          // Store the updated routes for display
+          if (state is FetchAcceptedRoutesStateLoaded) {
+            _lastLoadedRoutes = state.routeResponse.route ?? [];
+          }
         },
         child: SizedBox(
           height: MediaQuery.sizeOf(context).height,
@@ -125,10 +131,12 @@ class _MyAcceptedRoutesScreenState extends State<MyAcceptedRoutesScreen> {
                 right: 0,
                 child: BlocBuilder<RouteBloc, RouteState>(
                   buildWhen: (previous, current) {
-                    // Rebuild only for accepted routes states, not for cancel states
+                    // Rebuild for accepted routes states and cancel loaded state
+                    // (cancel loaded triggers FetchAcceptedRoutesStateLoaded which updates the list)
                     return current is FetchAcceptedRoutesStateLoading ||
                         current is FetchAcceptedRoutesStateLoaded ||
-                        current is FetchAcceptedRoutesStateFailed;
+                        current is FetchAcceptedRoutesStateFailed ||
+                        current is CancelRouteStateLoaded;
                   },
                   builder: (context, state) {
                     if (state is FetchAcceptedRoutesStateLoading) {
