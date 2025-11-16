@@ -112,42 +112,80 @@ class RouteBloc extends Bloc<RouteEvent, RouteState> {
      * Load Vehicle States Handling
      * */
     on<LoadVehicleEvent>((event, emit) async {
+      print('═══════════════════════════════════════════════════════');
+      print('🚚 LOAD VEHICLE EVENT RECEIVED');
+      print('📍 routeId: ${event.routeId}');
+      print('📍 currentLat: ${event.currentLat}');
+      print('📍 currentLng: ${event.currentLng}');
+      print('═══════════════════════════════════════════════════════');
+      
       emit(LoadVehicleStateLoading());
       try {
+        print('📡 Calling loadVehicle API...');
         final response = await routeRepository.loadVehicle(
           routeId: event.routeId,
           currentLat: event.currentLat,
           currentLng: event.currentLng,
         );
+        print('📡 API Response received: ${response['status']}');
+        print('📡 API Response message: ${response['message']}');
+        
         if (response['status'] == true) {
+          print('✅ Load vehicle API succeeded');
           final commonResponse = CommonResponse.fromJson(response);
           emit(LoadVehicleStateLoaded(response: commonResponse));
           
           // Start background location tracking after successful vehicle load
+          print('🔄 Starting background location tracking...');
           try {
             // Get driver ID from preferences
+            print('📋 Getting driver ID from preferences...');
             final driverId = await AppPreference.getInt(AppPreference.userId);
             final driverIdString = driverId?.toString() ?? '';
+            print('📋 Driver ID: $driverIdString');
             
-            final locationService = BackgroundLocationService();
-            await locationService.startTracking(
-              accuracy: LocationAccuracy.high,
-              distanceFilter: 10, // Update every 10 meters
-              routeId: event.routeId,
-              driverId: driverIdString,
-            );
-          } catch (e) {
+            if (driverIdString.isEmpty) {
+              print('⚠️ WARNING: Driver ID is empty, cannot start location tracking');
+            } else {
+              print('🚀 Calling BackgroundLocationService.startTracking()...');
+              print('🚀 Parameters: routeId=${event.routeId}, driverId=$driverIdString');
+              final locationService = BackgroundLocationService();
+              final success = await locationService.startTracking(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: 10, // Update every 10 meters
+                routeId: event.routeId,
+                driverId: driverIdString,
+              );
+              
+              if (success) {
+                print('✅ Location tracking started successfully');
+              } else {
+                print('❌ Location tracking failed to start (returned false)');
+              }
+            }
+          } catch (e, stackTrace) {
             // Log error but don't fail the load vehicle operation
-            print('Failed to start background location tracking: $e');
+            print('═══════════════════════════════════════════════════════');
+            print('❌ EXCEPTION in background location tracking');
+            print('❌ Error: $e');
+            print('❌ Error type: ${e.runtimeType}');
+            print('❌ Stack trace: $stackTrace');
+            print('═══════════════════════════════════════════════════════');
           }
           
           add(FetchRouteDetailsEvent(routeId: event.routeId));
         } else {
+          print('❌ Load vehicle API failed: ${response['message']}');
           emit(LoadVehicleStateFailed(
             error: response['message'] ?? 'Unable to load vehicle',
           ));
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        print('═══════════════════════════════════════════════════════');
+        print('❌ EXCEPTION in LoadVehicleEvent handler');
+        print('❌ Error: $e');
+        print('❌ Stack trace: $stackTrace');
+        print('═══════════════════════════════════════════════════════');
         emit(LoadVehicleStateFailed(error: e.toString()));
       }
     });

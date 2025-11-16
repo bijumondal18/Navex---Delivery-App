@@ -45,13 +45,15 @@ flutter {
 dependencies {
     // ✅ Use correct Kotlin DSL syntax for dependencies
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+    
+    // AndroidX Core for ContextCompat
+    implementation("androidx.core:core-ktx:1.12.0")
 
     // ✅ Firebase BOM (Bill of Materials) - ensures all Firebase dependencies use compatible versions
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     
     // Firebase dependencies will automatically use versions from BOM
-    // Uncomment these if you need specific Firebase services:
-    // implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-firestore") // Required for native location service
     // implementation("com.google.firebase:firebase-messaging")
     // implementation("com.google.firebase:firebase-analytics")
 

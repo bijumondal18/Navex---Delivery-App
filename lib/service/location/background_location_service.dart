@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -20,6 +21,9 @@ class BackgroundLocationService {
   static const String _isTrackingKey = 'background_location_tracking';
   static const String _workManagerTaskName = 'backgroundLocationUpdate';
   static const bool _debugMode = true; // Set to false in production
+  
+  // Method channel for native Android service
+  static const MethodChannel _channel = MethodChannel('com.navex.navex/location_service');
 
   /// Check if location tracking is currently active
   bool get isTracking => _isTracking;
@@ -61,11 +65,23 @@ class BackgroundLocationService {
     String? routeId,
     String? driverId,
   }) async {
-    if (_isTracking) {
-      _debugLog('Tracking already started');
-      return true; // Already tracking
+    print('═══════════════════════════════════════════════════════');
+    print('🎯 BackgroundLocationService.startTracking() CALLED');
+    print('📍 routeId: $routeId');
+    print('📍 driverId: $driverId');
+    print('📍 accuracy: $accuracy');
+    print('📍 distanceFilter: $distanceFilter');
+    print('📍 Current tracking status: $_isTracking');
+    print('═══════════════════════════════════════════════════════');
+    
+    // Update routeId and driverId even if already tracking
+    bool wasAlreadyTracking = _isTracking;
+    if (wasAlreadyTracking) {
+      print('⚠️ Tracking already started, but will update route/driver info and ensure Firestore document exists');
+      _debugLog('Tracking already started, updating route info');
     }
 
+    print('🔄 Starting new tracking session...');
     _debugLog('Starting background location tracking...');
     _debugLog('Settings: accuracy=$accuracy, distanceFilter=$distanceFilter meters');
 
@@ -108,30 +124,7 @@ class BackgroundLocationService {
         // This will show a system dialog if needed
       }
 
-      // Configure location settings optimized for background tracking
-      final locationSettings = LocationSettings(
-        accuracy: accuracy,
-        distanceFilter: distanceFilter,
-        timeLimit: interval,
-      );
-
-      _debugLog('Starting position stream with background support...');
-      // Start listening to position updates
-      // This stream will continue even when app is in background
-      _positionStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).listen(
-        (Position position) {
-          // Handle position updates - this will be called even in background
-          _onLocationUpdate(position);
-        },
-        onError: (error) {
-          // Handle errors
-          _onLocationError(error);
-        },
-        cancelOnError: false, // Continue tracking even on errors
-      );
-
+      // Update tracking state
       _isTracking = true;
       _currentRouteId = routeId;
       _currentDriverId = driverId;
@@ -144,52 +137,93 @@ class BackgroundLocationService {
         await prefs.setString('bg_driver_id', driverId);
       }
       
-      _debugLog('✅ Background location tracking STARTED successfully');
+      if (!wasAlreadyTracking) {
+        _debugLog('✅ Background location tracking STARTED successfully');
+      } else {
+        _debugLog('✅ Background location tracking UPDATED (was already running)');
+      }
       _debugLog('Tracking status: ${getTrackingStatus()}');
       
-      // Initialize Firestore live tracking if routeId and driverId are provided
+      // CRITICAL: Create/Update Firestore document FIRST before starting native service
+      // This ensures document exists even if native service fails
+      // ALWAYS create/update document, even if tracking was already started
       if (routeId != null && driverId != null) {
+        bool documentCreated = false;
         try {
-          // Get current position for initial Firestore update
+          // Try to get current position for initial Firestore update
           Position? currentPosition = _latestPosition;
           if (currentPosition == null) {
-            // Try to get current position if not available
             try {
+              // Try to get current position with timeout
               currentPosition = await Geolocator.getCurrentPosition(
                 desiredAccuracy: accuracy,
+              ).timeout(
+                const Duration(seconds: 5),
               );
               _latestPosition = currentPosition;
+              _debugLog('📍 Got current position: lat=${currentPosition.latitude}, lng=${currentPosition.longitude}');
+            } on TimeoutException {
+              _debugLog('⚠️ Timeout getting current position, will create document without position');
             } catch (e) {
               _debugLog('⚠️ Could not get current position: $e');
             }
           }
           
-          if (currentPosition != null) {
-            await LiveTrackingFirestoreService.startTracking(
-              routeId: routeId,
-              driverId: driverId,
-              initialLatitude: currentPosition.latitude,
-              initialLongitude: currentPosition.longitude,
-            );
+          // Create document with or without position - WAIT for completion
+          _debugLog('📝 Creating Firestore document: routeId=$routeId, driverId=$driverId');
+          await LiveTrackingFirestoreService.startTracking(
+            routeId: routeId,
+            driverId: driverId,
+            initialLatitude: currentPosition?.latitude ?? 0.0,
+            initialLongitude: currentPosition?.longitude ?? 0.0,
+          );
+          documentCreated = true;
+          _debugLog('✅ Firestore tracking document created successfully');
+        } catch (e, stackTrace) {
+          _debugLog('❌ Failed to create Firestore document: $e');
+          _debugLog('Stack trace: $stackTrace');
+          // Don't continue if document creation fails - this is critical
+          throw Exception('Failed to create Firestore tracking document: $e');
+        }
+        
+        // Only start native service if document was created successfully
+        if (documentCreated) {
+          // Use native Android foreground service for better reliability (survives app kill)
+          if (Platform.isAndroid) {
+            try {
+              _debugLog('🚀 Starting/Updating native Android foreground service...');
+              await _channel.invokeMethod('startLocationTracking', {
+                'routeId': routeId,
+                'driverId': driverId,
+              });
+              _debugLog('✅ Native Android foreground service started/updated');
+            } catch (e) {
+              _debugLog('⚠️ Failed to start native Android service: $e');
+              // Only start Flutter tracking if it wasn't already started
+              if (!wasAlreadyTracking) {
+                _debugLog('⚠️ Falling back to Flutter-based tracking');
+                _startFlutterLocationTracking(accuracy, distanceFilter, interval);
+              }
+            }
           } else {
-            // Initialize without position, will be updated on first location update
-            _debugLog('⚠️ Initializing Firestore tracking without position, will update on first location update');
+            // iOS: Use Flutter-based tracking (only if not already started)
+            if (!wasAlreadyTracking) {
+              _startFlutterLocationTracking(accuracy, distanceFilter, interval);
+            }
           }
-        } catch (e) {
-          _debugLog('⚠️ Failed to start Firestore live tracking: $e');
         }
       }
       
-      // Register periodic background task for location updates
+      // Register periodic background task for location updates (backup mechanism)
       // This ensures location updates continue even when app is in background
       if (Platform.isAndroid) {
         try {
           await Workmanager().registerPeriodicTask(
             _workManagerTaskName,
             _workManagerTaskName,
-            frequency: const Duration(minutes: 1), // Update every minute in background
+            frequency: const Duration(seconds: 5), // Update every 5 seconds for debugging
           );
-          _debugLog('✅ Background workmanager task registered');
+          _debugLog('✅ Background workmanager task registered (5 seconds for debugging)');
         } catch (e) {
           _debugLog('⚠️ Failed to register background workmanager task: $e');
         }
@@ -204,6 +238,39 @@ class BackgroundLocationService {
     }
   }
 
+  /// Start Flutter-based location tracking (fallback for iOS or if native service fails)
+  void _startFlutterLocationTracking(
+    LocationAccuracy accuracy,
+    int distanceFilter,
+    Duration? interval,
+  ) {
+    _debugLog('Starting Flutter-based location tracking...');
+    
+    // Configure location settings optimized for background tracking
+    final locationSettings = LocationSettings(
+      accuracy: accuracy,
+      distanceFilter: distanceFilter,
+      timeLimit: interval,
+    );
+
+    // Start listening to position updates
+    // This stream will continue even when app is in background
+    // Geolocator automatically handles foreground service on Android when proper permissions are granted
+    _positionStreamSubscription = Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).listen(
+      (Position position) {
+        // Handle position updates - this will be called even in background
+        _onLocationUpdate(position);
+      },
+      onError: (error) {
+        // Handle errors
+        _onLocationError(error);
+      },
+      cancelOnError: false, // Continue tracking even on errors
+    );
+  }
+
   /// Stop background location tracking
   Future<void> stopTracking({String? routeId}) async {
     if (!_isTracking) {
@@ -212,6 +279,16 @@ class BackgroundLocationService {
     }
 
     _debugLog('Stopping background location tracking...');
+    
+    // Stop native Android service if running
+    if (Platform.isAndroid) {
+      try {
+        await _channel.invokeMethod('stopLocationTracking');
+        _debugLog('✅ Native Android foreground service stopped');
+      } catch (e) {
+        _debugLog('⚠️ Failed to stop native Android service: $e');
+      }
+    }
     
     // Stop Firestore live tracking if routeId is available
     final routeIdToStop = routeId ?? _currentRouteId;
@@ -253,6 +330,17 @@ class BackgroundLocationService {
     _latestPosition = position;
     _lastUpdateTime = DateTime.now();
     
+    // Print location update to console (always visible)
+    print('═══════════════════════════════════════════════════════');
+    print('📍 LOCATION UPDATE');
+    print('📍 Lat: ${position.latitude}');
+    print('📍 Lng: ${position.longitude}');
+    print('📍 Accuracy: ${position.accuracy}m');
+    print('📍 Speed: ${position.speed}m/s');
+    print('📍 Heading: ${position.heading}°');
+    print('📍 Timestamp: ${position.timestamp}');
+    print('═══════════════════════════════════════════════════════');
+    
     _debugLog('📍 Location update: lat=${position.latitude}, lng=${position.longitude}, accuracy=${position.accuracy}m');
     _debugLog('   Timestamp: ${position.timestamp}');
     _debugLog('   Speed: ${position.speed}m/s, Heading: ${position.heading}°');
@@ -263,6 +351,7 @@ class BackgroundLocationService {
     // Update Firestore live tracking if routeId and driverId are available
     // Use unawaited to make this non-blocking for background execution
     if (_currentRouteId != null && _currentDriverId != null) {
+      print('📝 Updating Firestore with location...');
       // Firestore update is async and non-blocking - won't block location updates
       LiveTrackingFirestoreService.updateLocation(
         routeId: _currentRouteId!,
@@ -273,9 +362,14 @@ class BackgroundLocationService {
         speed: position.speed,
         heading: position.heading,
         timestamp: position.timestamp,
-      ).catchError((error) {
+      ).then((_) {
+        print('✅ Firestore updated successfully');
+      }).catchError((error) {
+        print('❌ Failed to update Firestore: $error');
         _debugLog('⚠️ Failed to update Firestore live tracking: $error');
       });
+    } else {
+      print('⚠️ Cannot update Firestore: routeId or driverId is null');
     }
   }
 
@@ -362,7 +456,7 @@ class BackgroundLocationService {
   static void backgroundLocationUpdateCallback() {
     Workmanager().executeTask((task, inputData) async {
       try {
-        _staticDebugLog('🔄 Background location update task started');
+        _staticDebugLog('🔄 Background location update task started: $task');
         
         // Get routeId and driverId from shared preferences
         final prefs = await SharedPreferences.getInstance();
@@ -371,13 +465,33 @@ class BackgroundLocationService {
         
         if (routeId == null || driverId == null) {
           _staticDebugLog('⚠️ No routeId or driverId found, skipping background update');
-          return Future.value(true);
+          return Future.value(true); // Return true to prevent retry
         }
         
-        // Get current location
+        // Check if location services are enabled
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          _staticDebugLog('⚠️ Location services are disabled');
+          return Future.value(true); // Return true to prevent retry
+        }
+        
+        // Check permissions
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied || 
+            permission == LocationPermission.deniedForever) {
+          _staticDebugLog('⚠️ Location permission denied: $permission');
+          return Future.value(true); // Return true to prevent retry
+        }
+        
+        // Get current location with timeout
         try {
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
+          ).timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException('Location request timed out');
+            },
           );
           
           // Update Firestore
@@ -395,12 +509,18 @@ class BackgroundLocationService {
           _staticDebugLog('✅ Background location updated: lat=${position.latitude}, lng=${position.longitude}');
         } catch (e) {
           _staticDebugLog('❌ Error getting location in background: $e');
+          // Return true to prevent retry on timeout/permission errors
+          // Return false only for transient errors that should be retried
+          if (e is TimeoutException) {
+            return Future.value(true);
+          }
+          return Future.value(false); // Retry on other errors
         }
         
         return Future.value(true);
       } catch (e) {
         _staticDebugLog('❌ Error in background location update callback: $e');
-        return Future.value(false);
+        return Future.value(false); // Retry on unexpected errors
       }
     });
   }
